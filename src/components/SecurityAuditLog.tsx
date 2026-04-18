@@ -1,5 +1,5 @@
-import React from 'react';
-import { motion } from 'motion/react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   ShieldAlert, 
   Terminal, 
@@ -21,6 +21,22 @@ import {
 } from 'lucide-react';
 
 const SecurityAuditLog: React.FC = () => {
+  const [integrityStatus, setIntegrityStatus] = useState<'IDLE' | 'VERIFYING' | 'VERIFIED' | 'TAMPERED'>('IDLE');
+  const [logs] = useState([
+    { time: '2023-11-24 14:22:01.092', id: 'EV-982-XQ', sub: 'usr_root_admin', act: 'ROLE_MOD_ESCALATION', res: 'SUCCESS', crit: 'LOW', hash: 'e3b0c442...52b855' },
+    { time: '2023-11-24 14:19:44.811', id: 'EV-981-AB', sub: 'svc_worker_node', act: 'BATCH_PROCESS_INIT', res: 'COMPLETED', crit: 'INFO', hash: '8f434346...327aa4' },
+    { time: '2023-11-24 14:15:12.003', id: 'EV-980-CR', sub: 'usr_external_guest', act: 'UNAUTHORIZED_ACCESS', res: 'REJECTED', crit: 'CRITICAL', hash: 'a665a459...f7a27ae3' },
+    { time: '2023-11-24 14:12:09.992', id: 'EV-979-ZZ', sub: 'usr_compliance', act: 'DATA_EXPORT_DENIED', res: 'PENDING', crit: 'HIGH', hash: 'b3a8e0e1...fbf1228' },
+    { time: '2023-11-24 14:08:33.111', id: 'EV-978-PL', sub: 'sys_cron_job_77', act: 'DB_CLEANUP_SEQ', res: 'SUCCESS', crit: 'INFO', hash: 'cda94b15...0bd8ed' },
+  ]);
+
+  const verifyLedger = () => {
+    setIntegrityStatus('VERIFYING');
+    setTimeout(() => {
+      setIntegrityStatus('VERIFIED');
+    }, 2000);
+  };
+
   return (
     <div className="min-h-screen bg-[#f8fafc] p-10 font-sans cursor-default">
       <div className="max-w-[1440px] mx-auto space-y-8">
@@ -42,6 +58,21 @@ const SecurityAuditLog: React.FC = () => {
             </p>
           </div>
           <div className="flex gap-4 relative z-10 font-mono text-[9px] font-black uppercase tracking-widest text-[#091426]">
+             <button 
+                onClick={verifyLedger}
+                disabled={integrityStatus === 'VERIFYING'}
+                className={`px-5 py-2.5 rounded-xl border flex items-center gap-2 transition-all ${
+                  integrityStatus === 'VERIFIED' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' :
+                  integrityStatus === 'VERIFYING' ? 'bg-amber-50 text-amber-600 border-amber-200 animate-pulse' :
+                  'bg-white text-blue-600 border-blue-200 hover:bg-blue-50 cursor-pointer shadow-sm'
+                }`}
+             >
+                {integrityStatus === 'VERIFIED' ? <Verified size={14} /> : 
+                 integrityStatus === 'VERIFYING' ? <Activity size={14} className="animate-spin" /> : 
+                 <ShieldAlert size={14} />}
+                {integrityStatus === 'IDLE' ? 'Vérifier l\'Intégrité SOC 2' :
+                 integrityStatus === 'VERIFYING' ? 'Calcul SHA-256...' : 'Registre Immuable'}
+             </button>
              <div className="flex bg-white border border-slate-200 rounded-xl p-1 shadow-sm">
                 <button className="px-5 py-2.5 bg-[#091426] text-white rounded-lg shadow-xl shadow-slate-200">Real-time</button>
                 <button className="px-5 py-2.5 text-slate-400">Historical</button>
@@ -100,7 +131,7 @@ const SecurityAuditLog: React.FC = () => {
               <thead>
                  <tr className="bg-slate-50/50 text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50">
                     <th className="px-10 py-6">Timestamp (UTC)</th>
-                    <th className="px-10 py-6">Event Fingerprint</th>
+                    <th className="px-10 py-6">Cryptographic Hash</th>
                     <th className="px-10 py-6">Subject Principal</th>
                     <th className="px-10 py-6">Action / Protocol</th>
                     <th className="px-10 py-6">Result</th>
@@ -108,16 +139,15 @@ const SecurityAuditLog: React.FC = () => {
                  </tr>
               </thead>
               <tbody className="divide-y divide-slate-50 font-mono text-[10px] font-black uppercase tracking-tight text-slate-500">
-                 {[
-                   { time: '2023-11-24 14:22:01.092', id: 'EV-982-XQ', sub: 'usr_root_admin', act: 'ROLE_MOD_ESCALATION', res: 'SUCCESS', crit: 'LOW' },
-                   { time: '2023-11-24 14:19:44.811', id: 'EV-981-AB', sub: 'svc_worker_node_04', act: 'BATCH_PROCESS_INIT', res: 'COMPLETED', crit: 'INFO' },
-                   { time: '2023-11-24 14:15:12.003', id: 'EV-980-CR', sub: 'usr_external_guest', act: 'UNAUTHORIZED_ACCESS', res: 'REJECTED', crit: 'CRITICAL' },
-                   { time: '2023-11-24 14:12:09.992', id: 'EV-979-ZZ', sub: 'usr_compliance_mngr', act: 'DATA_EXPORT_RESTRICTED', res: 'PENDING', crit: 'HIGH' },
-                   { time: '2023-11-24 14:08:33.111', id: 'EV-978-PL', sub: 'sys_cron_job_77', act: 'DB_CLEANUP_SEQ', res: 'SUCCESS', crit: 'INFO' },
-                 ].map((row, i) => (
+                 {logs.map((row, i) => (
                    <tr key={i} className={`group transition-colors cursor-default ${row.crit === 'CRITICAL' ? 'bg-red-50/20 hover:bg-red-50/40' : 'hover:bg-slate-50/50'}`}>
                       <td className="px-10 py-6 text-slate-300">{row.time}</td>
-                      <td className="px-10 py-6 text-[#091426]">{row.id}</td>
+                      <td className="px-10 py-6 text-[#091426]">
+                         <div className="flex items-center gap-2">
+                           <span className="text-slate-300">0x</span>{row.hash}
+                           {integrityStatus === 'VERIFIED' && <Verified size={12} className="text-emerald-500" />}
+                         </div>
+                      </td>
                       <td className="px-10 py-6">
                          <div className="flex items-center gap-2">
                             <div className={`w-1.5 h-1.5 rounded-full ${row.sub.startsWith('usr') ? 'bg-blue-600 shadow-[0_0_5px_rgba(37,99,235,0.5)]' : 'bg-slate-300'}`} />
