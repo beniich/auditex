@@ -15,6 +15,30 @@
   --color-brand-border: #dfe3e7;
   --color-brand-text-main: #171c1f;
   --color-brand-text-muted: #45474c;
+
+  /* Glassmorphism Tokens */
+  --glass-bg: rgba(255, 255, 255, 0.4);
+  --glass-bg-dark: rgba(9, 20, 38, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.3);
+}
+
+@utility glass-card {
+  background-color: var(--glass-bg);
+  backdrop-filter: blur(24px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+}
+
+@utility glass-sidebar {
+  background-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(40px);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@utility glass-morphism {
+  background-color: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 @layer base {

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   TrendingUp, 
   FileDown, 
@@ -17,7 +17,12 @@ import {
   ArrowUpRight,
   Search,
   LayoutGrid,
-  FileText
+  FileText,
+  MousePointer2,
+  Cpu,
+  Fingerprint,
+  RefreshCw,
+  Box
 } from 'lucide-react';
 import { Audit, AuditTemplate } from '../types';
 import { computeComplianceScore } from '../lib/scoreEngine';
@@ -29,43 +34,52 @@ import { IncidentService } from '../services/IncidentService';
 import { AuditService } from '../services/AuditService';
 import { useApiQuery } from '../hooks/useApiQuery';
 import { toast } from '../hooks/useToast';
+import { GlassCard } from './common/GlassCard';
 
-const StatCard = ({ title, value, detail, icon: Icon, color, trend }: any) => (
-  <motion.div 
-    initial={{ opacity: 0, y: 15 }}
-    animate={{ opacity: 1, y: 0 }}
-    className="bg-white dark:bg-slate-900 p-8 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm group hover:shadow-xl hover:border-blue-100 transition-all cursor-default"
+const StatCardPremium = ({ title, value, detail, icon: Icon, color, trend, sparkData }: any) => (
+  <GlassCard 
+    className="p-8 border-white/5 bg-white/40 dark:bg-slate-900/40 backdrop-blur-3xl relative overflow-hidden group hover:scale-[1.02] transition-all"
   >
-    <div className="flex justify-between items-start mb-6">
-      <div className={`w-12 h-12 rounded-2xl ${color} bg-opacity-10 flex items-center justify-center group-hover:scale-110 transition-transform`}>
-        <Icon size={24} className={color} />
+    <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+       <Icon size={80} className={color} />
+    </div>
+    <div className="flex justify-between items-start mb-8">
+      <div className={`w-14 h-14 rounded-2xl ${color} bg-opacity-10 flex items-center justify-center border border-white/10 shadow-xl`}>
+        <Icon size={28} className={color} />
       </div>
       <div className="text-right">
-        <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{title}</span>
-        <h3 className="text-3xl font-black text-[#091426] dark:text-white mt-1 tracking-tighter">{value}</h3>
+        <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] font-mono">{title}</span>
+        <h3 className="text-4xl font-black text-[#091426] dark:text-white mt-2 tracking-tighter leading-none italic">{value}</h3>
       </div>
     </div>
-    <div className="flex items-center justify-between mt-auto">
-      <div className="flex items-center gap-1.5">
-        <div className={`p-1 rounded-full ${trend >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
-          <TrendingUp size={10} className={trend < 0 ? 'rotate-180' : ''} />
-        </div>
-        <span className={`text-[10px] font-bold ${trend >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-          {trend >= 0 ? '+' : ''}{trend}% 
-          <span className="text-slate-400 font-medium ml-1">vs 30d</span>
-        </span>
+    <div className="flex items-center justify-between">
+      <div className="flex flex-col">
+         <span className={`text-[10px] font-black ${trend >= 0 ? 'text-emerald-500' : 'text-red-500'} flex items-center gap-1`}>
+            {trend >= 0 ? <TrendingUp size={12} /> : <TrendingUp size={12} className="rotate-180" />}
+            {Math.abs(trend)}% VELOCITY
+         </span>
+         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter mt-1">{detail}</span>
       </div>
-      <div className="text-[9px] font-black text-slate-300 uppercase tracking-widest">{detail}</div>
+      {/* Mini Sparkline Simulation */}
+      <div className="flex items-end gap-1 h-8">
+         {[40, 70, 45, 90, 65, 80, 50].map((h, i) => (
+            <motion.div 
+               key={i} 
+               initial={{ height: 0 }} animate={{ height: `${h}%` }} 
+               className={`w-1 rounded-full ${trend >= 0 ? 'bg-emerald-500' : 'bg-red-500/50'} opacity-40`} 
+            />
+         ))}
+      </div>
     </div>
-  </motion.div>
+  </GlassCard>
 );
 
 export const Dashboard = ({ audits, templates }: { audits: Audit[], templates: AuditTemplate[] }) => {
   const [isExporting, setIsExporting] = useState(false);
 
-  const { data: nodeStats } = useQuery({
-    queryKey: ['infra-stats'],
-    queryFn: () => InfrastructureService.getStats(),
+  const { data: nodes = [] } = useQuery({
+    queryKey: ['infra-nodes'],
+    queryFn: () => InfrastructureService.getNodes(),
   });
 
   const { data: incidents = [] } = useApiQuery(
@@ -79,194 +93,174 @@ export const Dashboard = ({ audits, templates }: { audits: Audit[], templates: A
   const complianceValue = parseInt(complianceKpi.toString()) || 0;
   const criticalIncidents = incidents.filter(i => i.severity === 'CRITICAL' || i.severity === 'HIGH').length;
 
-  const handleExportAuditReport = async (auditId: string) => {
-    try {
-      const response = await axios.get(`/api/reports/download/${auditId}`, {
-        responseType: 'blob',
-      });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `Audit_Report_${auditId.substring(0, 8)}.md`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      toast.success('Rapport de synthèse généré.', 'Report Engine');
-    } catch (err: any) {
-      console.error(err);
-      toast.error('Échec de l\'export.', 'Audit AX');
-    }
-  };
-
   return (
-    <div className="flex flex-col gap-10 font-sans" id="dashboard-content">
+    <div className="flex flex-col gap-10 max-w-[1700px] mx-auto animate-in fade-in slide-in-from-bottom-8 duration-1000" id="dashboard-content">
       
-      {/* Header Executive */}
-      <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-8 lg:p-10 rounded-[3rem] shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-20 opacity-5 pointer-events-none">
-          <Zap size={200} className="text-blue-600" />
-        </div>
-        <div className="relative z-10 flex-1">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="bg-[#091426] text-white px-3 py-1 rounded text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 shadow-lg shadow-slate-900/10">
-              <Lock size={12} className="text-blue-400 fill-current" /> CRYPTO_SECURED
-            </span>
-            <span className="text-blue-600 text-[10px] font-mono font-black tracking-widest uppercase flex items-center gap-1.5 pl-2 border-l border-slate-200">
-               <Activity size={10} className="animate-pulse" /> LIVE_INTELLIGENCE_FEED
-            </span>
-          </div>
-          <h2 className="text-4xl font-black text-[#091426] dark:text-white tracking-tighter uppercase leading-none">Global Risk Command</h2>
-          <p className="text-slate-500 max-w-2xl mt-4 text-sm leading-relaxed font-medium">
-             Centralized oversight of organizational integrity, cryptographic block validation, and multi-jurisdictional compliance health.
-          </p>
-        </div>
-        <div className="flex gap-4 relative z-10">
-          <button 
-            onClick={async () => {
-              setIsExporting(true);
-              await exportDashboardToPDF('dashboard-content');
-              setIsExporting(false);
-            }}
-            disabled={isExporting}
-            className="flex items-center gap-2 px-8 py-4 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl text-[10px] font-black text-[#091426] dark:text-white hover:bg-slate-50 uppercase tracking-widest transition-all shadow-sm group"
-          >
-            <FileDown size={16} className="group-hover:-translate-y-1 transition-transform" /> {isExporting ? 'Generating Report...' : 'Export Intelligence'}
-          </button>
-          <button className="flex items-center gap-2 px-8 py-4 bg-[#091426] text-white rounded-2xl text-[10px] font-black hover:bg-slate-800 uppercase tracking-widest transition-all shadow-xl shadow-slate-900/20 group">
-            <Plus size={16} className="group-hover:rotate-90 transition-transform" /> New Audit Pipeline
-          </button>
-        </div>
-      </div>
-
-      {/* Strategic KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-        <StatCard 
-          title="Compliance Index" 
-          value={complianceKpi} 
-          detail="Verified Assets" 
-          icon={ShieldCheck} 
-          color="text-blue-600" 
-          trend={2.4}
-        />
-        <StatCard 
-          title="Threat Exposure" 
-          value={criticalIncidents} 
-          detail="Critical Alerts" 
-          icon={AlertTriangle} 
-          color="text-red-500" 
-          trend={-12}
-        />
-        <StatCard 
-          title="Forensic Ledger" 
-          value={audits.length} 
-          detail="Immutable Records" 
-          icon={Layers} 
-          color="text-emerald-500" 
-          trend={8.2}
-        />
-        <StatCard 
-          title="Network Health" 
-          value={`${nodeStats?.total || 0} Nodes`} 
-          detail={`SYNC_STABLE`} 
-          icon={Globe} 
-          color="text-slate-500" 
-          trend={0.5}
-        />
-      </div>
-
-
-      {/* Main Grid Content */}
+      {/* Command Center Header */}
       <div className="grid grid-cols-12 gap-8">
-        {/* Heatmap Section */}
-        <div className="col-span-12 lg:col-span-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[3rem] p-10 shadow-sm relative group overflow-hidden">
-          <div className="flex justify-between items-center mb-10">
-             <h3 className="text-[10px] font-black text-[#091426] dark:text-white uppercase tracking-[0.2em] flex items-center gap-3">
-               <Activity size={18} className="text-blue-600" /> Regional Risk Distribution
-             </h3>
-             <div className="flex gap-4">
-                <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-red-500" /><span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">High</span></div>
-                <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-amber-400" /><span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Medium</span></div>
-                <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-emerald-500" /><span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Low</span></div>
-             </div>
-          </div>
-          <div className="relative h-[400px]">
-             <RiskHeatmap />
-          </div>
-          <div className="mt-10 pt-8 border-t border-slate-50 flex justify-between items-center text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">
-             <p>Algorithm: PRED_MODEL_V5 // Last Run: 2m ago</p>
-             <button className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors uppercase">Drill-down Analytics <ArrowUpRight size={14} /></button>
-          </div>
-        </div>
+         <div className="col-span-12 lg:col-span-8">
+            <GlassCard className="p-12 border-white/5 bg-[#091426]/90 relative overflow-hidden h-full flex flex-col justify-center">
+               <div className="absolute top-0 right-0 p-20 opacity-10 pointer-events-none">
+                  <div className="w-[500px] h-[500px] bg-blue-600 rounded-full blur-[120px] animate-pulse" />
+               </div>
+               <div className="relative z-10">
+                  <div className="flex items-center gap-4 mb-8">
+                     <span className="bg-blue-600 text-white px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-[0.25em] flex items-center gap-2 shadow-2xl shadow-blue-500/20">
+                        <Lock size={12} className="text-white" /> CRYPTO_READY
+                     </span>
+                     <span className="text-blue-400 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border border-blue-400/20 px-4 py-1.5 rounded-xl backdrop-blur-md">
+                        <Activity size={12} className="animate-pulse" /> AUDITAX_OS_v5.4
+                     </span>
+                     <span className="text-emerald-400 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border border-emerald-400/20 px-4 py-1.5 rounded-xl backdrop-blur-md ml-auto">
+                        <Fingerprint size={12} /> BIOMETRIC_LOCKED
+                     </span>
+                  </div>
+                  <h2 className="text-6xl font-black text-white tracking-tighter uppercase leading-[0.8] mb-6 italic">Global Risk Command</h2>
+                  <p className="text-slate-400 max-w-2xl text-lg font-medium leading-relaxed opacity-80 uppercase tracking-tight">
+                     Autonomous oversight of jurisdictional integrity patterns and decentralized compliance ledgers.
+                  </p>
+                  
+                  <div className="flex gap-4 mt-12">
+                     <button 
+                        onClick={async () => {
+                           setIsExporting(true);
+                           await exportDashboardToPDF('dashboard-content');
+                           setIsExporting(false);
+                        }}
+                        className="px-10 py-5 bg-white text-[#091426] rounded-[2rem] text-[10px] font-black uppercase tracking-widest shadow-2xl hover:scale-105 transition-all flex items-center gap-3"
+                     >
+                        <FileDown size={18} /> {isExporting ? 'Generating...' : 'Export Intelligence'}
+                     </button>
+                     <button className="px-10 py-5 bg-blue-600 text-white rounded-[2rem] text-[10px] font-black uppercase tracking-widest shadow-2xl hover:scale-105 transition-all flex items-center gap-3 group">
+                        <Plus size={18} className="group-hover:rotate-90 transition-transform" /> Deploy New Pipeline
+                     </button>
+                  </div>
+               </div>
+            </GlassCard>
+         </div>
 
-        {/* Audit Queue - Premium Sidebar */}
-        <div className="col-span-12 lg:col-span-4 bg-[#091426] rounded-[3.5rem] shadow-2xl p-10 flex flex-col group overflow-hidden relative">
-          <div className="absolute top-0 right-0 p-10 opacity-5 group-hover:opacity-10 transition-opacity">
-            <LayoutGrid size={120} className="text-white" />
-          </div>
-          <div className="flex justify-between items-center mb-8 relative z-10">
-             <div>
-                <h3 className="text-sm font-black text-white uppercase tracking-tighter">Active Registre</h3>
-                <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mt-1">Mission Pipeline</p>
-             </div>
-             <div className="bg-white/10 p-2 rounded-xl text-white">
-                <Search size={16} />
-             </div>
-          </div>
-          
-          <div className="flex-1 space-y-6 relative z-10 overflow-y-auto pr-2 custom-scrollbar">
-            {audits.map((audit) => {
-              const template = templates.find(t => t.id === audit.templateId);
-              const score = template ? computeComplianceScore(audit, template) : Math.floor(Math.random() * 40 + 60);
-              return (
-                <div key={audit.id} className="p-6 bg-white/5 border border-white/10 rounded-[2rem] group/item hover:bg-white/10 hover:border-blue-500/50 transition-all cursor-pointer">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <span className="font-mono text-[9px] text-blue-400 font-black tracking-widest uppercase">ID: {audit.id.substring(0, 8)}</span>
-                      <h4 className="text-sm font-black text-white mt-1 uppercase tracking-tight truncate max-w-[150px]">{audit.entityId}</h4>
-                    </div>
-                    <span className={`text-[8px] font-black px-2.5 py-1 rounded-lg uppercase tracking-widest border ${
-                      audit.status === 'DRAFT' ? 'bg-slate-800 text-slate-400 border-slate-700' :
-                      audit.status === 'IN_PROGRESS' ? 'bg-blue-600/20 text-blue-400 border-blue-500/30' : 'bg-emerald-600/20 text-emerald-400 border-emerald-500/30'
-                    }`}>
-                      {audit.status}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between gap-4 mt-2">
-                    <div className="flex-1 bg-white/10 h-1.5 rounded-full overflow-hidden">
-                       <motion.div 
-                        initial={{ width: 0 }}
-                        animate={{ width: `${score}%` }}
-                        className={`h-full ${score > 80 ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]' : score > 50 ? 'bg-blue-500' : 'bg-red-500'}`} />
-                    </div>
-                    <span className="text-[11px] font-black text-white">{score}%</span>
-                  </div>
-                  <div className="mt-4 flex justify-end">
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); handleExportAuditReport(audit.id); }}
-                      className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-blue-400 transition-all"
-                    >
-                      <FileText size={14} />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-            {audits.length === 0 && Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="h-32 bg-white/5 rounded-[2rem] border border-white/5 animate-pulse" />
-            ))}
-          </div>
+         <div className="col-span-12 lg:col-span-4">
+            <GlassCard className="p-0 border-white/5 bg-slate-900 overflow-hidden h-full relative group">
+               <div className="p-8 border-b border-white/10 flex justify-between items-center bg-white/5">
+                  <h3 className="text-[10px] font-black text-white uppercase tracking-[0.25em]">Critical Active Nodes</h3>
+                  <div className="p-2 bg-red-500 rounded-lg animate-pulse" />
+               </div>
+               <div className="p-8 space-y-6">
+                  {nodes?.slice(0, 3).map((node, i) => (
+                     <div key={i} className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 transition-all cursor-pointer">
+                        <div className="w-12 h-12 rounded-xl bg-blue-600/20 flex items-center justify-center text-blue-400">
+                           <Box size={24} />
+                        </div>
+                        <div className="flex-1">
+                           <p className="text-xs font-black text-white uppercase truncate">{node.name}</p>
+                           <p className="text-[9px] font-bold text-slate-500 uppercase mt-1">STATUS: {node.status}</p>
+                        </div>
+                        <span className="text-[9px] font-black text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20 uppercase">Online</span>
+                     </div>
+                  ))}
+               </div>
+               <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black to-transparent">
+                  <button className="w-full py-4 rounded-xl border border-white/10 text-[10px] font-black text-white uppercase tracking-widest hover:bg-white/10 transition-all">View All Nodes</button>
+               </div>
+            </GlassCard>
+         </div>
+      </div>
 
-          <button className="mt-10 w-full py-5 bg-white text-[#091426] rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl hover:bg-blue-50 transition-all flex items-center justify-center gap-2">
-            Explore All Assets <ChevronRight size={14} />
-          </button>
-        </div>
+      {/* Modern KPI Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+         <StatCardPremium 
+            title="Compliance Index" value={`${complianceValue}%`} detail="Institutional Alignment" 
+            icon={ShieldCheck} color="text-emerald-500" trend={2.1} 
+         />
+         <StatCardPremium 
+            title="Critical Risk" value={criticalIncidents} detail="Unresolved Deviations" 
+            icon={AlertTriangle} color="text-red-500" trend={-14} 
+         />
+         <StatCardPremium 
+            title="Operational ROI" value="$24.2k" detail="Projected Savings" 
+            icon={TrendingUp} color="text-blue-500" trend={8.4} 
+         />
+         <StatCardPremium 
+            title="AI Efficiency" value="99.2%" detail="Model Consistency" 
+            icon={Cpu} color="text-indigo-500" trend={0.5} 
+         />
+      </div>
+
+      {/* Main Forensic View Grid */}
+      <div className="grid grid-cols-12 gap-8">
+         {/* Strategic Heatmap Container */}
+         <div className="col-span-12 lg:col-span-8">
+            <GlassCard className="p-10 border-white/5 h-full">
+               <div className="flex justify-between items-center mb-10">
+                  <div className="flex flex-col">
+                     <span className="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] mb-1">Infrastructural Landscape</span>
+                     <h3 className="text-2xl font-black text-[#091426] dark:text-white uppercase tracking-tighter italic">Risk Spatial Topology</h3>
+                  </div>
+                  <div className="flex gap-4 p-2 bg-white/50 rounded-2xl border border-slate-100">
+                     {['HEATMAPPED', 'GRIDVUE', 'FORENSIC'].map((mode, i) => (
+                        <button key={i} className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${i === 0 ? 'bg-[#091426] text-white shadow-xl' : 'text-slate-400 hover:text-slate-600'}`}>
+                           {mode}
+                        </button>
+                     ))}
+                  </div>
+               </div>
+               <div className="h-[550px] relative rounded-[2rem] overflow-hidden border border-slate-100 shadow-inner bg-slate-50">
+                  <RiskHeatmap />
+               </div>
+            </GlassCard>
+         </div>
+
+         {/* Intelligence Feed Section */}
+         <div className="col-span-12 lg:col-span-4">
+            <GlassCard className="p-8 border-white/5 h-full flex flex-col bg-slate-50/50">
+               <div className="flex items-center justify-between mb-8">
+                  <h3 className="text-[10px] font-black text-[#091426] uppercase tracking-[0.25em] flex items-center gap-3">
+                     <Activity size={18} className="text-blue-600" /> Operational Stream
+                  </h3>
+                  <button className="p-2 hover:rotate-180 transition-transform duration-700"><RefreshCw size={14} className="text-slate-400" /></button>
+               </div>
+               <div className="flex-1 space-y-6">
+                  {[
+                     { id: 1, title: 'Invoice Discrepancy #4502', time: '2m', color: 'bg-red-500' },
+                     { id: 2, title: 'Access Violation US-EAST', time: '15m', color: 'bg-amber-500' },
+                     { id: 3, title: 'Node Sync Complete DE-2', time: '22m', color: 'bg-emerald-500' },
+                     { id: 4, title: 'RAG Context Refresh', time: '41m', color: 'bg-blue-500' },
+                     { id: 5, title: 'GDPR Alignment Scan', time: '1h', color: 'bg-indigo-500' }
+                  ].map((log, i) => (
+                     <div key={i} className="flex gap-4 group">
+                        <div className="flex flex-col items-center gap-2">
+                           <div className={`w-2 h-2 rounded-full ${log.color} shadow-lg shadow-current`} />
+                           <div className="w-px h-full bg-slate-200" />
+                        </div>
+                        <div className="flex-1 pb-6 group-last:pb-0">
+                           <div className="flex justify-between items-start mb-1">
+                              <p className="text-xs font-black text-[#091426] uppercase tracking-tight leading-none">{log.title}</p>
+                              <span className="text-[9px] font-bold text-slate-300 uppercase">{log.time}</span>
+                           </div>
+                           <p className="text-[10px] font-medium text-slate-500 leading-relaxed uppercase tracking-tighter">Event logged in immutable ledger sequence.</p>
+                        </div>
+                     </div>
+                  ))}
+               </div>
+               <button className="w-full mt-8 py-4 bg-[#091426] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-2xl hover:bg-slate-800 transition-all">Audit Global Logs</button>
+            </GlassCard>
+         </div>
       </div>
 
       {/* Footer System Strip */}
-      <div className="pt-10 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center text-[9px] font-mono font-black text-slate-300 dark:text-slate-700 uppercase tracking-[0.4em]">
-         <p>Protocol: AuditMaster_v5 // State: STABLE</p>
-         <p>Global Time: {new Date().toISOString()}</p>
-      </div>
+      <GlassCard className="p-6 border-white/5 bg-[#091426] text-white/40 flex justify-between items-center overflow-hidden">
+         <div className="flex items-center gap-8">
+            <div className="flex items-center gap-2">
+               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+               <span className="text-[9px] font-mono uppercase tracking-[0.4em]">SYSTEM_MASTER: STABLE</span>
+            </div>
+            <span className="text-[9px] font-mono uppercase tracking-[0.4em]">LATENCY: 12ms</span>
+         </div>
+         <div className="flex items-center gap-2">
+            <MousePointer2 size={12} />
+            <span className="text-[9px] font-mono uppercase tracking-[0.4em]">OPERATOR: {new Date().toLocaleTimeString()}</span>
+         </div>
+      </GlassCard>
     </div>
   );
 };

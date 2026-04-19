@@ -22,6 +22,7 @@ import { IncidentService, Incident, CAPATask } from '../services/IncidentService
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from '../hooks/useToast';
 import { SkeletonCard } from './Skeleton';
+import { GlassCard } from './common/GlassCard';
 
 const RemediationWorkflow: React.FC = () => {
   const queryClient = useQueryClient();
@@ -81,8 +82,8 @@ const RemediationWorkflow: React.FC = () => {
     <div className="min-h-screen bg-[#f8fafc] p-6 lg:p-10 font-sans cursor-default">
       <div className="max-w-[1600px] mx-auto space-y-8">
         
-        {/* Page Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end bg-white border border-slate-200 p-8 lg:p-10 rounded-[2.5rem] shadow-sm relative overflow-hidden">
+        {/* Page Header (Glass Style) */}
+        <GlassCard className="flex flex-col md:flex-row justify-between items-start md:items-end p-8 lg:p-10 relative overflow-hidden">
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-4">
               <span className="bg-[#091426] text-white px-3 py-1 rounded text-[10px] font-black uppercase tracking-[0.15em] flex items-center gap-2">
@@ -92,31 +93,31 @@ const RemediationWorkflow: React.FC = () => {
                  {incidents.length} ACTIVE INCIDENTS
               </span>
             </div>
-            <h1 className="text-4xl font-black text-[#091426] tracking-tighter uppercase leading-none">Remediation Engine</h1>
+            <h1 className="text-4xl font-black text-[#091426] dark:text-white tracking-tighter uppercase leading-none">Remediation Engine</h1>
             <p className="text-slate-500 max-w-2xl mt-4 text-sm leading-relaxed font-medium">
                Structural resolution hub for multi-quarter initiatives and Corrective Actions (CAPA). Bridging finding resolution with real-time incident telemetry.
             </p>
           </div>
           <div className="flex gap-4 mt-6 md:mt-0 relative z-10 font-mono text-[9px] font-black uppercase tracking-widest">
-             <div className="flex bg-slate-50 border border-slate-200 rounded-xl p-1 shadow-inner">
+             <div className="flex bg-slate-50/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-1 shadow-inner">
                 <button 
                   onClick={() => setActiveView('OVERVIEW')}
-                  className={`px-5 py-2.5 rounded-lg transition-all ${activeView === 'OVERVIEW' ? 'bg-white text-[#091426] shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
+                  className={`px-5 py-2.5 rounded-lg transition-all ${activeView === 'OVERVIEW' ? 'bg-white dark:bg-slate-800 text-[#091426] dark:text-white shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
                   Overview
                 </button>
                 <button 
                   onClick={() => setActiveView('KANBAN')}
-                  className={`px-5 py-2.5 rounded-lg transition-all ${activeView === 'KANBAN' ? 'bg-white text-[#091426] shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
+                  className={`px-5 py-2.5 rounded-lg transition-all ${activeView === 'KANBAN' ? 'bg-white dark:bg-slate-800 text-[#091426] dark:text-white shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
                   Kanban
                 </button>
                 <button 
                   onClick={() => setActiveView('CAPEX')}
-                  className={`px-5 py-2.5 rounded-lg transition-all ${activeView === 'CAPEX' ? 'bg-white text-[#091426] shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
+                  className={`px-5 py-2.5 rounded-lg transition-all ${activeView === 'CAPEX' ? 'bg-white dark:bg-slate-800 text-[#091426] dark:text-white shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
                   CapEx Projection
                 </button>
              </div>
           </div>
-        </div>
+        </GlassCard>
 
         {activeView === 'OVERVIEW' && (
           <div className="grid grid-cols-12 gap-8">
@@ -199,94 +200,123 @@ const RemediationWorkflow: React.FC = () => {
         )}
 
         {activeView === 'KANBAN' && (
-          <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-               <div className="relative group flex-1 max-w-md">
-                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-600 transition-colors" size={16} />
-                 <input 
-                   value={searchQuery}
-                   onChange={e => setSearchQuery(e.target.value)}
-                   placeholder="Search remediation tasks..."
-                   className="w-full bg-white border border-slate-200 rounded-2xl py-3 pl-12 pr-4 text-xs font-bold text-[#091426] outline-none focus:ring-4 focus:ring-blue-50 transition-all font-sans"
-                 />
-               </div>
-               <div className="flex gap-4">
-                  <button className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-200 text-[#091426] rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-sm hover:border-blue-200 transition-all">
-                     <Filter size={14} /> Filter
-                  </button>
-                  <button className="flex items-center gap-2 px-5 py-3 bg-[#091426] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-slate-800 transition-all">
-                     <Plus size={14} /> New CAPA Plan
-                  </button>
-               </div>
-            </div>
+          <div className="grid grid-cols-12 gap-8">
+            {/* Main Kanban (10 cols) */}
+            <div className="col-span-12 lg:col-span-10 space-y-6">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                 <div className="relative group flex-1 max-w-md">
+                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-600 transition-colors" size={16} />
+                   <input 
+                     value={searchQuery}
+                     onChange={e => setSearchQuery(e.target.value)}
+                     placeholder="Search remediation tasks..."
+                     className="w-full bg-white/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-3 pl-12 pr-4 text-xs font-bold text-[#091426] dark:text-white outline-none focus:ring-4 focus:ring-blue-50 transition-all font-sans"
+                   />
+                 </div>
+                 <div className="flex gap-4">
+                    <button className="flex items-center gap-2 px-5 py-3 bg-white/50 border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:border-blue-200 transition-all">
+                       <Filter size={14} /> Filter
+                    </button>
+                    <button className="flex items-center gap-2 px-5 py-3 bg-[#091426] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-slate-800 transition-all">
+                       <Plus size={14} /> New CAPA Plan
+                    </button>
+                 </div>
+              </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-               {(['TODO', 'IN_PROGRESS', 'REVIEW', 'DONE'] as const).map((status) => (
-                 <div key={status} className="space-y-6">
-                   <div className="flex justify-between items-center px-4">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{status.replace('_', ' ')}</span>
-                        <span className="bg-slate-100 text-slate-500 text-[9px] font-extrabold px-2 py-0.5 rounded-full">
-                          {tasksByStatus[status].length}
-                        </span>
-                      </div>
-                      <MoreHorizontal size={14} className="text-slate-300 cursor-pointer hover:text-slate-600" />
-                   </div>
-
-                   <div className="space-y-4 min-h-[500px]">
-                     {isLoading ? (
-                       <SkeletonCard />
-                     ) : tasksByStatus[status].length === 0 ? (
-                        <div className="h-32 border-2 border-dashed border-slate-100 rounded-[2.5rem] flex items-center justify-center">
-                           <p className="text-[9px] font-black text-slate-200 uppercase tracking-widest">Empty State</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                 {(['TODO', 'IN_PROGRESS', 'REVIEW', 'DONE'] as const).map((status) => (
+                   <div key={status} className="space-y-6">
+                     <div className="flex justify-between items-center px-4">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{status === 'REVIEW' ? 'UNDER_REVIEW' : status}</span>
+                          <span className="bg-slate-100 dark:bg-white/10 text-slate-500 text-[9px] font-extrabold px-2 py-0.5 rounded-full">
+                            {tasksByStatus[status].length}
+                          </span>
                         </div>
-                     ) : (
-                       tasksByStatus[status].map((task) => (
-                         <motion.div 
-                           layoutId={task.id}
+                     </div>
+
+                     <div className="space-y-4 min-h-[600px] p-2 bg-slate-100/30 dark:bg-white/5 rounded-[2.5rem]">
+                       {tasksByStatus[status].map((task) => (
+                         <GlassCard 
                            key={task.id} 
                            onClick={() => handleStatusChange(task.id, task.status)}
-                           className="bg-white border border-slate-200 p-6 rounded-[2.5rem] shadow-sm hover:shadow-xl hover:border-blue-100 transition-all group cursor-pointer relative overflow-hidden"
+                           className="p-5 overflow-hidden group cursor-pointer"
+                           whileHover={{ y: -4, scale: 1.02 }}
                          >
-                            <div className="flex justify-between items-start mb-4">
-                               <div className="flex gap-1.5 overflow-hidden">
-                                  <span className={`text-[7px] font-black px-2 py-0.5 rounded-sm tracking-widest border uppercase ${
-                                    task.severity === 'CRITICAL' ? 'bg-red-50 text-red-600 border-red-100' :
-                                    task.severity === 'HIGH' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                                    'bg-blue-50 text-blue-600 border-blue-100'
-                                  }`}>
-                                    {task.severity || 'LOW'}
-                                  </span>
+                            <div className="flex justify-between items-start mb-3">
+                               <span className={`text-[7px] font-black px-2 py-0.5 rounded-sm tracking-widest border uppercase ${
+                                 task.severity === 'CRITICAL' ? 'bg-red-50 text-red-600 border-red-100' :
+                                 task.severity === 'HIGH' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                                 'bg-blue-50 text-blue-600 border-blue-100'
+                               }`}>
+                                 {task.severity || 'LOW'}
+                               </span>
+                               <div className="w-5 h-5 bg-slate-100 dark:bg-white/10 rounded-full flex items-center justify-center text-[7px] font-black text-slate-400">
+                                  {task.assignee?.firstName?.[0] || '?'}{task.assignee?.lastName?.[0] || 'U'}
                                </div>
-                               <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <ChevronRight size={14} className="text-blue-500" />
-                                </div>
                             </div>
-                            <h5 className="text-[11px] font-black text-[#091426] uppercase tracking-tight mb-2 leading-tight uppercase line-clamp-2">{task.title}</h5>
-                            <p className="text-[10px] font-medium text-slate-400 leading-relaxed line-clamp-2 italic mb-4 uppercase">
-                              Relates to: {task.incidentTitle}
+                            <h5 className="text-[11px] font-black text-[#091426] dark:text-white uppercase tracking-tight mb-1 line-clamp-2">{task.title}</h5>
+                            <p className="text-[9px] font-medium text-slate-400 uppercase tracking-tighter truncate opacity-70 italic">
+                               {task.incidentTitle}
                             </p>
-                            <div className="flex justify-between items-center pt-4 border-t border-slate-50">
-                               <div className="flex items-center gap-1.5">
-                                  <div className="w-5 h-5 bg-slate-100 rounded-full flex items-center justify-center text-[7px] font-black text-slate-400">
-                                    {task.assignee?.firstName?.[0] || '?'}{task.assignee?.lastName?.[0] || 'U'}
-                                  </div>
-                                  <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">
-                                    {task.assignee?.firstName || 'SYSTEM'}
-                                  </span>
-                               </div>
-                               {task.dueDate && (
-                                 <span className="text-[8px] font-mono font-black text-slate-300">
-                                   DUE: {new Date(task.dueDate).toLocaleDateString()}
-                                 </span>
-                               )}
+                            <div className="mt-4 flex justify-between items-center text-[8px] font-black text-slate-300 uppercase tracking-widest">
+                               <span>Due {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'TBD'}</span>
                             </div>
-                         </motion.div>
-                       ))
-                     )}
+                         </GlassCard>
+                       ))}
+                     </div>
                    </div>
-                 </div>
-               ))}
+                 ))}
+              </div>
+            </div>
+
+            {/* Premium Analytics Sidebar (Image 4) */}
+            <div className="col-span-12 lg:col-span-2 space-y-8">
+               {/* Resolution Velocity Chart */}
+               <GlassCard className="p-6 flex flex-col gap-6">
+                  <h3 className="text-[9px] font-black uppercase tracking-widest text-[#091426] dark:text-white">Resolution Velocity</h3>
+                  <div className="h-40 flex items-end justify-between gap-1 mt-4">
+                     {[30, 45, 60, 55, 80, 75, 95].map((h, i) => (
+                       <motion.div 
+                        initial={{ height: 0 }} animate={{ height: `${h}%` }}
+                        key={i} className="flex-1 bg-emerald-400/80 rounded-t-sm shadow-[0_-2px_10px_rgba(52,211,153,0.2)]" />
+                     ))}
+                     {[20, 35, 45, 40, 60, 65, 85].map((h, i) => (
+                       <motion.div 
+                        initial={{ height: 0 }} animate={{ height: `${h}%` }}
+                        key={i+7} className="flex-1 bg-emerald-600/40 rounded-t-sm" />
+                     ))}
+                  </div>
+                  <div className="flex justify-between items-center text-[8px] font-black text-slate-400 uppercase">
+                     <span>1</span><span>4</span><span>7</span><span>10</span>
+                  </div>
+                  <div className="flex flex-col gap-2 mt-2">
+                     <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-emerald-400" /><span className="text-[7px] font-black text-slate-500 uppercase tracking-tighter">Resolution</span></div>
+                     <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-emerald-600/40" /><span className="text-[7px] font-black text-slate-500 uppercase tracking-tighter">Velocity</span></div>
+                  </div>
+               </GlassCard>
+
+               {/* CapEx Impact Chart */}
+               <GlassCard className="p-6 flex flex-col gap-6">
+                  <h3 className="text-[9px] font-black uppercase tracking-widest text-[#091426] dark:text-white">CapEx Impact</h3>
+                  <div className="flex-1 flex flex-col justify-between pt-4">
+                     <div className="flex justify-between items-end border-b border-slate-100 dark:border-white/5 pb-2">
+                        <span className="text-[8px] font-black text-slate-300">$15k</span>
+                        <div className="flex flex-col items-center">
+                           <span className="text-[8px] font-black text-emerald-500 mb-1">$20B</span>
+                           <motion.div initial={{ height:0 }} animate={{ height: 80 }} className="w-6 bg-emerald-400/60 rounded-t-sm" />
+                        </div>
+                        <div className="flex flex-col items-center">
+                           <span className="text-[8px] font-black text-red-500 mb-1">-$1.7k</span>
+                           <motion.div initial={{ height:0 }} animate={{ height: 10 }} className="w-6 bg-red-400/60 rounded-b-sm" />
+                        </div>
+                        <span className="text-[8px] font-black text-slate-300 pb-1">$0</span>
+                     </div>
+                     <div className="flex justify-between items-center text-[8px] font-black text-slate-400 uppercase mt-2">
+                        <span>Savings</span><span>Cost</span>
+                     </div>
+                  </div>
+               </GlassCard>
             </div>
           </div>
         )}

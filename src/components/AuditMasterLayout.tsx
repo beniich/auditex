@@ -37,7 +37,10 @@ import {
   LogOut,
   AppWindow,
   Cpu,
-  Zap
+  Zap,
+  Radio,
+  Unlock,
+  TrendingUp
 } from 'lucide-react';
 import { UserButton, SignOutButton } from '@clerk/clerk-react';
 import { ToastContainer } from './ToastContainer';
@@ -94,9 +97,9 @@ export const AuditMasterLayout = ({ children, activeTab, onTabChange }: any) => 
 
   return (
     <div className="flex min-h-screen bg-[#f3f7fa] dark:bg-slate-950 font-sans">
-      {/* Sidebar - Dark Industrial Style */}
+      {/* Sidebar - Precision Glass Style */}
       <aside 
-        className={`flex flex-col bg-[#091426] fixed left-0 h-screen z-50 transition-all duration-500 shadow-2xl ${
+        className={`flex flex-col glass-sidebar fixed left-0 h-screen z-50 transition-all duration-500 shadow-2xl ${
           isCollapsed ? 'w-24' : 'w-[280px]'
         }`}
       >
@@ -107,16 +110,17 @@ export const AuditMasterLayout = ({ children, activeTab, onTabChange }: any) => 
             </div>
             {!isCollapsed && (
               <div className="animate-in fade-in slide-in-from-left-2 duration-500">
-                <h1 className="text-xl font-black text-white leading-none tracking-tighter uppercase italic">Auditax</h1>
-                <p className="text-[8px] font-black uppercase tracking-[0.3em] text-blue-400 mt-1">Enterprise Core</p>
+                <h1 className="text-xl font-black text-[#091426] dark:text-white leading-none tracking-tighter uppercase italic">Auditax</h1>
+                <p className="text-[8px] font-black uppercase tracking-[0.3em] text-blue-600 mt-1">Enterprise Core</p>
               </div>
             )}
           </div>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-2 custom-scrollbar py-4">
+        <nav className="flex-1 overflow-y-auto px-2 custom-scrollbar py-4 overflow-x-hidden">
           <NavSection title="Command Center" collapsed={isCollapsed}>
             <NavItem icon={LayoutDashboard} label="Global Board" active={activeTab === 'dashboard'} onClick={() => onTabChange('dashboard')} collapsed={isCollapsed}/>
+            <NavItem icon={Radio} label="Live War Room" active={activeTab === 'war_room'} onClick={() => onTabChange('war_room')} collapsed={isCollapsed}/>
             <NavItem icon={ClipboardList} label="Audit Runner" active={activeTab === 'audits'} onClick={() => onTabChange('audits')} collapsed={isCollapsed}/>
             <NavItem icon={CheckCircle2} label="Compliance Hub" active={activeTab === 'compliance'} onClick={() => onTabChange('compliance')} collapsed={isCollapsed}/>
           </NavSection>
@@ -147,19 +151,19 @@ export const AuditMasterLayout = ({ children, activeTab, onTabChange }: any) => 
           </NavSection>
         </nav>
 
-        <div className="p-6 border-t border-white/5 space-y-4">
+        <div className="p-6 border-t border-slate-200 dark:border-white/5 space-y-4">
           <button 
              onClick={() => setIsCollapsed(!isCollapsed)}
-             className="w-full flex items-center justify-center h-10 rounded-xl bg-white/5 text-slate-400 hover:text-white transition-all border border-white/5"
+             className="w-full flex items-center justify-center h-10 rounded-xl bg-white/5 text-slate-400 hover:text-[#091426] dark:hover:text-white transition-all border border-slate-200 dark:border-white/5"
           >
             {isCollapsed ? <ChevronRight size={18} /> : <div className="flex items-center gap-2"><ChevronLeft size={16} /> <span className="text-[9px] font-black uppercase tracking-widest">Collapse View</span></div>}
           </button>
           
-          <div className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : 'px-4'} py-3 bg-white/5 rounded-2xl border border-white/5 overflow-hidden`}>
+          <div className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : 'px-4'} py-3 bg-white/5 rounded-2xl border border-slate-200 dark:border-white/5 overflow-hidden`}>
              <UserButton afterSignOutUrl="/" />
              {!isCollapsed && (
                <div className="flex flex-col">
-                  <span className="text-[10px] font-black text-white leading-none">ROOT_ADMIN</span>
+                  <span className="text-[10px] font-black text-[#091426] dark:text-white leading-none">ROOT_ADMIN</span>
                   <span className="text-[8px] font-bold text-blue-400 uppercase tracking-tighter mt-1">Tier-5 Access</span>
                </div>
              )}
@@ -174,7 +178,7 @@ export const AuditMasterLayout = ({ children, activeTab, onTabChange }: any) => 
         }`}
       >
         {/* Top Header */}
-        <header className="sticky top-0 w-full flex justify-between items-center h-20 px-10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 z-40 shadow-sm">
+        <header className="sticky top-0 w-full flex justify-between items-center h-20 px-10 bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl border-b border-slate-200 dark:border-slate-800 z-40 shadow-sm">
           <div className="flex items-center flex-1">
              <div className="flex items-center gap-4">
                 <div className="p-2 bg-slate-100 rounded-xl text-slate-400">
