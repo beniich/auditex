@@ -24,7 +24,7 @@ import { useApiQuery } from '../hooks/useApiQuery';
 import { SkeletonCard } from './Skeleton';
 
 // Mock data integration as real services might not be fully exposed yet for COI/RH
-const CertificationsHub: React.FC = () => {
+export const CertificationsHub: React.FC = () => {
   const [activeSubTab, setActiveSubTab] = useState<'ONBOARDING' | 'PERFORMANCE' | 'COI'>('ONBOARDING');
   const [searchQuery, setSearchQuery] = useState('');
 
