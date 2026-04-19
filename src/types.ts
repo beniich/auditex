@@ -29,12 +29,21 @@ export interface AuditSection {
   questions: AuditQuestion[];
 }
 
+export interface AuditQuestionLogic {
+  showIf?: {
+    questionId: string;
+    operator: 'equals' | 'not_equals' | 'greater_than' | 'less_than';
+    value: any;
+  };
+}
+
 export interface AuditQuestion {
   id: string;
   text: string;
   type: 'YES_NO' | 'SCORE' | 'TEXT' | 'IMAGE';
   weight: number;
   required: boolean;
+  logic?: AuditQuestionLogic;
 }
 
 export interface Audit {

@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { ComplianceService } from '../services/ComplianceService';
+import { WSManager } from '../lib/ws';
 
 export class ComplianceController {
   static async listPolicies(req: Request, res: Response) {
@@ -20,6 +21,7 @@ export class ComplianceController {
         organizationId: orgId,
         ...req.body
       });
+      WSManager.broadcast('COMPLIANCE_UPDATED', policy);
       res.status(201).json(policy);
     } catch (error) {
       console.error('ComplianceController.createPolicy error:', error);
@@ -30,6 +32,7 @@ export class ComplianceController {
   static async addControl(req: Request, res: Response) {
     try {
       const control = await ComplianceService.addControl(req.params.id, req.body);
+      WSManager.broadcast('COMPLIANCE_UPDATED', { policyId: req.params.id });
       res.status(201).json(control);
     } catch (error) {
        console.error('ComplianceController.addControl error:', error);
@@ -40,6 +43,7 @@ export class ComplianceController {
   static async updateControlStatus(req: Request, res: Response) {
     try {
       const control = await ComplianceService.updateControlStatus(req.params.controlId, req.body.status);
+      WSManager.broadcast('COMPLIANCE_UPDATED', control);
       res.json(control);
     } catch (error) {
        console.error('ComplianceController.updateControlStatus error:', error);

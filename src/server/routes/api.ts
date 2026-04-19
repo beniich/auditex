@@ -4,6 +4,7 @@ import { IncidentController } from '../controllers/IncidentController';
 import { InfrastructureController } from '../controllers/InfrastructureController';
 import { ComplianceController } from '../controllers/ComplianceController';
 import { StorageController } from '../controllers/StorageController';
+import { AIController } from '../controllers/AIController';
 import multer from 'multer';
 
 // Configure Multer for local storage (mimicking S3)
@@ -68,9 +69,11 @@ apiRouter.post('/compliance/policies', validate(PolicySchema), ComplianceControl
 apiRouter.post('/compliance/policies/:id/controls', ComplianceController.addControl);
 apiRouter.patch('/compliance/controls/:controlId', ComplianceController.updateControlStatus);
 
-
-
-
+// AI Gateway Routes
+apiRouter.post('/ai/validate', AIController.validate);
+apiRouter.post('/ai/analyze-evidence', AIController.analyzeEvidence);
+apiRouter.get('/ai/forensics/:entityId', AIController.forensic);
+apiRouter.post('/ai/remediate', AIController.remediate);
 
 // Storage Routes
 apiRouter.post('/storage/upload', upload.single('file'), StorageController.upload);

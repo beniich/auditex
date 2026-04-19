@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { AuditService } from '../services/AuditService';
+import { WSManager } from '../lib/ws';
 
 export class AuditController {
   static async getTemplates(req: Request, res: Response) {
@@ -47,6 +48,7 @@ export class AuditController {
         req.body.type, 
         req.body.payload
       );
+      WSManager.broadcast('AUDIT_UPDATED', eventObj);
       res.status(201).json(eventObj);
     } catch (error) {
       console.error('addEvent error:', error);

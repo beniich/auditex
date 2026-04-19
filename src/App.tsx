@@ -27,8 +27,10 @@ import { AuditService } from './services/AuditService';
 import { Audit, AuditTemplate } from './types';
 import { ClipboardCheck, List, Plus } from 'lucide-react';
 import { useAuth } from '@clerk/clerk-react';
+import { useLiveUpdates } from './hooks/useLiveUpdates';
 
 export default function App() {
+  useLiveUpdates();
   const { getToken } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [audits, setAudits] = useState<Audit[]>([]);

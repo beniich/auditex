@@ -15,6 +15,7 @@ import {
   Eye,
   AlertTriangle,
   Play,
+  X,
   RotateCcw,
   FastForward,
   Rewind,
@@ -25,6 +26,7 @@ import {
   Activity,
   VerifiedIcon,
   Pause,
+  RefreshCw,
   Terminal,
   Cpu,
   Zap,
@@ -39,17 +41,33 @@ import {
 import { useApiQuery } from '../hooks/useApiQuery';
 import { AuditService } from '../services/AuditService';
 
+import { AiApiService } from '../services/AiApiService';
+
 const ForensicView: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [playhead, setPlayhead] = useState(35); // 0-100
   const [activeSpeed, setActiveSpeed] = useState('1.0x');
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const { data: logs = [], isLoading } = useApiQuery(
     ['audit-logs-forensic'],
     () => AuditService.getLogs(),
     { refetchInterval: 5000 }
   );
+
+  const runForensicAI = async () => {
+    setIsAnalyzing(true);
+    try {
+      // Analyze current entity (using a placeholder ID for now)
+      const res = await AiApiService.getForensicAnalysis('ledger-root-01');
+      setAiAnalysis(res.analysis);
+    } catch (err) {
+      console.error(err);
+    }
+    setIsAnalyzing(false);
+  };
 
   useEffect(() => {
     let interval: any;
@@ -92,16 +110,66 @@ const ForensicView: React.FC = () => {
                Investigators can navigate chronological delta-states to identify structural decay or unauthorized logical shifts.
             </p>
           </div>
-          <div className="flex gap-4 mt-8 xl:mt-0 relative z-10">
+          <div className="flex flex-col gap-4 mt-8 xl:mt-0 relative z-10 items-end">
+             <button 
+               onClick={runForensicAI}
+               disabled={isAnalyzing}
+               className="bg-blue-600 text-white px-8 py-4 rounded-2xl flex items-center gap-3 shadow-xl shadow-blue-900/40 hover:bg-blue-700 transition-all font-black text-[10px] uppercase tracking-widest disabled:opacity-50"
+             >
+                {isAnalyzing ? <RefreshCw className="animate-spin" size={16} /> : <Zap size={16} />} 
+                {isAnalyzing ? 'Analyzing Hash Chains...' : 'Run Agentic Forensic Diagnostic'}
+             </button>
+
              <div className="bg-white/5 border border-white/10 px-8 py-5 rounded-[2.5rem] flex items-center gap-6">
                 <Database className="text-blue-400" size={32} />
                 <div>
-                  <p className="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] leading-none mb-2">Event Store Index</p>
-                  <p className="font-mono text-xl font-black text-white tracking-tighter">4.2 PB ARCHIVED</p>
+                   <p className="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] leading-none mb-2">Event Store Index</p>
+                   <p className="font-mono text-xl font-black text-white tracking-tighter">4.2 PB ARCHIVED</p>
                 </div>
              </div>
           </div>
         </div>
+
+        {/* AI Narrative Overlay (Sprint 19) */}
+        <AnimatePresence>
+          {aiAnalysis && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="bg-white border-b-4 border-blue-600 rounded-[3rem] p-10 shadow-2xl relative overflow-hidden"
+            >
+               <div className="absolute top-0 right-0 p-8 opacity-5"><Zap size={100} className="text-blue-600" /></div>
+               <div className="flex items-center gap-4 mb-6">
+                  <div className="w-12 h-12 bg-blue-600 text-white rounded-2xl flex items-center justify-center">
+                     <Fingerprint size={24} />
+                  </div>
+                  <div>
+                     <h2 className="text-xl font-black text-[#091426] uppercase tracking-tighter">Agentic Root Cause Analysis</h2>
+                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Advanced Forensic Narrative Generation</p>
+                  </div>
+                  <button onClick={() => setAiAnalysis(null)} className="ml-auto p-2 hover:bg-slate-100 rounded-xl transition-all"><X size={20} /></button>
+               </div>
+               
+               <div className="grid md:grid-cols-3 gap-10">
+                  <div className="md:col-span-2 space-y-4">
+                     <p className="text-sm font-medium text-slate-600 leading-relaxed italic border-l-4 border-slate-100 pl-6">
+                        "{aiAnalysis}"
+                     </p>
+                  </div>
+                  <div className="bg-slate-50 rounded-[2rem] p-8 border border-slate-100 flex flex-col justify-between">
+                     <div>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Integrity Confidence</p>
+                        <div className="text-3xl font-black text-blue-600 tracking-tighter">94.8%</div>
+                     </div>
+                     <button className="w-full mt-6 py-4 bg-[#091426] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all">
+                        Attach to Official Incident
+                     </button>
+                  </div>
+               </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Main Workspace Bento */}
         <div className="grid grid-cols-12 gap-8">

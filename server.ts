@@ -49,6 +49,14 @@ async function startServer() {
             title: 'Équipements de Protection Individuelle (EPI)',
             questions: [
               { id: 'q1', text: 'Le port du casque est-il respecté en zone A ?', type: 'YES_NO', weight: 10, required: true },
+              { 
+                id: 'q-followup', 
+                text: 'Indiquez la raison du non-port des EPI (Rupture stock, Oubli, Inconfort...) ?', 
+                type: 'TEXT', 
+                weight: 5, 
+                required: true,
+                logic: { showIf: { questionId: 'q1', operator: 'equals', value: false } }
+              },
               { id: 'q2', text: 'État des stocks de gants anti-coupures', type: 'SCORE', weight: 5, required: true },
               { id: 'q3', text: 'Capturez une photo de la signalétique EPI à l\'entrée', type: 'IMAGE', weight: 2, required: false }
             ]
@@ -111,6 +119,32 @@ async function startServer() {
 
   // Initialize WebSockets
   WSManager.initialize(server);
+
+  // Background Simulator: Keeping the "Command Center" alive with real-time anomalies
+  if (process.env.NODE_ENV !== 'production') {
+    setInterval(async () => {
+      try {
+        const nodes = await prisma.networkNode.findMany();
+        if (nodes.length === 0) return;
+
+        // Pick a random node to "fluctuate"
+        const target = nodes[Math.floor(Math.random() * nodes.length)];
+        const statuses = ['HEALTHY', 'DEGRADED', 'DOWN'] as const;
+        // 80% chance of staying healthy, 20% fluctuation
+        const newStatus = Math.random() > 0.8 ? statuses[Math.floor(Math.random() * 3)] : 'HEALTHY';
+        
+        if (target.status !== newStatus) {
+           const updated = await prisma.networkNode.update({
+             where: { id: target.id },
+             data: { status: newStatus, lastSync: new Date() }
+           });
+           WSManager.broadcast('NODE_UPDATED', updated);
+        }
+      } catch (err) {
+        // Silent error for background task
+      }
+    }, 15000); // Pulse every 15s
+  }
 
   // Centralized Error Handler
   app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

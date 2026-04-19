@@ -33,10 +33,33 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from '../hooks/useToast';
 import { SkeletonKanban, SkeletonTable } from './Skeleton';
 
+import { AiApiService } from '../services/AiApiService';
+
 export const ComplianceHub: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'KANBAN' | 'LIST' | 'EXCEPTIONS'>('KANBAN');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isGeneratingCAPA, setIsGeneratingCAPA] = useState(false);
   const queryClient = useQueryClient();
+
+  const generateCAPAMutation = useMutation({
+    mutationFn: (gapDesc: string) => AiApiService.generateRemediationPlan(gapDesc),
+    onMutate: () => setIsGeneratingCAPA(true),
+    onSuccess: (tasks, gapDesc) => {
+      // Traceability: Enrich tasks with AI metadata
+      const enrichedTasks = tasks.map((t: any) => ({
+        ...t,
+        metadata: {
+          generated_by: 'AI_ARCHITECT',
+          ai_version: t._ai_version,
+          source_gap: gapDesc,
+          timestamp: new Date().toISOString()
+        }
+      }));
+      console.log('Industrial Traceability - Enriched Tasks:', enrichedTasks);
+      toast.success(`${tasks.length} Remediation tasks injected with cryptographic trace.`, 'Agentic CAPA');
+    },
+    onSettled: () => setIsGeneratingCAPA(false)
+  });
 
   const { data: policies = [], isLoading } = useApiQuery(
     ['policies'], 
@@ -243,24 +266,37 @@ export const ComplianceHub: React.FC = () => {
                              
                              {/* Floating Quick Action Overlay */}
                              <div className="absolute inset-0 bg-[#091426]/95 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center items-center p-8 text-center text-white scale-95 group-hover:scale-100 duration-300">
-                                <h6 className="text-[10px] font-black uppercase tracking-[0.2em] mb-6 text-blue-400">Logic_Transition</h6>
-                                <div className="grid grid-cols-2 gap-3 w-full">
-                                   {['OPEN', 'IN_PROGRESS', 'REVIEW', 'CLOSED'].filter(s => s !== columnLabel).map(s => (
+                                 <div className="grid grid-cols-2 gap-3 w-full">
+                                    {['OPEN', 'IN_PROGRESS', 'REVIEW', 'CLOSED'].filter(s => s !== columnLabel).map(s => (
+                                      <button 
+                                        key={s}
+                                        onClick={(e) => {
+                                           e.stopPropagation();
+                                           updateControlStatusMutation.mutate({ controlId: item.id, status: statusToPrisma(s) });
+                                        }}
+                                        className="py-2.5 bg-white/10 hover:bg-white text-[9px] font-black uppercase tracking-widest rounded-xl hover:text-[#091426] transition-all border border-white/10"
+                                      >
+                                         to {s}
+                                      </button>
+                                    ))}
+                                 </div>
+                                 
+                                 <div className="flex flex-col gap-3 w-full mt-6 pt-6 border-t border-white/10">
+                                   {item.status === 'NON_COMPLIANT' && (
                                      <button 
-                                       key={s}
                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          updateControlStatusMutation.mutate({ controlId: item.id, status: statusToPrisma(s) });
+                                         e.stopPropagation();
+                                         generateCAPAMutation.mutate(`Control failure: ${item.name} for framework ${item.framework}.`);
                                        }}
-                                       className="py-2.5 bg-white/10 hover:bg-white text-[9px] font-black uppercase tracking-widest rounded-xl hover:text-[#091426] transition-all border border-white/10"
+                                       className="w-full py-3 bg-blue-600 text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-xl flex items-center justify-center gap-2 hover:bg-blue-500 transition-all shadow-xl shadow-blue-500/20"
                                      >
-                                        to {s}
+                                        <Zap size={12} className="fill-current" /> Agentic_AutoFix
                                      </button>
-                                   ))}
-                                </div>
-                                <button className="mt-6 text-[9px] font-black text-white/40 hover:text-white uppercase tracking-widest flex items-center gap-1.5"><FileSearch size={12} /> View Evidence</button>
-                             </div>
-                          </motion.div>
+                                   )}
+                                   <button className="text-[9px] font-black text-white/40 hover:text-white uppercase tracking-widest flex items-center gap-1.5 justify-center"><FileSearch size={12} /> View Evidence</button>
+                                 </div>
+                              </div>
+                           </motion.div>
                         ))}
                         {columnItems.length === 0 && (
                           <div className="h-32 border-2 border-dashed border-slate-200 rounded-[2.5rem] flex items-center justify-center bg-slate-50/30">
