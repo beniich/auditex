@@ -13,7 +13,9 @@ import {
   TrendingUp,
   LayoutGrid,
   ScrollText,
-  AlertCircle
+  AlertCircle,
+  Gavel,
+  Activity
 } from 'lucide-react';
 import { useApiQuery } from '../hooks/useApiQuery';
 import { IncidentService, Incident, CAPATask } from '../services/IncidentService';
@@ -37,9 +39,9 @@ const RemediationWorkflow: React.FC = () => {
       IncidentService.updateTask(taskId, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['incidents'] });
-      toast.success('Task status updated.', { title: 'Remediation' });
+      toast.success('Task status updated.');
     },
-    onError: () => toast.error('Failed to update task.', { title: 'Error' })
+    onError: () => toast.error('Failed to update task.')
   });
 
   const allTasks = incidents.flatMap(i => i.tasks.map(t => ({ ...t, incidentTitle: i.title, severity: i.severity })));

@@ -129,14 +129,14 @@ const IncidentWorkspace: React.FC = () => {
                     icon: <Zap size={16} /> 
                   },
                   ...incident.tasks.map(t => ({
-                    time: new Date(t.updatedAt || t.createdAt).toLocaleTimeString(),
+                    time: new Date((t as any).updatedAt || (t as any).createdAt).toLocaleTimeString(),
                     type: 'Action Log',
                     title: t.title,
                     desc: t.description,
                     color: t.status === 'DONE' ? 'emerald' : 'blue',
                     icon: t.status === 'DONE' ? <CheckCircle2 size={16} /> : <Activity size={16} />
-                  }))
-                ].map((event, i) => (
+                  } as any))
+                ].map((event: any, i) => (
                   <div key={i} className={`relative pl-12 group ${event.active ? 'bg-blue-50/50 -mx-10 px-10 py-6 border-y border-blue-100' : ''}`}>
                     <div className={`absolute left-[-13px] top-1 w-6 h-6 rounded-full bg-white dark:bg-slate-900 border-2 flex items-center justify-center z-10 
                       ${event.color === 'red' ? 'text-red-500 border-red-200' : 

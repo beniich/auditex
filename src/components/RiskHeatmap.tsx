@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Globe, AlertTriangle, TrendingUp, ShieldCheck, Shield, Activity, Zap } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { InfrastructureService } from '../services/InfrastructureService';

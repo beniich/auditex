@@ -239,8 +239,8 @@ export const AuditRunner = ({ auditId, template, onComplete }: AuditRunnerProps)
                             if (file) {
                               setSaving(true);
                               try {
-                                const url = await StorageService.uploadFile(file, file.name);
-                                await AuditService.appendEvent(auditId, 'EVIDENCE_ADDED', { questionId: q.id, url });
+                                const res = await StorageService.uploadEvidence(file, auditId);
+                                await AuditService.appendEvent(auditId, 'EVIDENCE_ADDED', { questionId: q.id, url: res.url });
                                 await loadAudit();
                               } catch (err) {
                                 console.error("Upload failed", err);

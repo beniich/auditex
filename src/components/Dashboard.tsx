@@ -14,7 +14,8 @@ import {
   Zap,
   Lock,
   ArrowUpRight,
-  Search
+  Search,
+  LayoutGrid
 } from 'lucide-react';
 import { Audit, AuditTemplate } from '../types';
 import { computeComplianceScore } from '../lib/scoreEngine';
@@ -72,7 +73,7 @@ export const Dashboard = ({ audits, templates }: { audits: Audit[], templates: A
   const complianceKpi = computeGlobalKPIs(audits, templates).find(k => k.title.includes('Conformité'))?.value || '0%';
   const riskKpi = computeGlobalKPIs(audits, templates).find(k => k.title.includes('Risques'))?.value || '0';
   
-  const complianceValue = parseInt(complianceKpi) || 0;
+  const complianceValue = parseInt(complianceKpi.toString()) || 0;
   const criticalIncidents = incidents.filter(i => i.severity === 'CRITICAL' || i.severity === 'HIGH').length;
 
   return (

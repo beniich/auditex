@@ -36,7 +36,8 @@ import {
   ShieldCheck,
   LogOut,
   AppWindow,
-  Cpu
+  Cpu,
+  Zap
 } from 'lucide-react';
 import { UserButton, SignOutButton } from '@clerk/clerk-react';
 import { ToastContainer } from './ToastContainer';

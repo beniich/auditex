@@ -21,7 +21,7 @@ const requireAuth = process.env.VITE_CLERK_PUBLISHABLE_KEY
   ? ClerkExpressRequireAuth() 
   : async (req: any, res: any, next: any) => {
       // Dev mode: find the first user in DB to act as the current user
-      const { prisma } = await import('../lib/prisma');
+      const { prisma } = await import('../../lib/prisma');
       const user = await prisma.user.findFirst({
         include: { organization: true }
       });

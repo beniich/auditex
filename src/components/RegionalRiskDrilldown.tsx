@@ -84,8 +84,8 @@ const RegionalRiskDrilldown: React.FC = () => {
       region.incidents++;
       const incWeight = inc.severity === 'CRITICAL' ? 40 : inc.severity === 'HIGH' ? 25 : 10;
       region.riskScore += incWeight;
-      region.lastEvent = `${inc.type}: ${inc.title}`;
-      region.detail = inc.description;
+      region.lastEvent = `${(inc as any).type}: ${inc.title}`;
+      region.detail = (inc as any).description;
     });
 
     // Final pass for status
@@ -107,8 +107,8 @@ const RegionalRiskDrilldown: React.FC = () => {
         title: inc.title,
         status: inc.status,
         severity: inc.severity,
-        time: new Date(inc.createdAt).toLocaleTimeString(),
-        detail: inc.description
+        time: new Date((inc as any).createdAt || inc.detectedAt).toLocaleTimeString(),
+        detail: (inc as any).description
      }));
   }, [incidents]);
 

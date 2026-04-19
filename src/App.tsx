@@ -25,7 +25,7 @@ import { NewAuditModal } from './components/NewAuditModal';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AuditService } from './services/AuditService';
 import { Audit, AuditTemplate } from './types';
-import { ClipboardCheck, List } from 'lucide-react';
+import { ClipboardCheck, List, Plus } from 'lucide-react';
 import { useAuth } from '@clerk/clerk-react';
 
 export default function App() {

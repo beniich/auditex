@@ -23,7 +23,9 @@ import {
   Download,
   Activity,
   FileSearch,
-  BookOpen
+  BookOpen,
+  Gavel,
+  ShieldCheck
 } from 'lucide-react';
 import { useApiQuery } from '../hooks/useApiQuery';
 import { ComplianceService, Policy, Control } from '../services/ComplianceService';
@@ -47,9 +49,9 @@ export const ComplianceHub: React.FC = () => {
       ComplianceService.updateControlStatus(controlId, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['policies'] });
-      toast.success('Control status updated successfully.', { title: 'Compliance Hub' });
+      toast.success('Control status updated successfully.', 'Compliance Hub');
     },
-    onError: () => toast.error('Failed to update control status.', { title: 'Error' })
+    onError: () => toast.error('Failed to update control status.', 'Error')
   });
 
   const allControls = useMemo(() => policies.flatMap(p => p.controls.map(c => ({
@@ -146,7 +148,7 @@ export const ComplianceHub: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
            {[
              { label: 'Compliance Index', val: `${Math.round((stats.compliant/stats.total || 0) * 100)}%`, detail: '+2.4% vs 30d', icon: CheckCircle2, color: 'text-emerald-500', bg: 'bg-emerald-50' },
-             { label: 'Critical Gaps', val: stats.criticalIncidents || 0, detail: 'ISO-27001 Scope', icon: ShieldAlert, color: 'text-red-500', bg: 'bg-red-50' },
+             { label: 'Critical Gaps', val: stats.criticalGaps || 0, detail: 'ISO-27001 Scope', icon: ShieldAlert, color: 'text-red-500', bg: 'bg-red-50' },
              { label: 'Evidence Vault', val: (stats.total * 3.2).toFixed(0), detail: 'Objects Anchored', icon: Database, color: 'text-blue-600', bg: 'bg-blue-50' },
              { label: 'Audit Velocity', val: '4.2d', detail: 'Validation Latency', icon: Activity, color: 'text-slate-500', bg: 'bg-slate-100' },
            ].map((stat, i) => (
