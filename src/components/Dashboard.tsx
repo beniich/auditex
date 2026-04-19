@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'motion/react';
 import { 
@@ -15,7 +16,8 @@ import {
   Lock,
   ArrowUpRight,
   Search,
-  LayoutGrid
+  LayoutGrid,
+  FileText
 } from 'lucide-react';
 import { Audit, AuditTemplate } from '../types';
 import { computeComplianceScore } from '../lib/scoreEngine';
@@ -26,6 +28,7 @@ import { InfrastructureService } from '../services/InfrastructureService';
 import { IncidentService } from '../services/IncidentService';
 import { AuditService } from '../services/AuditService';
 import { useApiQuery } from '../hooks/useApiQuery';
+import { toast } from '../hooks/useToast';
 
 const StatCard = ({ title, value, detail, icon: Icon, color, trend }: any) => (
   <motion.div 
@@ -75,6 +78,25 @@ export const Dashboard = ({ audits, templates }: { audits: Audit[], templates: A
   
   const complianceValue = parseInt(complianceKpi.toString()) || 0;
   const criticalIncidents = incidents.filter(i => i.severity === 'CRITICAL' || i.severity === 'HIGH').length;
+
+  const handleExportAuditReport = async (auditId: string) => {
+    try {
+      const response = await axios.get(`/api/reports/download/${auditId}`, {
+        responseType: 'blob',
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Audit_Report_${auditId.substring(0, 8)}.md`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success('Rapport de synthèse généré.', 'Report Engine');
+    } catch (err: any) {
+      console.error(err);
+      toast.error('Échec de l\'export.', 'Audit AX');
+    }
+  };
 
   return (
     <div className="flex flex-col gap-10 font-sans" id="dashboard-content">
@@ -217,6 +239,14 @@ export const Dashboard = ({ audits, templates }: { audits: Audit[], templates: A
                         className={`h-full ${score > 80 ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]' : score > 50 ? 'bg-blue-500' : 'bg-red-500'}`} />
                     </div>
                     <span className="text-[11px] font-black text-white">{score}%</span>
+                  </div>
+                  <div className="mt-4 flex justify-end">
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); handleExportAuditReport(audit.id); }}
+                      className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-blue-400 transition-all"
+                    >
+                      <FileText size={14} />
+                    </button>
                   </div>
                 </div>
               );

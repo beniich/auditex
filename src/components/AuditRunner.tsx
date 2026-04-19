@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { motion, AnimatePresence } from 'motion/react';
-import { Check, X, Camera, ChevronRight, ChevronLeft, Save, Send, Sparkles, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Check, X, Camera, ChevronRight, ChevronLeft, Save, Send, Sparkles, AlertTriangle, RefreshCw, FileText } from 'lucide-react';
 import { Audit, AuditTemplate, AuditQuestion } from '../types';
 import { AuditService } from '../services/AuditService';
 import { StorageService } from '../services/StorageService';
@@ -44,6 +45,29 @@ export const AuditRunner = ({ auditId, template, onComplete }: AuditRunnerProps)
 
     await loadAudit();
     setSaving(false);
+  };
+
+  const handleExportReport = async () => {
+    if (!auditId) return;
+    setSaving(true);
+    try {
+      const response = await axios.get(`/api/reports/download/${auditId}`, {
+        responseType: 'blob',
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Audit_Report_${auditId.substring(0, 8)}.md`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success('Rapport de synthèse généré avec succès.', 'Report Engine');
+    } catch (err: any) {
+      console.error(err);
+      toast.error('Échec de la génération du rapport.', 'Audit AX');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const runAIDiagnostic = async (questionId: string, value: any) => {
@@ -189,6 +213,12 @@ export const AuditRunner = ({ auditId, template, onComplete }: AuditRunnerProps)
           <p className="text-slate-500 text-xs font-medium mt-1">{template.title} • {audit.entityId}</p>
         </div>
         <div className="flex gap-3">
+          <button 
+            onClick={handleExportReport}
+            className="px-6 py-2 bg-white border border-slate-200 text-[#091426] rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm hover:border-blue-200 transition-all flex items-center gap-2"
+          >
+            <FileText size={16} className="text-blue-600" /> Export Synthesis
+          </button>
           <button className="w-12 h-12 flex items-center justify-center border border-slate-200 text-slate-400 rounded-2xl hover:bg-slate-50 transition-all">
             <Save size={18} />
           </button>

@@ -96,7 +96,27 @@ export class AIService {
       return tasks.map((t: any) => ({ ...t, _ai_version: promptConfig.version }));
     } catch (error) {
       console.error('AIService.generateRemediationPlan error:', error);
-      throw error;
+    }
+  }
+
+  /**
+   * MODEL 5: The Synthesizer (Executive Summary for Reports)
+   */
+  static async generateExecutiveSummary(findingsData: string) {
+    const prompt = `You are a Senior Strategic Compliance Consultant.
+    Based on these audit findings, write a high-level executive summary (3-4 paragraphs) suitable for C-suite presentation.
+    Focus on strategic risk, priority of remediation, and overall security posture.
+    Use professional tone. Use Markdown formatting.`;
+
+    try {
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4o',
+        messages: [{ role: 'system', content: prompt }, { role: 'user', content: `FINDINGS:\n${findingsData}` }],
+      });
+      return response.choices[0].message.content || 'Report generation summary unavailable.';
+    } catch (error) {
+      console.error('AIService.generateExecutiveSummary error:', error);
+      return 'AI synthesis failed during report generation.';
     }
   }
 }
