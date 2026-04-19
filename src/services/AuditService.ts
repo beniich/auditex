@@ -58,6 +58,10 @@ export const AuditService = {
     const auditId = `audit-${Date.now()}`;
     await this.appendEvent(auditId, 'AUDIT_STARTED', { templateId, entityId });
     return auditId;
+  },
+  
+  async getLogs(): Promise<any[]> {
+    return safeFetch<any[]>(`${API_BASE}/audit/logs`);
   }
 };
 

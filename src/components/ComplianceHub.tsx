@@ -1,41 +1,72 @@
-import React, { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { 
   CheckCircle2, 
-  AlertCircle, 
-  Clock, 
-  ArrowRight, 
-  Plus, 
+  Search, 
   Filter, 
-  Search,
-  MoreHorizontal,
-  FileBadge
+  Plus, 
+  MoreHorizontal, 
+  Clock, 
+  ArrowRight,
+  FileBadge,
+  AlertCircle,
+  Database,
+  History,
+  ShieldAlert
 } from 'lucide-react';
-
-interface Finding {
-  id: string;
-  title: string;
-  status: 'OPEN' | 'IN_PROGRESS' | 'REVIEW' | 'CLOSED';
-  priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
-  dueDate: string;
-  entity: string;
-}
-
-const mockFindings: Finding[] = [
-  { id: 'CAPA-901', title: 'Faille d\'authentification BIOS Site-A', status: 'IN_PROGRESS', priority: 'CRITICAL', dueDate: '2024-05-12', entity: 'Site-Paris' },
-  { id: 'CAPA-902', title: 'Absence d\'EPI validé en zone ATEX', status: 'OPEN', priority: 'HIGH', dueDate: '2024-05-15', entity: 'Site-Lyon' },
-  { id: 'CAPA-903', title: 'Registre de sécurité non visé (S1)', status: 'REVIEW', priority: 'MEDIUM', dueDate: '2024-05-10', entity: 'Site-Paris' },
-  { id: 'CAPA-904', title: 'Mise à jour Firewall Core ruleset', status: 'CLOSED', priority: 'HIGH', dueDate: '2024-05-01', entity: 'Data Center 1' },
-];
+import { useApiQuery } from '../hooks/useApiQuery';
+import { ComplianceService, Policy, Control } from '../services/ComplianceService';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from '../hooks/useToast';
+import { SkeletonKanban, SkeletonTable } from './Skeleton';
 
 export const ComplianceHub = () => {
   const [activeTab, setActiveTab] = useState<'KANBAN' | 'LIST' | 'EXCEPTIONS'>('KANBAN');
+  const queryClient = useQueryClient();
+
+  const { data: policies = [], isLoading } = useApiQuery(['policies'], () => ComplianceService.getPolicies());
+
+  const updateControlStatusMutation = useMutation({
+    mutationFn: ({ controlId, status }: { controlId: string; status: string }) => 
+      ComplianceService.updateControlStatus(controlId, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['policies'] });
+      toast.success('Statut du contrôle mis à jour avec succès');
+    },
+    onError: () => toast.error('Erreur lors de la mise à jour du statut')
+  });
+
+  // Aggregate all controls into a flat list for the Kanban/List view
+  const allControls = useMemo(() => policies.flatMap(p => p.controls.map(c => ({
+    ...c,
+    policyTitle: p.title,
+    framework: p.framework
+  }))), [policies]);
 
   const getPriorityColor = (p: string) => {
     switch (p) {
-      case 'CRITICAL': return 'bg-red-950/20 text-red-500 border-red-500/30';
-      case 'HIGH': return 'bg-red-100 text-red-600 border-red-200';
-      case 'MEDIUM': return 'bg-amber-100 text-amber-600 border-amber-200';
-      default: return 'bg-blue-100 text-blue-600 border-blue-200';
+      case 'HIGH': return 'bg-red-50 text-red-600 border-red-200';
+      case 'MEDIUM': return 'bg-amber-50 text-amber-600 border-amber-200';
+      case 'LOW': return 'bg-emerald-50 text-emerald-600 border-emerald-200';
+      default: return 'bg-blue-50 text-blue-600 border-blue-200';
+    }
+  };
+
+  const getStatusMap = (status: string) => {
+    switch(status) {
+      case 'COMPLIANT': return 'CLOSED';
+      case 'NON_COMPLIANT': return 'OPEN';
+      case 'NOT_TESTED': return 'REVIEW';
+      default: return status;
+    }
+  };
+
+  const statusToPrisma = (displayStatus: string) => {
+    switch(displayStatus) {
+      case 'CLOSED': return 'COMPLIANT';
+      case 'OPEN': return 'NON_COMPLIANT';
+      case 'REVIEW': return 'NOT_TESTED';
+      case 'IN_PROGRESS': return 'IN_PROGRESS';
+      default: return 'NOT_TESTED';
     }
   };
 
@@ -136,91 +167,117 @@ export const ComplianceHub = () => {
       </div>
 
       {/* Kanban / List Board */}
-      <div className="flex flex-col gap-6">
-        <div className="flex items-center justify-between">
+      <div className="flex flex-col gap        <div className="flex items-center justify-between">
            <div className="flex items-center gap-3">
               <h3 className="text-lg font-bold text-slate-900 dark:text-white">Remediation Task Board</h3>
-              <span className="px-2 py-0.5 bg-slate-100 text-slate-500 rounded text-[10px] font-bold">{mockFindings.length} Active</span>
+              <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-[10px] font-bold">{allControls.length} Active Controls</span>
            </div>
            <div className="flex gap-2">
-              <button className="p-2 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-400 hover:bg-slate-50"><Filter size={16}/></button>
-              <button className="p-2 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-400 hover:bg-slate-50"><Search size={16}/></button>
-              <button className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:opacity-90 shadow-lg shadow-blue-500/20">
-                <Plus size={14} /> New Remediation
+              <button className="p-2 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-400 hover:bg-slate-50 transition-colors"><Filter size={16}/></button>
+              <button className="p-2 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-400 hover:bg-slate-50 transition-colors"><Search size={16}/></button>
+              <button className="flex items-center gap-2 px-6 py-2 bg-[#091426] text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:opacity-90 shadow-lg shadow-slate-200">
+                <Plus size={14} /> New Manual Control
               </button>
            </div>
         </div>
 
-        {activeTab === 'KANBAN' ? (
+        {isLoading ? (
+          activeTab === 'KANBAN' ? <SkeletonKanban /> : <SkeletonTable />
+        ) : activeTab === 'KANBAN' ? (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {['OPEN', 'IN_PROGRESS', 'REVIEW', 'CLOSED'].map((status) => (
+            {['OPEN', 'IN_PROGRESS', 'REVIEW', 'CLOSED'].map((status) => {
+              const items = allControls.filter(c => getStatusMap(c.status) === status);
+
+              return (
               <div key={status} className="flex flex-col gap-4">
-                 <div className="px-4 py-2 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 flex justify-between items-center">
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{status}</span>
-                    <button className="text-slate-400"><Plus size={14}/></button>
+                 <div className="px-4 py-2 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 flex justify-between items-center shadow-sm">
+                    <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em]">{status} ({items.length})</span>
+                    <button className="text-slate-400 hover:text-blue-600 transition-colors"><Plus size={14}/></button>
                  </div>
                  
-                 <div className="space-y-4">
-                    {mockFindings.filter(f => f.status === status).map((finding) => (
-                      <div key={finding.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-sm hover:shadow-md hover:border-blue-200 transition-all cursor-pointer group">
+                 <div className="space-y-4 min-h-[200px]">
+                    {items.map((item: any) => (
+                      <motion.div 
+                        layout
+                        key={item.id} 
+                        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm hover:shadow-xl hover:border-blue-200 transition-all cursor-pointer group"
+                      >
                          <div className="flex justify-between items-start mb-3">
-                            <span className={`px-2 py-0.5 border rounded text-[8px] font-black uppercase tracking-tighter ${getPriorityColor(finding.priority)}`}>
-                               {finding.priority}
+                            <span className={`px-2 py-0.5 border rounded text-[8px] font-black uppercase tracking-tighter ${getPriorityColor(item.framework === 'ISO-27001' ? 'HIGH' : 'MEDIUM')}`}>
+                               {item.framework || 'SOC2'}
                             </span>
-                            <MoreHorizontal size={14} className="text-slate-300 group-hover:text-slate-500" />
-                         </div>
-                         <h5 className="text-[13px] font-bold text-slate-900 dark:text-white leading-tight mb-4 group-hover:text-blue-600 transition-colors">
-                            {finding.title}
-                         </h5>
-                         <div className="flex items-center justify-between pt-4 border-t border-slate-50 dark:border-slate-800">
-                            <span className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-tighter">{finding.id}</span>
-                            <div className="flex items-center gap-1.5 text-[9px] font-black text-slate-500 uppercase tracking-widest">
-                               <Clock size={12} className="text-slate-400" /> {finding.dueDate}
+                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              {['OPEN', 'IN_PROGRESS', 'REVIEW', 'CLOSED'].filter(s => s !== status).map(s => (
+                                <button 
+                                  key={s} 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    updateControlStatusMutation.mutate({ controlId: item.id, status: statusToPrisma(s) });
+                                  }}
+                                  className="p-1 hover:bg-slate-100 rounded text-[8px] font-bold text-slate-400"
+                                  title={`Move to ${s}`}
+                                >
+                                  {s.charAt(0)}
+                                </button>
+                              ))}
                             </div>
                          </div>
-                      </div>
+                         <h5 className="text-[13px] font-bold text-slate-900 dark:text-white leading-tight mb-4 group-hover:text-blue-600 transition-colors uppercase tracking-tight">
+                            {item.name}
+                         </h5>
+                         <p className="text-[10px] text-slate-400 mb-4 line-clamp-2">{item.description}</p>
+                         <div className="flex items-center justify-between pt-4 border-t border-slate-50 dark:border-slate-800">
+                            <span className="text-[9px] font-mono font-bold text-slate-300 uppercase tracking-tighter">{item.id.substring(0, 8)}</span>
+                            <div className="flex items-center gap-1.5 text-[9px] font-black text-slate-500 uppercase tracking-widest">
+                               <Clock size={12} className="text-slate-400" /> {item.frequency || 'ANNUAL'}
+                            </div>
+                         </div>
+                      </motion.div>
                     ))}
-                    {mockFindings.filter(f => f.status === status).length === 0 && (
-                      <div className="h-32 border-2 border-dashed border-slate-100 dark:border-slate-900 rounded-xl flex items-center justify-center">
+                    {items.length === 0 && (
+                      <div className="h-32 border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-2xl flex items-center justify-center opacity-40">
                          <span className="text-[10px] font-bold text-slate-300 uppercase">Clear Stage</span>
                       </div>
                     )}
                  </div>
               </div>
-            ))}
+            )})}
           </div>
         ) : (
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[2rem] overflow-hidden shadow-sm">
             <table className="w-full text-left">
                <thead>
                   <tr className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-800 text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                     <th className="px-6 py-4">Finding ID</th>
-                     <th className="px-6 py-4">Title</th>
-                     <th className="px-6 py-4">Status</th>
-                     <th className="px-6 py-4">Priority</th>
-                     <th className="px-6 py-4">Entity</th>
-                     <th className="px-6 py-4 text-right">Actions</th>
+                     <th className="px-10 py-5">Control ID</th>
+                     <th className="px-10 py-5">Control Name</th>
+                     <th className="px-10 py-5">Status</th>
+                     <th className="px-10 py-5">Framework</th>
+                     <th className="px-10 py-5">Frequency</th>
+                     <th className="px-10 py-5 text-right">Actions</th>
                   </tr>
                </thead>
                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {mockFindings.map(finding => (
-                    <tr key={finding.id} className="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer group">
-                       <td className="px-6 py-4 font-mono text-[10px] font-bold text-blue-600">{finding.id}</td>
-                       <td className="px-6 py-4 text-xs font-bold text-slate-900 dark:text-white uppercase tracking-tight">{finding.title}</td>
-                       <td className="px-6 py-4">
-                          <span className={`px-2 py-1 rounded text-[8px] font-black ${
-                            finding.status === 'CLOSED' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-500'
+                  {allControls.map((item: any) => (
+                    <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer group">
+                       <td className="px-10 py-6 font-mono text-[10px] font-bold text-blue-600">0x{item.id.substring(0, 8)}</td>
+                       <td className="px-10 py-6">
+                         <div className="flex flex-col">
+                           <span className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-tight">{item.name}</span>
+                           <span className="text-[9px] text-slate-400 uppercase font-bold">{item.policyTitle}</span>
+                         </div>
+                       </td>
+                       <td className="px-10 py-6">
+                          <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${
+                            item.status === 'COMPLIANT' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 
+                            item.status === 'NON_COMPLIANT' ? 'bg-red-50 text-red-600 border border-red-100' :
+                            'bg-slate-100 text-slate-500'
                           }`}>
-                            {finding.status}
+                            {item.status}
                           </span>
                        </td>
-                       <td className="px-6 py-4">
-                          <span className={`px-2 py-0.5 border rounded text-[8px] font-black ${getPriorityColor(finding.priority)}`}>
-                             {finding.priority}
-                          </span>
-                       </td>
-                       <td className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase">{finding.entity}</td>
-                       <td className="px-6 py-4 text-right">
+                       <td className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase">{item.framework}</td>
+                       <td className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">{item.frequency}</td>
+                       <td className="px-10 py-6 text-right">
                           <ArrowRight size={16} className="text-slate-300 group-hover:text-blue-600 transition-all inline-block" />
                        </td>
                     </tr>
@@ -228,7 +285,8 @@ export const ComplianceHub = () => {
                </tbody>
             </table>
           </div>
-        )}
+        ) : (
+    )}
 
         {activeTab === 'EXCEPTIONS' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

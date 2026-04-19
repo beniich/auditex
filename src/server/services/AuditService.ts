@@ -34,7 +34,16 @@ export class AuditService {
       .map((events: any) => projectAudit(events))
       .filter(a => a !== null);
   }
-
+  /**
+   * Retrieves all events for an organization for global audit logs.
+   */
+  static async getAllEventsByOrganization(organizationId: string) {
+    return await prisma.auditEvent.findMany({
+      where: { audit: { organizationId } },
+      include: { user: true },
+      orderBy: { timestamp: 'desc' }
+    });
+  }
   /**
    * Start a new audit
    */
@@ -115,5 +124,16 @@ export class AuditService {
       compromisedAt: result.compromisedAt,
       verifiedAt: new Date().toISOString()
     };
+  }
+
+  /**
+   * Retrieves all events for a specific audit.
+   */
+  static async getEventsByAudit(auditId: string) {
+    return await prisma.auditEvent.findMany({
+      where: { auditId },
+      include: { user: true },
+      orderBy: { timestamp: 'asc' }
+    });
   }
 }

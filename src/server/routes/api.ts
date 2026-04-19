@@ -19,8 +19,20 @@ export const apiRouter = Router();
 // Middleware: Clerk Auth validation
 const requireAuth = process.env.VITE_CLERK_PUBLISHABLE_KEY 
   ? ClerkExpressRequireAuth() 
-  : (req: any, res: any, next: any) => {
-      req.auth = { userId: 'inspector-123' };
+  : async (req: any, res: any, next: any) => {
+      // Dev mode: find the first user in DB to act as the current user
+      const { prisma } = await import('../lib/prisma');
+      const user = await prisma.user.findFirst({
+        include: { organization: true }
+      });
+      
+      if (user) {
+        req.auth = { userId: user.clerkId };
+        req.user = user;
+      } else {
+        req.auth = { userId: 'inspector-123' };
+        req.user = { organizationId: 'org-1' }; // Fallback
+      }
       next();
     };
 
@@ -33,6 +45,8 @@ apiRouter.get('/health', (req, res) => res.json({ status: 'ok', environment: 'pr
 apiRouter.get('/templates', AuditController.getTemplates);
 apiRouter.get('/audits', AuditController.getAudits);
 apiRouter.post('/audit/:id/events', AuditController.addEvent);
+apiRouter.get('/audit/:id/events', AuditController.getEvents);
+apiRouter.get('/audit/logs', AuditController.getLogs);
 apiRouter.get('/audit/:id/verify', AuditController.verifyAudit);
 
 // Incident & CAPA Routes

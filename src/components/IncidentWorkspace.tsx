@@ -24,22 +24,51 @@ import {
 } from 'lucide-react';
 import { IncidentService, Incident } from '../services/IncidentService';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLiveUpdates } from '../hooks/useLiveUpdates';
+import { toast } from '../hooks/useToast';
+import { Skeleton } from './Skeleton';
 
 const IncidentWorkspace: React.FC = () => {
   useLiveUpdates();
+  const queryClient = useQueryClient();
   const [selectedIncidentId, setSelectedIncidentId] = React.useState<string | null>(null);
 
   const { data: incidents = [], isLoading: loading } = useQuery({
     queryKey: ['incidents'],
     queryFn: () => IncidentService.getIncidents(),
+    refetchInterval: 10000,
   });
 
-  const incident = incidents.find(i => i.id === selectedIncidentId) || incidents[0];
+  const updateTaskMutation = useMutation({
+    mutationFn: ({ taskId, status }: { taskId: string; status: string }) =>
+      IncidentService.updateTask(taskId, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['incidents'] });
+      toast.success('CAPA Task status updated');
+    },
+    onError: () => toast.error('Failed to update task status'),
+  });
 
-  if (loading) return <div className="p-10 text-slate-500 font-bold animate-pulse">LOADING FORENSIC DATA...</div>;
-  if (!incident && incidents.length === 0) return <div className="p-10 font-bold text-red-600">NO INCIDENTS FOUND</div>;
+  const incident = incidents.find(i => i.id === selectedIncidentId) || (incidents.length > 0 ? incidents[0] : null);
+
+  if (loading) return <div className="p-10 space-y-8"><Skeleton className="h-20 w-full" /><div className="grid grid-cols-12 gap-8"><Skeleton className="col-span-4 h-[600px]" /><Skeleton className="col-span-8 h-[600px]" /></div></div>;
+  if (!incident) return (
+    <div className="p-16 flex flex-col items-center justify-center text-center space-y-4">
+      <ShieldAlert size={64} className="text-slate-200" />
+      <h2 className="text-2xl font-black text-slate-400 uppercase">No active incidents</h2>
+      <p className="text-slate-400 text-sm">All systems are currently within compliance bounds.</p>
+    </div>
+  );
+
+  const getTaskStatusColor = (status: string) => {
+    switch (status) {
+      case 'DONE': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
+      case 'REVIEW': return 'bg-amber-50 text-amber-600 border-amber-100';
+      case 'IN_PROGRESS': return 'bg-blue-50 text-blue-600 border-blue-100';
+      default: return 'bg-slate-50 text-slate-400 border-slate-100';
+    }
+  };
 
 
   return (
@@ -89,16 +118,31 @@ const IncidentWorkspace: React.FC = () => {
             </div>
             
             <div className="flex-1 p-10 overflow-y-auto scrollbar-hide">
-              <div className="relative border-l-2 border-slate-50 ml-4 py-2 space-y-12">
+              <div className="relative border-l-2 border-slate-100 dark:border-slate-800 ml-4 py-2 space-y-12">
                 {[
-                  { time: '04:12:01 UTC', type: 'Root Detection', title: 'Non-conformity triggered', desc: 'External IP 45.22.1.92 initiated handshake bypassing WAF Protocol 14B.', node: 'NODE-X7', color: 'red', icon: <Zap size={16} /> },
-                  { time: '04:14:55 UTC', type: 'Propagation', title: 'Credential Injection Attempt', desc: 'Shadow account admin_test_v2 created via lateral SQL injection in sub-ledger.', color: 'blue', icon: <Monitor size={16} /> },
-                  { time: '04:18:22 UTC', type: 'Analysis Point', title: 'Encrypted Data Extraction', desc: '3.2GB of blob storage transferred to unauthorized endpoint. Payload identified.', active: true, color: 'blue', icon: <Activity size={16} /> },
-                  { time: '04:22:10 UTC', type: 'Containment', title: 'Security Kill-Switch Engaged', desc: 'Automated protocol isolation successful. All APAC endpoints rotated.', color: 'slate', icon: <Lock size={16} /> },
+                  { 
+                    time: new Date(incident.detectedAt).toLocaleTimeString(), 
+                    type: 'Root Detection', 
+                    title: 'Anomaly Triggered', 
+                    desc: `Sensor alert on ${incident.node?.name || 'Infrastructure'}. Severity ${incident.severity} threshold breached.`, 
+                    color: incident.severity === 'CRITICAL' ? 'red' : 'amber', 
+                    icon: <Zap size={16} /> 
+                  },
+                  ...incident.tasks.map(t => ({
+                    time: new Date(t.updatedAt || t.createdAt).toLocaleTimeString(),
+                    type: 'Action Log',
+                    title: t.title,
+                    desc: t.description,
+                    color: t.status === 'DONE' ? 'emerald' : 'blue',
+                    icon: t.status === 'DONE' ? <CheckCircle2 size={16} /> : <Activity size={16} />
+                  }))
                 ].map((event, i) => (
                   <div key={i} className={`relative pl-12 group ${event.active ? 'bg-blue-50/50 -mx-10 px-10 py-6 border-y border-blue-100' : ''}`}>
-                    <div className={`absolute left-[-13px] top-1 w-6 h-6 rounded-full bg-white border-2 border-current flex items-center justify-center z-10 
-                      ${event.color === 'red' ? 'text-red-500' : event.color === 'blue' ? 'text-blue-500' : 'text-slate-400'}`}>
+                    <div className={`absolute left-[-13px] top-1 w-6 h-6 rounded-full bg-white dark:bg-slate-900 border-2 flex items-center justify-center z-10 
+                      ${event.color === 'red' ? 'text-red-500 border-red-200' : 
+                        event.color === 'amber' ? 'text-amber-500 border-amber-200' :
+                        event.color === 'emerald' ? 'text-emerald-500 border-emerald-200' :
+                        'text-blue-600 border-blue-200'}`}>
                       {event.icon}
                     </div>
                     <div>
@@ -190,36 +234,43 @@ const IncidentWorkspace: React.FC = () => {
                </div>
             </div>
 
-            {/* Forensic Audit Log Component */}
             <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
                <div className="px-8 py-5 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
-                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Forensic Audit Trail (Immuable)</h3>
+                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Remediation Tasks (CAPA Ledger)</h3>
                   <button className="text-[9px] font-black text-blue-600 uppercase tracking-widest border border-blue-100 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-all">
-                    Export Full Log
+                    Add Task
                   </button>
                </div>
                <div className="overflow-x-auto">
                  <table className="w-full text-left">
                    <thead>
                      <tr className="border-b border-slate-50 font-bold text-[9px] text-slate-400 uppercase tracking-widest">
-                       <th className="px-8 py-4">Timestamp (UTC)</th>
-                       <th className="px-8 py-4">Authorizer</th>
-                       <th className="px-8 py-4">Action Summary</th>
-                       <th className="px-8 py-4 text-right">Verification</th>
+                       <th className="px-8 py-4">Task Description</th>
+                       <th className="px-8 py-4">Assignee</th>
+                       <th className="px-8 py-4">Due Date</th>
+                       <th className="px-8 py-4 text-right">Status</th>
                      </tr>
                    </thead>
                    <tbody className="divide-y divide-slate-50 font-mono text-[10px]">
-                     {[
-                       { time: '10:45:22.091', auth: 'SYS_WATCHDOG', action: 'Auto-flagging: Threshold alert triggered', status: 'OK' },
-                       { time: '10:48:10.422', auth: 'J. RODRIGUEZ', action: 'Manual investigation workspace opened', status: 'OK' },
-                       { time: '11:02:05.118', auth: 'L3_INVESTIGATOR', action: 'Evidence cluster locked for forensic audit', status: 'OK' },
-                     ].map((row, i) => (
-                       <tr key={i} className="hover:bg-slate-50/50 transition-colors">
-                         <td className="px-8 py-4 text-slate-400">{row.time}</td>
-                         <td className="px-8 py-4 font-black text-[#091426]">{row.auth}</td>
-                         <td className="px-8 py-4 text-slate-600 uppercase font-bold tracking-tighter">{row.action}</td>
+                     {incident.tasks.map((task) => (
+                       <tr key={task.id} className="hover:bg-slate-50/50 transition-colors">
+                         <td className="px-8 py-4">
+                            <div className="flex flex-col">
+                              <span className="font-black text-[#091426] uppercase mb-1">{task.title}</span>
+                              <span className="text-slate-400 text-[9px] lowercase opacity-70 line-clamp-1">{task.description}</span>
+                            </div>
+                         </td>
+                         <td className="px-8 py-4 font-bold text-slate-600">
+                            {task.assignee ? `${task.assignee.firstName} ${task.assignee.lastName}`.toUpperCase() : 'UNASSIGNED'}
+                         </td>
+                         <td className="px-8 py-4 text-slate-400">{task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'N/A'}</td>
                          <td className="px-8 py-4 text-right">
-                           <CheckCircle2 size={12} className="text-emerald-500 ml-auto" fill="currentColor" fillOpacity={0.1} />
+                            <span className={`px-2 py-1 rounded text-[8px] font-black ${
+                              task.status === 'DONE' ? 'bg-emerald-50 text-emerald-600' :
+                              task.status === 'IN_PROGRESS' ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-500'
+                            }`}>
+                              {task.status}
+                            </span>
                          </td>
                        </tr>
                      ))}

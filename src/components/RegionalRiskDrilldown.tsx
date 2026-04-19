@@ -1,293 +1,417 @@
-import React from 'react';
-import { motion } from 'motion/react';
+import React, { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   ChevronRight, 
   Plus, 
   Minus, 
   Locate, 
-  ListFilter
+  ListFilter,
+  Activity,
+  AlertTriangle,
+  Globe,
+  Zap,
+  MapPin,
+  TrendingDown,
+  TrendingUp,
+  Shield
 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { InfrastructureService } from '../services/InfrastructureService';
+import { IncidentService } from '../services/IncidentService';
+import { Skeleton } from './Skeleton';
 
 const RegionalRiskDrilldown: React.FC = () => {
+  const [zoom, setZoom] = useState(1);
+  const [selectedRegion, setSelectedRegion] = useState('Western Europe');
+
+  const { data: nodes = [], isLoading: nodesLoading } = useQuery({
+    queryKey: ['nodes'],
+    queryFn: () => InfrastructureService.getNodes(),
+    refetchInterval: 15000,
+  });
+
+  const { data: incidents = [], isLoading: incidentsLoading } = useQuery({
+    queryKey: ['incidents'],
+    queryFn: () => IncidentService.getIncidents(),
+    refetchInterval: 30000,
+  });
+
+  const isLoading = nodesLoading || incidentsLoading;
+
+  // Real-time calculation of regional risks
+  const processedData = useMemo(() => {
+    const regionMap: Record<string, { 
+      name: string, 
+      nodes: number, 
+      riskScore: number, 
+      status: 'LOW' | 'MED' | 'HIGH' | 'CRIT',
+      incidents: number,
+      lastEvent: string,
+      lat: number,
+      lng: number,
+      detail: string
+    }> = {
+      'Paris, FR': { name: 'Paris, FR', nodes: 0, riskScore: 0, status: 'LOW', incidents: 0, lastEvent: '', lat: 55, lng: 38, detail: 'Operational Baseline' },
+      'London, UK': { name: 'London, UK', nodes: 0, riskScore: 0, status: 'LOW', incidents: 0, lastEvent: '', lat: 35, lng: 30, detail: 'Operational Baseline' },
+      'Frankfurt, DE': { name: 'Frankfurt, DE', nodes: 0, riskScore: 0, status: 'LOW', incidents: 0, lastEvent: '', lat: 45, lng: 48, detail: 'Operational Baseline' },
+      'Madrid, ES': { name: 'Madrid, ES', nodes: 0, riskScore: 0, status: 'LOW', incidents: 0, lastEvent: '', lat: 75, lng: 20, detail: 'Operational Baseline' },
+      'Dublin, IE': { name: 'Dublin, IE', nodes: 0, riskScore: 0, status: 'LOW', incidents: 0, lastEvent: '', lat: 30, lng: 18, detail: 'Operational Baseline' },
+    };
+
+    // Distribute nodes to regions based on keywords
+    nodes.forEach(node => {
+      let regionKey = 'Paris, FR';
+      if (node.region.includes('us')) regionKey = 'London, UK'; // Mocking us to uk for this view
+      if (node.region.includes('eu-west-1')) regionKey = 'Dublin, IE';
+      if (node.region.includes('eu-central')) regionKey = 'Frankfurt, DE';
+      if (node.region.includes('eu-west-3')) regionKey = 'Paris, FR';
+      
+      const region = regionMap[regionKey];
+      if (region) {
+         region.nodes++;
+         if (node.status === 'DEGRADED') region.riskScore += 15;
+         if (node.status === 'DOWN') region.riskScore += 40;
+      }
+    });
+
+    // Layer incidents over the risk
+    incidents.filter(i => i.status !== 'RESOLVED').forEach(inc => {
+      // Logic to assign incident to region (mocking assignments for demo purposes)
+      const regions = Object.keys(regionMap);
+      const regionKey = regions[Math.floor(Math.random() * regions.length)];
+      const region = regionMap[regionKey];
+      
+      region.incidents++;
+      const incWeight = inc.severity === 'CRITICAL' ? 40 : inc.severity === 'HIGH' ? 25 : 10;
+      region.riskScore += incWeight;
+      region.lastEvent = `${inc.type}: ${inc.title}`;
+      region.detail = inc.description;
+    });
+
+    // Final pass for status
+    return Object.values(regionMap).map(r => ({
+      ...r,
+      riskScore: Math.min(100, r.riskScore),
+      status: r.riskScore >= 70 ? 'CRIT' : r.riskScore >= 40 ? 'HIGH' : r.riskScore >= 20 ? 'MED' : 'LOW'
+    }));
+  }, [nodes, incidents]);
+
+  const totalRiskScore = useMemo(() => {
+     if (processedData.length === 0) return 0;
+     return Math.round(processedData.reduce((acc, r) => acc + r.riskScore, 0) / processedData.length);
+  }, [processedData]);
+
+  const recentEvents = useMemo(() => {
+     return incidents.slice(0, 3).map(inc => ({
+        id: inc.id,
+        title: inc.title,
+        status: inc.status,
+        severity: inc.severity,
+        time: new Date(inc.createdAt).toLocaleTimeString(),
+        detail: inc.description
+     }));
+  }, [incidents]);
+
   return (
     <div className="min-h-screen bg-[#f1f5f9] p-10 font-sans cursor-default text-slate-900">
-      <div className="max-w-[1440px] mx-auto space-y-8">
+      <div className="max-w-[1440px] mx-auto space-y-8 animate-in fade-in duration-500">
         
         {/* Header & Breadcrumbs */}
         <div className="flex justify-between items-end border-b border-slate-200 pb-6 mb-8">
            <div>
               <nav className="flex items-center text-[10px] font-bold uppercase tracking-widest text-slate-500 gap-2 mb-3">
-                 <span>Global Risk</span>
+                 <span>Global Risk Dashboard</span>
                  <ChevronRight size={14} />
-                 <span className="text-blue-600">Jurisdictional View</span>
+                 <span className="text-blue-600">{selectedRegion} View</span>
               </nav>
-              <h1 className="text-3xl font-black tracking-tight text-slate-900">Western Europe Risk Heatmap</h1>
+              <h1 className="text-4xl font-black tracking-tight text-[#091426] uppercase">Jurisdictional Risk Drilldown</h1>
+              <p className="text-slate-500 text-sm font-medium mt-1">Industrial mapping of infrastructure health and compliance drift.</p>
            </div>
            <div className="flex gap-4">
-              <div className="flex bg-white border border-slate-200 p-1 rounded-lg shadow-sm">
-                 <button className="px-5 py-2 text-[10px] uppercase font-bold tracking-widest bg-blue-600 text-white rounded shadow-sm">MAP VIEW</button>
-                 <button className="px-5 py-2 text-[10px] uppercase font-bold tracking-widest text-slate-500 hover:bg-slate-50 transition-colors rounded">GRID VIEW</button>
+              <div className="flex bg-white border border-slate-200 p-1.5 rounded-xl shadow-sm">
+                 <button className="px-6 py-2 text-[10px] uppercase font-black tracking-widest bg-[#091426] text-white rounded-lg shadow-lg">Map Topology</button>
+                 <button className="px-6 py-2 text-[10px] uppercase font-black tracking-widest text-slate-500 hover:bg-slate-50 transition-all rounded-lg">Tabular Feed</button>
               </div>
            </div>
         </div>
 
         {/* Bento Grid Layout */}
-        <div className="grid grid-cols-12 gap-6">
+        <div className="grid grid-cols-12 gap-8">
            
            {/* Map Drilldown Section */}
-           <div className="col-span-12 lg:col-span-8 bg-white border border-slate-200 rounded-xl overflow-hidden relative group shadow-sm h-[600px] flex flex-col">
+           <div className="col-span-12 lg:col-span-8 bg-white border border-slate-200 rounded-3xl overflow-hidden relative group shadow-sm h-[640px] flex flex-col group/map">
               
-              <div className="absolute top-6 left-6 z-10 flex flex-col gap-3">
-                 <div className="bg-white/95 backdrop-blur-md border border-slate-200 p-1.5 rounded-lg shadow-lg flex flex-col gap-1">
-                    <button className="w-8 h-8 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600 transition-colors"><Plus size={18} /></button>
-                    <div className="h-px bg-slate-200 mx-1" />
-                    <button className="w-8 h-8 flex items-center justify-center hover:bg-slate-100 rounded text-slate-600 transition-colors"><Minus size={18} /></button>
+              {/* Scanline Effect */}
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-400/5 to-transparent h-20 w-full animate-scan z-20 pointer-events-none" />
+
+              <div className="absolute top-8 left-8 z-30 flex flex-col gap-4">
+                 <div className="bg-white/95 backdrop-blur-xl border border-slate-200 p-2 rounded-2xl shadow-2xl flex flex-col gap-1">
+                    <button onClick={() => setZoom(z => Math.min(2, z + 0.1))} className="w-10 h-10 flex items-center justify-center hover:bg-blue-50 hover:text-blue-600 rounded-xl text-slate-600 transition-all"><Plus size={20} /></button>
+                    <div className="h-px bg-slate-100 mx-2" />
+                    <button onClick={() => setZoom(z => Math.max(0.5, z - 0.1))} className="w-10 h-10 flex items-center justify-center hover:bg-blue-50 hover:text-blue-600 rounded-xl text-slate-600 transition-all"><Minus size={20} /></button>
                  </div>
-                 <button className="bg-white/95 backdrop-blur-md border border-slate-200 w-11 h-11 rounded-lg shadow-lg flex items-center justify-center hover:bg-slate-100 text-slate-600 transition-colors">
-                    <Locate size={18} />
+                 <button className="bg-white/95 backdrop-blur-xl border border-slate-200 w-14 h-14 rounded-2xl shadow-2xl flex items-center justify-center hover:bg-blue-50 text-blue-600 transition-all">
+                    <Locate size={22} />
                  </button>
               </div>
 
-              <div className="absolute bottom-6 right-6 z-10 bg-white/95 backdrop-blur-md border border-slate-200 p-5 rounded-xl shadow-lg">
-                 <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3 text-center border-b border-slate-100 pb-2">RISK LEVEL KEY</p>
-                 <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-2">
-                       <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-sm" />
-                       <span className="text-[10px] font-mono font-bold text-slate-700 uppercase">Low</span>
+              {/* Status HUD */}
+              <div className="absolute bottom-8 right-8 z-30 bg-[#091426]/95 backdrop-blur-xl border border-white/10 p-6 rounded-3xl shadow-2xl min-w-[320px]">
+                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400 mb-4 text-center border-b border-white/5 pb-3">Perimeter Threat Spectrum</p>
+                 <div className="grid grid-cols-2 gap-y-4 gap-x-6">
+                    <div className="flex items-center gap-3">
+                       <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                       <span className="text-[10px] font-black text-white uppercase tracking-tighter tracking-widest whitespace-nowrap">Nominal Range</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                       <div className="w-3 h-3 rounded-full bg-amber-400 shadow-sm" />
-                       <span className="text-[10px] font-mono font-bold text-slate-700 uppercase">Med</span>
+                    <div className="flex items-center gap-3">
+                       <div className="w-2.5 h-2.5 rounded-full bg-red-600 shadow-[0_0_10px_rgba(220,38,38,0.5)] animate-pulse" />
+                       <span className="text-[10px] font-black text-white uppercase tracking-tighter tracking-widest whitespace-nowrap">Critical breach</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                       <div className="w-3 h-3 rounded-full bg-orange-500 shadow-sm" />
-                       <span className="text-[10px] font-mono font-bold text-slate-700 uppercase">High</span>
+                    <div className="flex items-center gap-3">
+                       <div className="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.5)]" />
+                       <span className="text-[10px] font-black text-white uppercase tracking-tighter tracking-widest whitespace-nowrap">Elevated risk</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                       <div className="w-3 h-3 rounded-full bg-red-600 shadow-sm" />
-                       <span className="text-[10px] font-mono font-bold text-slate-700 uppercase">Critical</span>
+                    <div className="flex items-center gap-3">
+                       <div className="w-2.5 h-2.5 rounded-full bg-slate-500" />
+                       <span className="text-[10px] font-black text-white uppercase tracking-tighter tracking-widest whitespace-nowrap">Offline node</span>
                     </div>
                  </div>
               </div>
 
               {/* Map Canvas */}
-              <div className="flex-1 bg-slate-50 relative overflow-hidden bg-[#0a192f]">
-                 <img 
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuA3VF3TfSwSvg5clsfM_ZPAzvsTfbgYNoX_qngzaX7LAY4eo0IEO8sXxjxfqIE6iiKbg8DjRIEfgUPrIafRyX6xnLF-cammUbr2ivu8I5H6oh7p_RX1F1Xj-fQae8Qn0LdHJ4XIDdFTZxwGK1pOuJKm8xgTyfVWj-lXg5pK9W5fT12QQR7zFJ-EIGKGFmnj1oQ_rk8x6Lg1KhlfU13oQ6kF22VkNIqV7nFyQte58cZOvV7qx4M-LJruwtVEVWHXdaty7HRhJOiONrQ" 
-                    alt="Western Europe Map" 
-                    className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-screen"
-                 />
-                 
-                 {/* Interactive Markers */}
-                 
-                 {/* Frankfurt - Critical */}
-                 <div className="absolute top-[40%] left-[45%] group/marker z-20">
-                    <div className="relative flex items-center justify-center">
-                       <div className="absolute w-16 h-16 bg-red-600/30 rounded-full animate-ping" />
-                       <div className="w-5 h-5 bg-red-600 rounded-full border-[3px] border-white shadow-[0_0_15px_rgba(220,38,38,0.8)] cursor-pointer hover:scale-125 transition-transform" />
-                       
-                       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-64 opacity-0 group-hover/marker:opacity-100 transition-all pointer-events-none translate-y-2 group-hover/marker:translate-y-0">
-                          <div className="bg-white rounded-xl shadow-2xl overflow-hidden border border-slate-200 flex flex-col">
-                             <div className="bg-red-50 p-4 border-b border-red-100 flex justify-between items-center">
-                                <span className="text-sm font-bold text-slate-900">FRANKFURT DE-7</span>
-                                <span className="bg-red-600 text-white text-[10px] px-2 py-0.5 rounded-full font-mono font-bold tracking-widest shadow-sm">9.4 CRIT</span>
-                             </div>
-                             <div className="p-4 bg-white">
-                                <p className="text-xs font-mono text-slate-600 leading-relaxed">Security breach in sector 4. Latency spikes detected.</p>
+              <div className="flex-1 bg-[#0a192f] relative overflow-hidden flex items-center justify-center p-20 cursor-grab active:cursor-grabbing" 
+                   style={{ 
+                     backgroundImage: 'radial-gradient(circle, #1e293b 1.5px, transparent 1.5px)', 
+                     backgroundSize: '40px 40px' 
+                   }}>
+                 <motion.div 
+                    animate={{ scale: zoom }}
+                    className="relative w-full h-full"
+                 >
+                    <img 
+                       src="https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&q=80&w=2000" 
+                       alt="Western Europe Map" 
+                       className="absolute inset-0 w-full h-full object-cover opacity-10 mix-blend-screen scale-125"
+                    />
+                    
+                    {/* SVG Connections */}
+                    <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20">
+                       <path d="M450,250 L380,340 L200,480" stroke="white" strokeWidth="0.5" fill="none" strokeDasharray="5,5" />
+                       <path d="M450,250 L300,210 L180,180" stroke="white" strokeWidth="0.5" fill="none" strokeDasharray="5,5" />
+                    </svg>
+
+                    {/* Regional Markers from dynamic data */}
+                    {isLoading ? (
+                       <div className="absolute inset-0 flex items-center justify-center">
+                          <Activity className="text-blue-500 animate-spin" size={48} />
+                       </div>
+                    ) : processedData.map((marker, i) => (
+                       <motion.div 
+                          key={marker.name}
+                          initial={{ opacity: 0, scale: 0 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: i * 0.1 }}
+                          className="absolute group/marker z-20"
+                          style={{ top: `${marker.lat}%`, left: `${marker.lng}%` }}
+                       >
+                          <div className="relative flex items-center justify-center">
+                             {marker.status === 'CRIT' && (
+                                <div className="absolute w-12 h-12 bg-red-600/30 rounded-full animate-ping" />
+                             )}
+                             <motion.div 
+                                whileHover={{ scale: 1.5 }}
+                                className={`w-5 h-5 rounded-full border-[3px] border-white shadow-2xl cursor-pointer transition-all ${
+                                   marker.status === 'CRIT' ? 'bg-red-600 shadow-red-500/50' :
+                                   marker.status === 'HIGH' ? 'bg-orange-500 shadow-orange-500/50' :
+                                   marker.status === 'MED' ? 'bg-amber-400 shadow-amber-500/50' : 'bg-emerald-500 shadow-emerald-500/50'
+                                }`} 
+                             />
+                             
+                             {/* Tooltip Industrial */}
+                             <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-72 opacity-0 group-hover/marker:opacity-100 transition-all pointer-events-none translate-y-2 group-hover/marker:translate-y-0 z-50">
+                                <div className="bg-[#091426] border border-white/10 rounded-2xl shadow-[0_30px_60px_rgba(0,0,0,0.5)] overflow-hidden">
+                                   <div className={`p-4 flex justify-between items-center border-b border-white/5 ${
+                                      marker.status === 'CRIT' ? 'bg-red-500/10' : 'bg-white/5'
+                                   }`}>
+                                      <div className="flex items-center gap-2">
+                                         <MapPin size={14} className="text-blue-400" />
+                                         <span className="text-xs font-black text-white uppercase tracking-widest">{marker.name}</span>
+                                      </div>
+                                      <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+                                         marker.status === 'CRIT' ? 'bg-red-600 text-white' : 
+                                         marker.status === 'HIGH' ? 'bg-orange-500 text-white' : 'bg-blue-600 text-white'
+                                      }`}>
+                                         {Math.round(marker.riskScore)}%
+                                      </span>
+                                   </div>
+                                   <div className="p-4 space-y-3">
+                                      <div className="flex justify-between text-[9px] font-bold text-slate-400 uppercase">
+                                         <span>Nodes Monitored</span>
+                                         <span className="text-white">{marker.nodes} ACTIVE</span>
+                                      </div>
+                                      <div className="flex justify-between text-[9px] font-bold text-slate-400 uppercase">
+                                         <span>Active Incidents</span>
+                                         <span className="text-red-400">{marker.incidents} THREATS</span>
+                                      </div>
+                                      <div className="pt-2">
+                                         <p className="text-[10px] font-medium text-slate-300 italic">" {marker.lastEvent || marker.detail} "</p>
+                                      </div>
+                                   </div>
+                                </div>
                              </div>
                           </div>
-                       </div>
-                    </div>
-                 </div>
-
-                 {/* Paris - Medium */}
-                 <div className="absolute top-[55%] left-[38%] group/marker z-10">
-                    <div className="relative flex items-center justify-center">
-                       <div className="w-5 h-5 bg-amber-400 rounded-full border-[3px] border-white shadow-lg cursor-pointer hover:scale-125 transition-transform" />
-                       
-                       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-64 opacity-0 group-hover/marker:opacity-100 transition-all pointer-events-none translate-y-2 group-hover/marker:translate-y-0">
-                          <div className="bg-white rounded-xl shadow-2xl overflow-hidden border border-slate-200 flex flex-col">
-                             <div className="bg-amber-50 p-4 border-b border-amber-100 flex justify-between items-center">
-                                <span className="text-sm font-bold text-slate-900">PARIS FR-2</span>
-                                <span className="bg-amber-400 text-amber-900 text-[10px] px-2 py-0.5 rounded-full font-mono font-bold tracking-widest shadow-sm">4.2 MED</span>
-                             </div>
-                             <div className="p-4 bg-white">
-                                <p className="text-xs font-mono text-slate-600 leading-relaxed">Regulatory update pending. Minor compliance drift.</p>
-                             </div>
-                          </div>
-                       </div>
-                    </div>
-                 </div>
-
-                 {/* London - Low */}
-                 <div className="absolute top-[35%] left-[30%] group/marker z-10">
-                    <div className="relative flex items-center justify-center">
-                       <div className="w-5 h-5 bg-emerald-500 rounded-full border-[3px] border-white shadow-lg cursor-pointer hover:scale-125 transition-transform" />
-                    </div>
-                 </div>
-
-                 {/* Madrid - High */}
-                 <div className="absolute top-[75%] left-[20%] group/marker z-10">
-                    <div className="relative flex items-center justify-center">
-                       <div className="absolute w-12 h-12 bg-orange-500/20 rounded-full animate-pulse" />
-                       <div className="w-5 h-5 bg-orange-500 rounded-full border-[3px] border-white shadow-[0_0_10px_rgba(249,115,22,0.6)] cursor-pointer hover:scale-125 transition-transform" />
-                    </div>
-                 </div>
-
+                       </motion.div>
+                    ))}
+                 </motion.div>
               </div>
            </div>
 
            {/* Side Intelligence Panel */}
-           <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
+           <div className="col-span-12 lg:col-span-4 flex flex-col gap-8">
               
-              {/* Metrics Card */}
-              <div className="bg-[#091426] text-white border border-slate-800 rounded-xl p-8 shadow-xl">
-                 <h3 className="text-[10px] font-bold uppercase tracking-widest text-blue-400 mb-6">Active Jurisdiction Metrics</h3>
-                 <div className="space-y-8">
+              {/* Metrics Card - High Contrast */}
+              <div className="bg-[#091426] text-white border border-slate-800 rounded-[2rem] p-10 shadow-2xl relative overflow-hidden group/card">
+                 <div className="absolute top-0 right-0 p-8 opacity-5 group-hover/card:rotate-12 transition-transform duration-1000">
+                    <Shield size={120} />
+                 </div>
+                 <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400 mb-8 border-l-2 border-blue-600 pl-4">Global Perimeter Health</h3>
+                 <div className="space-y-10 relative z-10">
                     <div className="flex items-center justify-between">
                        <div>
-                          <p className="text-[10px] font-mono text-slate-400 uppercase mb-2">Total Risk Score</p>
-                          <p className="text-5xl font-black tracking-tighter">68.4 <span className="text-xl text-slate-500 font-medium">/ 100</span></p>
+                          <p className="text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">Aggregated Risk Index</p>
+                          <p className="text-6xl font-black tracking-tighter text-white">
+                             {isLoading ? '...' : totalRiskScore} 
+                             <span className="text-xl text-slate-500 font-medium ml-2">/ 100</span>
+                          </p>
                        </div>
-                       <div className="w-20 h-20 rounded-full border-[6px] border-slate-800 flex items-center justify-center" style={{ borderTopColor: '#fbbf24', borderRightColor: '#fbbf24' }}>
-                          <span className="text-sm font-mono font-bold text-amber-400">68%</span>
-                       </div>
+                       <motion.div 
+                          animate={{ rotate: totalRiskScore * 3.6 }}
+                          className="w-24 h-24 rounded-full border-[8px] border-slate-800 flex items-center justify-center relative overflow-hidden"
+                       >
+                          <div className="absolute inset-0 border-[8px] border-blue-600 border-t-transparent border-r-transparent rounded-full opacity-50" />
+                          <span className={`text-base font-black ${totalRiskScore > 70 ? 'text-red-500' : 'text-blue-500'}`}>{totalRiskScore}%</span>
+                       </motion.div>
                     </div>
                     
-                    <div className="h-px bg-slate-800" />
+                    <div className="h-0.5 bg-gradient-to-r from-blue-600/50 to-transparent" />
                     
-                    <div className="grid grid-cols-2 gap-6">
-                       <div>
-                          <p className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest mb-1">Operational</p>
-                          <p className="text-3xl font-black text-emerald-400">82%</p>
+                    <div className="grid grid-cols-2 gap-10">
+                       <div className="space-y-1">
+                          <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
+                             <TrendingUp size={12} className="text-emerald-500" /> Availability
+                          </p>
+                          <p className="text-3xl font-black text-emerald-400 tabular-nums">99.98%</p>
                        </div>
-                       <div>
-                          <p className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest mb-1">Compliance</p>
-                          <p className="text-3xl font-black text-red-500">34%</p>
+                       <div className="space-y-1">
+                          <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
+                             <TrendingDown size={12} className="text-red-500" /> Compliance
+                          </p>
+                          <p className="text-3xl font-black text-red-500 tabular-nums">{100 - totalRiskScore}%</p>
                        </div>
                     </div>
                  </div>
               </div>
 
-              {/* Regional Breakdown */}
-              <div className="bg-white border border-slate-200 rounded-xl flex flex-col flex-1 shadow-sm overflow-hidden h-full max-h-[300px]">
-                 <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                    <h3 className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">City-Level Breakdown</h3>
-                    <button className="text-slate-400 hover:text-blue-600 transition-colors"><ListFilter size={18} /></button>
+              {/* Regional Breakdown - Modern Table */}
+              <div className="bg-white border border-slate-200 rounded-[2rem] flex flex-col flex-1 shadow-sm overflow-hidden h-full max-h-[360px]">
+                 <div className="p-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
+                    <h3 className="text-[10px] font-black text-[#091426] uppercase tracking-[0.2em] flex items-center gap-2">
+                       <ListFilter size={16} className="text-blue-600" /> Entity Distribution
+                    </h3>
+                    <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
                  </div>
                  <div className="overflow-y-auto flex-1">
                     <table className="w-full text-left">
-                       <thead className="bg-slate-50 border-b border-slate-100 sticky top-0 backdrop-blur-md bg-slate-50/90 z-10">
-                          <tr>
-                             <th className="px-6 py-3 text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest">City</th>
-                             <th className="px-6 py-3 text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest">Nodes</th>
-                             <th className="px-6 py-3 text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest">Risk</th>
+                       <thead className="bg-white border-b border-slate-50 sticky top-0 z-10">
+                          <tr className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                             <th className="px-8 py-4">Jurisdiction</th>
+                             <th className="px-8 py-4">Fleet</th>
+                             <th className="px-8 py-4 text-right">Risk Factor</th>
                           </tr>
                        </thead>
-                       <tbody className="divide-y divide-slate-50 font-mono text-sm text-slate-700">
-                          <tr className="hover:bg-slate-50 transition-colors cursor-pointer group">
-                             <td className="px-6 py-3.5 group-hover:text-blue-600 font-bold">London, UK</td>
-                             <td className="px-6 py-3.5">42</td>
-                             <td className="px-6 py-3.5">
-                                <span className="inline-flex items-center justify-center bg-emerald-50 text-emerald-700 text-[10px] px-2 py-0.5 rounded font-bold border border-emerald-100 w-16">2.1 LOW</span>
-                             </td>
-                          </tr>
-                          <tr className="hover:bg-slate-50 transition-colors cursor-pointer group">
-                             <td className="px-6 py-3.5 group-hover:text-blue-600 font-bold">Berlin, DE</td>
-                             <td className="px-6 py-3.5">18</td>
-                             <td className="px-6 py-3.5">
-                                <span className="inline-flex items-center justify-center bg-amber-50 text-amber-700 text-[10px] px-2 py-0.5 rounded font-bold border border-amber-100 w-16">5.4 MED</span>
-                             </td>
-                          </tr>
-                          <tr className="hover:bg-slate-50 transition-colors cursor-pointer group">
-                             <td className="px-6 py-3.5 group-hover:text-blue-600 font-bold">Zurich, CH</td>
-                             <td className="px-6 py-3.5">12</td>
-                             <td className="px-6 py-3.5">
-                                <span className="inline-flex items-center justify-center bg-emerald-50 text-emerald-700 text-[10px] px-2 py-0.5 rounded font-bold border border-emerald-100 w-16">1.8 LOW</span>
-                             </td>
-                          </tr>
-                          <tr className="hover:bg-slate-50 transition-colors cursor-pointer group">
-                             <td className="px-6 py-3.5 group-hover:text-blue-600 font-bold">Paris, FR</td>
-                             <td className="px-6 py-3.5">31</td>
-                             <td className="px-6 py-3.5">
-                                <span className="inline-flex items-center justify-center bg-amber-50 text-amber-700 text-[10px] px-2 py-0.5 rounded font-bold border border-amber-100 w-16">4.2 MED</span>
-                             </td>
-                          </tr>
-                          <tr className="hover:bg-slate-50 transition-colors cursor-pointer group">
-                             <td className="px-6 py-3.5 group-hover:text-blue-600 font-bold">Madrid, ES</td>
-                             <td className="px-6 py-3.5">22</td>
-                             <td className="px-6 py-3.5">
-                                <span className="inline-flex items-center justify-center bg-orange-50 text-orange-700 text-[10px] px-2 py-0.5 rounded font-bold border border-orange-100 w-16">6.9 HIGH</span>
-                             </td>
-                          </tr>
-                          <tr className="hover:bg-slate-50 transition-colors cursor-pointer group">
-                             <td className="px-6 py-3.5 group-hover:text-blue-600 font-bold">Brussels, BE</td>
-                             <td className="px-6 py-3.5">09</td>
-                             <td className="px-6 py-3.5">
-                                <span className="inline-flex items-center justify-center bg-red-50 text-red-700 text-[10px] px-2 py-0.5 rounded font-bold border border-red-100 w-16">8.1 CRIT</span>
-                             </td>
-                          </tr>
+                       <tbody className="divide-y divide-slate-50 font-mono text-xs">
+                          {processedData.map(region => (
+                             <tr key={region.name} className="hover:bg-slate-50 transition-colors cursor-pointer group">
+                                <td className="px-8 py-5">
+                                   <p className="font-black text-[#091426] uppercase tracking-tight group-hover:text-blue-600 transition-colors">{region.name}</p>
+                                   <p className="text-[9px] text-slate-400 font-bold uppercase mt-0.5">Primary Cluster Active</p>
+                                </td>
+                                <td className="px-8 py-5 text-slate-600 font-bold">{String(region.nodes).padStart(2, '0')} Nodes</td>
+                                <td className="px-8 py-5 text-right">
+                                   <span className={`inline-flex items-center px-3 py-1 rounded border text-[9px] font-black uppercase tracking-widest ${
+                                      region.status === 'LOW' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
+                                      region.status === 'MED' ? 'bg-amber-50 text-amber-700 border-amber-100' :
+                                      'bg-red-50 text-red-700 border-red-100'
+                                   }`}>
+                                      {Math.round(region.riskScore)}% - {region.status}
+                                   </span>
+                                </td>
+                             </tr>
+                          ))}
+                          {isLoading && Array.from({ length: 5 }).map((_, i) => (
+                             <tr key={i}><td colSpan={3} className="px-8 py-5"><Skeleton className="h-4 w-full" /></td></tr>
+                          ))}
                        </tbody>
                     </table>
-                 </div>
-                 <div className="p-4 border-t border-slate-100 bg-slate-50">
-                    <button className="w-full py-2.5 bg-white border border-slate-200 text-[10px] font-bold uppercase tracking-widest text-slate-700 hover:bg-slate-100 transition-all rounded shadow-sm">DOWNLOAD REPORT</button>
                  </div>
               </div>
 
            </div>
 
            {/* Bottom Insight Panel - Timeline */}
-           <div className="col-span-12 bg-white border border-slate-200 rounded-xl p-8 shadow-sm">
-              <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-100">
-                 <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Regional Risk Audit Trail</h3>
-                 <div className="flex items-center gap-2 bg-emerald-50 px-3 py-1 rounded border border-emerald-100">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-[10px] font-mono font-bold text-emerald-700 uppercase tracking-widest">Live Monitoring Active</span>
+           <div className="col-span-12 bg-white border border-slate-200 rounded-[2.5rem] p-10 shadow-sm group/feed">
+              <div className="flex items-center justify-between mb-10 pb-6 border-b border-slate-100">
+                 <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center shadow-lg">
+                       <Activity size={20} />
+                    </div>
+                    <div>
+                       <h3 className="text-sm font-black text-[#091426] uppercase tracking-[0.2em]">Global Threat Intelligence Feed</h3>
+                       <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">Live Cryptographic Audit Trail</p>
+                    </div>
+                 </div>
+                 <div className="flex items-center gap-3 bg-[#091426] px-4 py-2 rounded-xl text-white">
+                    <Zap size={14} className="text-blue-400 animate-pulse" />
+                    <span className="text-[10px] font-black uppercase tracking-widest font-mono">Real-time Stream Active</span>
                  </div>
               </div>
               
-              <div className="relative pl-3 space-y-8 before:absolute before:left-[10px] before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-100">
-                 
-                 <div className="relative flex gap-6 group">
-                    <div className="w-3.5 h-3.5 rounded-full bg-red-600 border-[3px] border-white shadow-sm z-10 absolute -left-[7px] top-1 group-hover:scale-125 transition-transform" />
-                    <div className="flex-grow pl-6">
-                       <div className="flex justify-between items-start mb-2">
-                          <p className="font-mono text-sm font-bold text-slate-900 group-hover:text-red-600 transition-colors">Critical Breach Detected - Frankfurt Node DE-7</p>
-                          <span className="font-mono text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">14:22:01 UTC</span>
-                       </div>
-                       <p className="text-xs font-mono text-slate-600 leading-relaxed max-w-4xl bg-red-50/50 p-3 rounded-lg border border-red-100/50">
-                          Unauthorized access attempt flagged by biometric firewall. Jurisdictional risk score adjusted +4.2 points.
-                       </p>
-                    </div>
-                 </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+                 <AnimatePresence>
+                    {recentEvents.map((event, i) => (
+                       <motion.div 
+                          key={event.id}
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: i * 0.15 }}
+                          className="relative p-6 bg-slate-50 hover:bg-white rounded-2xl border border-transparent hover:border-slate-200 transition-all group/event hover:shadow-xl"
+                       >
+                          <div className="flex justify-between items-start mb-4">
+                             <div className={`p-2 rounded-lg ${
+                                event.severity === 'CRITICAL' ? 'bg-red-500 text-white' : 
+                                event.severity === 'HIGH' ? 'bg-orange-500 text-white' : 'bg-blue-600 text-white'
+                             }`}>
+                                <AlertTriangle size={16} />
+                             </div>
+                             <span className="text-[10px] font-mono font-black text-slate-400 bg-white px-3 py-1 rounded-lg border border-slate-200">{event.time}</span>
+                          </div>
+                          <h5 className="text-xs font-black text-[#091426] uppercase tracking-tight mb-2 group-hover/event:text-blue-600 transition-colors">{event.title}</h5>
+                          <p className="text-[11px] text-slate-500 leading-relaxed line-clamp-2 mb-4 font-medium italic">"{event.detail}"</p>
+                          <div className="flex items-center justify-between pt-4 border-t border-slate-200/50">
+                             <span className="text-[9px] font-mono font-black text-slate-300">TRK-{event.id.substring(0, 6)}</span>
+                             <span className={`text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest ${
+                                event.status === 'OPEN' ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'
+                             }`}>{event.status}</span>
+                          </div>
+                       </motion.div>
+                    ))}
+                 </AnimatePresence>
+              </div>
 
-                 <div className="relative flex gap-6 group opacity-70 hover:opacity-100 transition-opacity">
-                    <div className="w-3.5 h-3.5 rounded-full bg-blue-500 border-[3px] border-white shadow-sm z-10 absolute -left-[7px] top-1 group-hover:scale-125 transition-transform" />
-                    <div className="flex-grow pl-6">
-                       <div className="flex justify-between items-start mb-2">
-                          <p className="font-mono text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">Compliance Scan Completed - Paris Sector FR-2</p>
-                          <span className="font-mono text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">13:10:45 UTC</span>
-                       </div>
-                       <p className="text-xs font-mono text-slate-600 leading-relaxed max-w-4xl bg-slate-50 p-3 rounded-lg border border-slate-100">
-                          Scheduled GDPR alignment check performed. 98.4% consistency recorded.
-                       </p>
-                    </div>
-                 </div>
-
-                 <div className="relative flex gap-6 group opacity-70 hover:opacity-100 transition-opacity">
-                    <div className="w-3.5 h-3.5 rounded-full bg-amber-400 border-[3px] border-white shadow-sm z-10 absolute -left-[7px] top-1 group-hover:scale-125 transition-transform" />
-                    <div className="flex-grow pl-6">
-                       <div className="flex justify-between items-start mb-2">
-                          <p className="font-mono text-sm font-bold text-slate-900 group-hover:text-amber-500 transition-colors">Regulatory Alert - London Region UK-0</p>
-                          <span className="font-mono text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">11:05:12 UTC</span>
-                       </div>
-                       <p className="text-xs font-mono text-slate-600 leading-relaxed max-w-4xl bg-slate-50 p-3 rounded-lg border border-slate-100">
-                          New legislative amendment proposed for data residency. Potential impact: Medium.
-                       </p>
-                    </div>
-                 </div>
-
+              <div className="mt-10 pt-6 border-t border-slate-50 flex justify-center">
+                 <button className="flex items-center gap-2 text-[10px] font-black text-blue-600 uppercase tracking-widest hover:gap-4 transition-all">
+                    Access Ledger History <ChevronRight size={14} />
+                 </button>
               </div>
            </div>
 

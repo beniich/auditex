@@ -13,35 +13,14 @@ import { SystemVault } from './components/SystemVault';
 import { PredictiveAnalytics } from './components/PredictiveAnalytics';
 import { GovernancePortal } from './components/GovernancePortal';
 import { CertificationsHub } from './components/CertificationsHub';
-import { SystemConfig } from './components/SystemConfig';
-import RegulatorPortal from './components/RegulatorPortal';
 import RemediationWorkflow from './components/RemediationWorkflow';
 import ForensicView from './components/ForensicView';
-import SovereigntyMonitor from './components/SovereigntyMonitor';
-import SecurityAuditLog from './components/SecurityAuditLog';
 import EntityMapper from './components/EntityMapper';
-import JurisdictionMapping from './components/JurisdictionMapping';
-import IncidentWorkspace from './components/IncidentWorkspace';
-import ResourceAllocator from './components/ResourceAllocator';
-import BudgetAnalysis from './components/BudgetAnalysis';
-import MilestoneTracker from './components/MilestoneTracker';
-import RiskPrediction from './components/RiskPrediction';
-import StakeholderReporting from './components/StakeholderReporting';
-import QAReview from './components/QAReview';
 import PolicyLibrary from './components/PolicyLibrary';
-import BatchCenter from './components/BatchCenter';
-import APISecurity from './components/APISecurity';
-import AuditExceptions from './components/AuditExceptions';
 import IntegrityDiagnostics from './components/IntegrityDiagnostics';
-import ForensicReplay from './components/ForensicReplay';
-import InnovationLab from './components/InnovationLab';
-import FinalReportPreview from './components/FinalReportPreview';
-import SystemHelp from './components/SystemHelp';
-import EvidenceCollectorConfig from './components/EvidenceCollectorConfig';
-import IdentityProviderSetup from './components/IdentityProviderSetup';
 import NetworkNodeTopology from './components/NetworkNodeTopology';
-import MaintenanceUpgrades from './components/MaintenanceUpgrades';
 import RegionalRiskDrilldown from './components/RegionalRiskDrilldown';
+import StakeholderReporting from './components/StakeholderReporting';
 import { NewAuditModal } from './components/NewAuditModal';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AuditService } from './services/AuditService';
@@ -55,14 +34,15 @@ export default function App() {
   const [audits, setAudits] = useState<Audit[]>([]);
   const [templates, setTemplates] = useState<AuditTemplate[]>([]);
   const [selectedAuditId, setSelectedAuditId] = useState<string | null>(null);
-  const [viewingAuditId, setViewingAuditId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     getToken().then(t => {
-      AuditService.setToken(t);
-      refreshAudits();
-      loadTemplates();
+      if (t) {
+        AuditService.setToken(t);
+        refreshAudits();
+        loadTemplates();
+      }
     });
   }, [getToken]);
 
@@ -107,12 +87,15 @@ export default function App() {
             {!selectedAuditId ? (
               <div className="flex flex-col gap-8">
                  <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-bold text-brand-text-main uppercase tracking-tight">Registre des Audits de Site</h2>
+                  <div>
+                    <h2 className="text-2xl font-black text-[#091426] uppercase tracking-tight">Mission Control Registry</h2>
+                    <p className="text-slate-500 text-xs font-medium uppercase mt-1">Real-time audit pipeline and field execution</p>
+                  </div>
                   <button 
                     onClick={() => setIsModalOpen(true)}
-                    className="bg-brand-sidebar text-white px-6 py-3 rounded-xl font-bold text-xs shadow-lg shadow-brand-sidebar/20 uppercase tracking-widest hover:opacity-90 transition-all"
+                    className="bg-[#091426] text-white px-8 py-4 rounded-2xl font-black text-[10px] shadow-xl shadow-slate-900/10 uppercase tracking-widest hover:opacity-90 transition-all flex items-center gap-2"
                   >
-                    Démarrer Mission de Terrain
+                    <Plus size={16} /> Deploy New Mission
                   </button>
                 </div>
                 
@@ -124,57 +107,60 @@ export default function App() {
                   />
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {audits.map(audit => (
-                    <div key={audit.id} className="bg-white p-6 rounded-xl border border-brand-border shadow-sm flex flex-col gap-4 group hover:border-brand-accent/30 transition-all">
+                    <div key={audit.id} className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm flex flex-col gap-6 group hover:shadow-xl hover:border-blue-200 transition-all cursor-default">
                       <div className="flex justify-between items-start">
-                        <div className="w-12 h-12 bg-slate-50 rounded-lg flex items-center justify-center text-brand-text-muted border border-brand-border">
-                          <ClipboardCheck size={24} />
+                        <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 border border-slate-100 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+                          <ClipboardCheck size={28} />
                         </div>
-                        <span className={`px-3 py-1 rounded-full text-[9px] uppercase font-extrabold ${
-                          audit.status === 'DRAFT' ? 'bg-slate-100 text-slate-500' :
-                          audit.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-600' :
-                          'bg-emerald-100 text-emerald-600'
+                        <span className={`px-3 py-1.5 rounded-lg text-[8px] uppercase font-black tracking-widest border ${
+                          audit.status === 'DRAFT' ? 'bg-slate-100 text-slate-500 border-slate-200' :
+                          audit.status === 'IN_PROGRESS' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                          'bg-emerald-50 text-emerald-600 border-emerald-100'
                         }`}>
                           {audit.status}
                         </span>
                       </div>
                       <div>
-                        <h4 className="font-bold text-brand-text-main truncate">#{audit.id}</h4>
-                        <p className="text-brand-text-muted text-[11px] font-medium uppercase tracking-wider">
-                          {templates.find(t => t.id === audit.templateId)?.title || 'Audit de Sécurité Industrielle'}
-                        </p>
+                        <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest font-mono">#{audit.id.substring(0, 12)}</p>
+                        <h4 className="text-lg font-black text-[#091426] truncate mt-1 uppercase tracking-tight">
+                           {templates.find(t => t.id === audit.templateId)?.title || audit.entityId}
+                        </h4>
                       </div>
-                      <div className="pt-4 border-t border-brand-bg mt-2 flex gap-2">
+                      <div className="pt-6 border-t border-slate-50 flex gap-3">
                          <button 
                           onClick={() => setSelectedAuditId(audit.id)}
-                          className="flex-1 py-2 bg-slate-50 text-brand-text-main border border-brand-border rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-white transition-all"
+                          className="flex-1 py-3.5 bg-[#091426] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/10"
                          >
-                           {audit.status === 'SUBMITTED' ? 'Voir Rapport' : 'Continuer Saisie'}
+                           {audit.status === 'SUBMITTED' ? 'View Report' : 'Resume Capture'}
                          </button>
                          <button 
-                          onClick={() => { setViewingAuditId(audit.id); setActiveTab('trail'); }}
-                          className="px-4 py-2 border border-brand-border text-brand-text-muted rounded-lg hover:text-brand-accent transition-all"
+                          onClick={() => { setActiveTab('trail'); }}
+                          className="px-5 py-3.5 border border-slate-200 text-slate-400 rounded-xl hover:bg-slate-50 transition-all"
                          >
                            <List size={16} />
                          </button>
                       </div>
                     </div>
                   ))}
+                  {audits.length === 0 && Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="h-64 bg-slate-100/50 border border-slate-100 rounded-[2.5rem] animate-pulse" />
+                  ))}
                 </div>
               </div>
             ) : (
-              <div>
+              <div className="max-w-[1200px] mx-auto">
                 <button 
-                  onClick={() => setSelectedAuditId(null)}
-                  className="mb-8 text-brand-text-muted hover:text-brand-accent flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] transition-all"
+                   onClick={() => setSelectedAuditId(null)}
+                   className="mb-10 text-slate-400 hover:text-[#091426] flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] transition-all bg-white px-6 py-3 rounded-xl border border-slate-200 shadow-sm"
                 >
-                  ← Retour au Registre
+                   ← Exit to Registry
                 </button>
-                {selectedAuditId && templates.find(t => t.id === audits.find(a => a.id === selectedAuditId)?.templateId) && (
+                {selectedAuditId && (
                   <AuditRunner 
                     auditId={selectedAuditId} 
-                    template={templates.find(t => t.id === audits.find(a => a.id === selectedAuditId)?.templateId)!} 
+                    template={templates.find(t => t.id === audits.find(a => a.id === selectedAuditId)?.templateId) || templates[0]} 
                     onComplete={() => {
                       setSelectedAuditId(null);
                       refreshAudits();
@@ -186,157 +172,21 @@ export default function App() {
           </div>
         )}
 
-        {activeTab === 'trail' && (
-          <AuditTrail audits={audits} />
-        )}
+        {activeTab === 'trail' && <AuditTrail audits={audits} />}
+        {activeTab === 'compliance' && <ComplianceHub />}
+        {activeTab === 'vault' && <SystemVault />}
+        {activeTab === 'analytics' && <PredictiveAnalytics />}
+        {activeTab === 'governance' && <GovernancePortal />}
+        {activeTab === 'users' && <CertificationsHub />}
+        {activeTab === 'remediation_workflow' && <RemediationWorkflow />}
+        {activeTab === 'forensics' && <ForensicView />}
+        {activeTab === 'entities' && <EntityMapper />}
+        {activeTab === 'policy_library' && <PolicyLibrary />}
+        {activeTab === 'integrity_diagnostics' && <IntegrityDiagnostics />}
+        {activeTab === 'network_topology' && <NetworkNodeTopology />}
+        {activeTab === 'regional_risk' && <RegionalRiskDrilldown />}
+        {activeTab === 'stakeholder_reporting' && <StakeholderReporting />}
 
-        {activeTab === 'compliance' && (
-          <ComplianceHub />
-        )}
-
-        {activeTab === 'vault' && (
-          <SystemVault />
-        )}
-
-        {activeTab === 'analytics' && (
-          <PredictiveAnalytics />
-        )}
-
-        {activeTab === 'governance' && (
-          <GovernancePortal />
-        )}
-
-        {activeTab === 'users' && (
-          <CertificationsHub />
-        )}
-
-        {activeTab === 'settings' && (
-          <SystemConfig />
-        )}
-
-        {activeTab === 'regulator' && (
-          <RegulatorPortal />
-        )}
-
-        {activeTab === 'remediation' && (
-          <RemediationWorkflow />
-        )}
-
-        {activeTab === 'forensics' && (
-          <ForensicView />
-        )}
-
-        {activeTab === 'sovereignty' && (
-          <SovereigntyMonitor />
-        )}
-
-        {activeTab === 'syslogs' && (
-          <SecurityAuditLog />
-        )}
-
-        {activeTab === 'entities' && (
-          <EntityMapper />
-        )}
-
-        {activeTab === 'legal' && (
-          <JurisdictionMapping />
-        )}
-
-        {activeTab === 'incidents' && (
-          <IncidentWorkspace />
-        )}
-
-        {activeTab === 'resource_allocator' && (
-          <ResourceAllocator />
-        )}
-
-        {activeTab === 'budget_analysis' && (
-          <BudgetAnalysis />
-        )}
-
-        {activeTab === 'milestone_tracker' && (
-          <MilestoneTracker />
-        )}
-
-        {activeTab === 'risk_prediction' && (
-          <RiskPrediction />
-        )}
-
-        {activeTab === 'regulator_portal' && (
-          <RegulatorPortal />
-        )}
-
-        {activeTab === 'stakeholder_reporting' && (
-          <StakeholderReporting />
-        )}
-
-        {activeTab === 'qa_review' && (
-          <QAReview />
-        )}
-
-        {activeTab === 'policy_library' && (
-          <PolicyLibrary />
-        )}
-
-        {activeTab === 'batch_center' && (
-          <BatchCenter />
-        )}
-
-        {activeTab === 'api_security' && (
-          <APISecurity />
-        )}
-
-        {activeTab === 'audit_exceptions' && (
-          <AuditExceptions />
-        )}
-
-        {activeTab === 'integrity_diagnostics' && (
-          <IntegrityDiagnostics />
-        )}
-
-        {activeTab === 'forensic_replay' && (
-          <ForensicReplay />
-        )}
-
-        {activeTab === 'innovation_lab' && (
-          <InnovationLab />
-        )}
-
-        {activeTab === 'security_audit_log' && (
-          <SecurityAuditLog />
-        )}
-
-        {activeTab === 'remediation_workflow' && (
-          <RemediationWorkflow />
-        )}
-
-        {activeTab === 'report_preview' && (
-          <FinalReportPreview />
-        )}
-
-        {activeTab === 'system_help' && (
-          <SystemHelp />
-        )}
-
-        {activeTab === 'evidence_collector' && (
-          <EvidenceCollectorConfig />
-        )}
-
-        {activeTab === 'identity_provider' && (
-          <IdentityProviderSetup />
-        )}
-
-        {activeTab === 'network_topology' && (
-          <NetworkNodeTopology />
-        )}
-
-        {activeTab === 'maintenance_upgrades' && (
-          <MaintenanceUpgrades />
-        )}
-
-        {activeTab === 'regional_risk' && (
-          <RegionalRiskDrilldown />
-        )}
       </AuditMasterLayout>
     </ProtectedRoute>
   );

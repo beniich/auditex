@@ -53,4 +53,25 @@ export class AuditController {
       res.status(500).json({ error: 'Internal Server Error' });
     }
   }
+
+  static async getLogs(req: Request, res: Response) {
+    try {
+      const orgId = (req as any).user?.organizationId || 'global-org-placeholder';
+      const logs = await AuditService.getAllEventsByOrganization(orgId);
+      res.json(logs);
+    } catch (error) {
+      console.error('getLogs error:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  }
+
+  static async getEvents(req: Request, res: Response) {
+    try {
+      const events = await AuditService.getEventsByAudit(req.params.id);
+      res.json(events);
+    } catch (error) {
+      console.error('getEvents error:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  }
 }

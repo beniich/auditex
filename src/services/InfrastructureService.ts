@@ -22,4 +22,5 @@ export const InfrastructureService = {
   getStats: () => api.get<NodeStats>('/infrastructure/stats'),
   registerNode: (data: Partial<NetworkNode>) => api.post<NetworkNode>('/infrastructure/nodes', data),
   updateNodeStatus: (nodeId: string, status: string) => api.patch<NetworkNode>(`/infrastructure/nodes/${nodeId}`, { status }),
+  getNodeHealth: (nodeId: string) => api.get<{ nodeId: string; status: string; metrics: any }>(`/infrastructure/nodes/${nodeId}/health`),
 };

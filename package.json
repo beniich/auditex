@@ -4,12 +4,16 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "tsx server.ts",
-    "build": "npx vite build",
+    "dev": "concurrently \"nodemon server.ts\" \"vite\"",
+    "build": "prisma generate && npx vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
-    "start": "node server.js"
+    "start": "node server.js",
+    "seed": "prisma db seed"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@clerk/backend": "^3.2.13",
@@ -32,11 +36,9 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "uuid": "^13.0.0",
-    "ws": "^8.20.0",
-    "zod": "^4.3.6",
     "vite": "^6.2.0",
-    "@vitejs/plugin-react": "^5.0.4",
-    "@tailwindcss/vite": "^4.1.14"
+    "ws": "^8.20.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@prisma/client": "^6.2.1",
@@ -48,6 +50,8 @@
     "@types/uuid": "^10.0.0",
     "@types/ws": "^8.18.1",
     "autoprefixer": "^10.4.21",
+    "concurrently": "^9.2.1",
+    "nodemon": "^3.1.14",
     "prisma": "^6.2.1",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.21.0",
