@@ -6,6 +6,7 @@ import { ComplianceController } from '../controllers/ComplianceController';
 import { StorageController } from '../controllers/StorageController';
 import { AIController } from '../controllers/AIController';
 import { ReportController } from '../controllers/ReportController';
+import { AIAnalyticsController } from '../controllers/AIAnalyticsController';
 import multer from 'multer';
 
 // Configure Multer for local storage (mimicking S3)
@@ -75,6 +76,8 @@ apiRouter.post('/ai/validate', AIController.validate);
 apiRouter.post('/ai/analyze-evidence', AIController.analyzeEvidence);
 apiRouter.get('/ai/forensics/:entityId', AIController.forensic);
 apiRouter.post('/ai/remediate', AIController.remediate);
+apiRouter.get('/ai/analytics', AIAnalyticsController.getDashboardStats);
+apiRouter.post('/ai/track', AIAnalyticsController.trackAction);
 
 // Report Routes
 apiRouter.get('/reports/download/:auditId', ReportController.downloadReport);

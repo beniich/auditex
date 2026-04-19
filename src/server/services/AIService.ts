@@ -8,6 +8,8 @@ const openai = new OpenAI({
 });
 
 import { AI_PROMPTS } from '../utils/aiPrompts';
+import { AiTelemetryService } from './AiTelemetryService';
+import { performance } from 'perf_hooks';
 
 export class AIService {
   /**
@@ -15,13 +17,18 @@ export class AIService {
    */
   static async validateAuditResponse(question: string, answer: string, policy: string) {
     const promptConfig = AI_PROMPTS.AUDITOR_VALIDATION;
-    
+    const startTime = performance.now();
+
     try {
       const response = await openai.chat.completions.create({
         model: 'gpt-4o',
         messages: [{ role: 'system', content: promptConfig.system(policy) }, { role: 'user', content: `Q: ${question}\nA: ${answer}` }],
         response_format: { type: 'json_object' },
       });
+
+      const latency = performance.now() - startTime;
+      const usage = response.usage?.total_tokens || 0;
+      AiTelemetryService.trackCall(latency, usage);
 
       const result = JSON.parse(response.choices[0].message.content || '{}');
       return { ...result, _ai_version: promptConfig.version };

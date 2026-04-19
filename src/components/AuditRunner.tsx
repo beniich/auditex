@@ -128,6 +128,32 @@ export const AuditRunner = ({ auditId, template, onComplete }: AuditRunnerProps)
     }
   };
 
+  const handleAcceptFinding = async (questionId: string) => {
+    setAiDiagnostics(prev => ({
+      ...prev,
+      [questionId]: { ...prev[questionId], status: 'ACCEPTED', type: 'success' }
+    }));
+    toast.success('AI Finding validated and anchored to evidence.', 'HITL Success');
+    try {
+      await axios.post('/api/ai/track', { action: 'ACCEPT' });
+    } catch (e) {
+      console.error('Tracking failed', e);
+    }
+  };
+
+  const handleReportError = async (questionId: string) => {
+    setAiDiagnostics(prev => ({
+      ...prev,
+      [questionId]: { ...prev[questionId], status: 'REPORTED', type: 'info', message: 'Reported as hallucination. Our engineers will review.' }
+    }));
+    toast.info('Hallucination report sent to AI Governance.', 'Feedback Received');
+    try {
+      await axios.post('/api/ai/track', { action: 'REJECT' });
+    } catch (e) {
+      console.error('Tracking failed', e);
+    }
+  };
+
   const handleSubmit = async () => {
     if (confirm('Voulez-vous soumettre cet audit pour revue ? Cette action est irréversible.')) {
       setSaving(true);
@@ -397,13 +423,13 @@ export const AuditRunner = ({ auditId, template, onComplete }: AuditRunnerProps)
                             {aiDiagnostics[q.id].status !== 'CONFORM' && (
                               <div className="flex gap-2 pt-2">
                                  <button 
-                                   onClick={() => toast.success('AI Finding validated and anchored to evidence.', 'HITL Success')}
+                                   onClick={() => handleAcceptFinding(q.id)}
                                    className="flex-1 py-2 bg-current text-white rounded-lg text-[9px] font-black uppercase tracking-widest hover:opacity-90 transition-all font-sans"
                                  >
                                     Accept Finding
                                  </button>
                                  <button 
-                                   onClick={() => toast.error('Hallucination report sent to AI Governance.', 'Feedback Received')}
+                                   onClick={() => handleReportError(q.id)}
                                    className="px-3 py-2 border border-current rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-white transition-all font-sans"
                                  >
                                     Report Error
