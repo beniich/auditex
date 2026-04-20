@@ -62,6 +62,10 @@ export const AuditService = {
   
   async getLogs(): Promise<any[]> {
     return safeFetch<any[]>(`${API_BASE}/audit/logs`);
+  },
+
+  async verifyAudit(auditId: string): Promise<any> {
+    return safeFetch<any>(`${API_BASE}/audit/${auditId}/verify`);
   }
 };
 

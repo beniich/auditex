@@ -60,8 +60,8 @@ const ForensicView: React.FC = () => {
   const runForensicAI = async () => {
     setIsAnalyzing(true);
     try {
-      // Analyze current entity (using a placeholder ID for now)
-      const res = await AiApiService.getForensicAnalysis('ledger-root-01');
+      const targetEntity = logs.length > 0 ? logs[0].auditId : 'ledger-root-01';
+      const res = await AiApiService.getForensicAnalysis(targetEntity);
       setAiAnalysis(res.analysis);
     } catch (err) {
       console.error(err);
@@ -79,12 +79,33 @@ const ForensicView: React.FC = () => {
     return () => clearInterval(interval);
   }, [isPlaying]);
 
-  const forensicTimeline = [
-    { ts: '14:02:11.002', type: 'BLOCK_ANCHOR', desc: 'SHA-256 Chain Validation', detail: 'Root: 0x8f2a...c91e confirmed', color: 'text-blue-500', bg: 'bg-blue-50' },
-    { ts: '14:03:04.991', type: 'RECOVERY_INIT', desc: 'Bit-Perfect Reconstruction', detail: 'Restoring sector 88291... success.', color: 'text-emerald-500', bg: 'bg-emerald-50' },
-    { ts: '14:08:45.332', type: 'INTEGRITY_ALERT', desc: 'Hash Mismatch detected', detail: 'Checksum at 0x902A failed. Correction active.', color: 'text-red-500', bg: 'bg-red-50' },
-    { ts: '14:12:10.118', type: 'VIRTUAL_SNAPSHOT', desc: 'Point-in-Time Image Created', detail: 'State captured: /VOL01/FIN/ARCHIVE', color: 'text-blue-500', bg: 'bg-blue-50' },
-  ];
+  const forensicTimeline = React.useMemo(() => {
+    if (!logs || logs.length === 0) {
+      return [
+        { ts: new Date().toISOString().substring(11, 23), type: 'AWAITING_EVENTS', desc: 'Ledger Empty', detail: 'Waiting for blockchain sync...', color: 'text-slate-500', bg: 'bg-slate-50' }
+      ];
+    }
+    return logs.slice(0, 20).map((log: any) => {
+      let color = 'text-slate-500';
+      let bg = 'bg-slate-50';
+      if (log.type.includes('CRITICAL') || log.type.includes('DENIED') || log.type.includes('COMPROMISED')) {
+        color = 'text-red-500'; bg = 'bg-red-50';
+      } else if (log.type.includes('SUCCESS') || log.type.includes('COMPLIANT') || log.type.includes('VERIFIED')) {
+        color = 'text-emerald-500'; bg = 'bg-emerald-50';
+      } else if (log.type.includes('UPDATE') || log.type.includes('ANCHOR')) {
+        color = 'text-blue-500'; bg = 'bg-blue-50';
+      }
+      return {
+        ts: new Date(log.timestamp).toISOString().substring(11, 23),
+        type: log.type,
+        desc: `Action by ${log.userId || 'system'}`,
+        detail: `Hash: ${log.sha256Hash?.substring(0, 16) || 'N/A...'}`,
+        color,
+        bg,
+        log
+      };
+    });
+  }, [logs]);
 
   return (
     <div className="min-h-screen bg-[#f8fafc] p-6 lg:p-10 font-sans cursor-default">
