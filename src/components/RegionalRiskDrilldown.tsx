@@ -18,6 +18,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { InfrastructureService } from '../services/InfrastructureService';
 import { IncidentService } from '../services/IncidentService';
+import { CertificationService } from '../services/CertificationService';
 import { Skeleton } from './Skeleton';
 
 const RegionalRiskDrilldown: React.FC = () => {
@@ -36,6 +37,12 @@ const RegionalRiskDrilldown: React.FC = () => {
     refetchInterval: 30000,
   });
 
+  const { data: risks = [] } = useQuery({
+    queryKey: ['risks-regional'],
+    queryFn: () => CertificationService.getRisks(),
+    refetchInterval: 30000,
+  });
+
   const isLoading = nodesLoading || incidentsLoading;
 
   // Real-time calculation of regional risks
@@ -50,21 +57,38 @@ const RegionalRiskDrilldown: React.FC = () => {
       lat: number,
       lng: number,
       detail: string
-    }> = {
-      'Paris, FR': { name: 'Paris, FR', nodes: 0, riskScore: 0, status: 'LOW', incidents: 0, lastEvent: '', lat: 55, lng: 38, detail: 'Operational Baseline' },
-      'London, UK': { name: 'London, UK', nodes: 0, riskScore: 0, status: 'LOW', incidents: 0, lastEvent: '', lat: 35, lng: 30, detail: 'Operational Baseline' },
-      'Frankfurt, DE': { name: 'Frankfurt, DE', nodes: 0, riskScore: 0, status: 'LOW', incidents: 0, lastEvent: '', lat: 45, lng: 48, detail: 'Operational Baseline' },
-      'Madrid, ES': { name: 'Madrid, ES', nodes: 0, riskScore: 0, status: 'LOW', incidents: 0, lastEvent: '', lat: 75, lng: 20, detail: 'Operational Baseline' },
-      'Dublin, IE': { name: 'Dublin, IE', nodes: 0, riskScore: 0, status: 'LOW', incidents: 0, lastEvent: '', lat: 30, lng: 18, detail: 'Operational Baseline' },
-    };
+    }> = {};
 
-    // Distribute nodes to regions based on keywords
+    if (risks.length === 0) {
+      regionMap['Paris, FR'] = { name: 'Paris, FR', nodes: 0, riskScore: 0, status: 'LOW', incidents: 0, lastEvent: '', lat: 55, lng: 38, detail: 'Operational Baseline' };
+      regionMap['London, UK'] = { name: 'London, UK', nodes: 0, riskScore: 0, status: 'LOW', incidents: 0, lastEvent: '', lat: 35, lng: 30, detail: 'Operational Baseline' };
+      regionMap['Frankfurt, DE'] = { name: 'Frankfurt, DE', nodes: 0, riskScore: 0, status: 'LOW', incidents: 0, lastEvent: '', lat: 45, lng: 48, detail: 'Operational Baseline' };
+    } else {
+      risks.forEach((r: any, idx: number) => {
+        // Assign visual lat/lng if not present
+        const lat = 25 + ((idx * 17) % 50);
+        const lng = 15 + ((idx * 23) % 70);
+        regionMap[r.jurisdiction] = {
+          name: r.jurisdiction,
+          nodes: 0,
+          riskScore: r.riskScore,
+          status: 'LOW',
+          incidents: 0,
+          lastEvent: `Assessment: ${r.category}`,
+          lat,
+          lng,
+          detail: r.details
+        };
+      });
+    }
+
+    // Distribute nodes to regions
     nodes.forEach(node => {
-      let regionKey = 'Paris, FR';
-      if (node.region.includes('us')) regionKey = 'London, UK'; // Mocking us to uk for this view
-      if (node.region.includes('eu-west-1')) regionKey = 'Dublin, IE';
-      if (node.region.includes('eu-central')) regionKey = 'Frankfurt, DE';
-      if (node.region.includes('eu-west-3')) regionKey = 'Paris, FR';
+      const regionsList = Object.keys(regionMap);
+      let regionKey = regionsList[0];
+      if (node.region.includes('us') && regionsList.includes('US East')) regionKey = 'US East';
+      if (node.region.includes('eu') && regionsList.includes('EU West (GDPR)')) regionKey = 'EU West (GDPR)';
+      
       
       const region = regionMap[regionKey];
       if (region) {

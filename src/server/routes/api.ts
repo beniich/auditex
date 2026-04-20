@@ -7,6 +7,7 @@ import { StorageController } from '../controllers/StorageController';
 import { AIController } from '../controllers/AIController';
 import { ReportController } from '../controllers/ReportController';
 import { AIAnalyticsController } from '../controllers/AIAnalyticsController';
+import { CertificationController } from '../controllers/CertificationController';
 import multer from 'multer';
 
 // Configure Multer for local storage (mimicking S3)
@@ -70,6 +71,10 @@ apiRouter.get('/compliance/policies', ComplianceController.listPolicies);
 apiRouter.post('/compliance/policies', validate(PolicySchema), ComplianceController.createPolicy);
 apiRouter.post('/compliance/policies/:id/controls', ComplianceController.addControl);
 apiRouter.patch('/compliance/controls/:controlId', ComplianceController.updateControlStatus);
+
+// Certifications & Risks Routes
+apiRouter.get('/certifications/status', CertificationController.getCertificationsStatus);
+apiRouter.get('/risks', CertificationController.getRisks);
 
 // AI Gateway Routes
 apiRouter.post('/ai/validate', AIController.validate);

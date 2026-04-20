@@ -21,12 +21,18 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useApiQuery } from '../hooks/useApiQuery';
-import { SkeletonCard } from './Skeleton';
+import { SkeletonCard, SkeletonTable } from './Skeleton';
+import { CertificationService } from '../services/CertificationService';
 
-// Mock data integration as real services might not be fully exposed yet for COI/RH
 export const CertificationsHub: React.FC = () => {
-  const [activeSubTab, setActiveSubTab] = useState<'ONBOARDING' | 'PERFORMANCE' | 'COI'>('ONBOARDING');
+  const [activeSubTab, setActiveSubTab] = useState<'FRAMEWORKS' | 'ONBOARDING' | 'PERFORMANCE' | 'COI'>('FRAMEWORKS');
   const [searchQuery, setSearchQuery] = useState('');
+
+  const { data: frameworks = [], isLoading } = useApiQuery(
+    ['certifications-status'],
+    () => CertificationService.getStatus(),
+    { refetchInterval: 15000 }
+  );
 
   return (
     <div className="min-h-screen bg-[#f8fafc] p-6 lg:p-10 font-sans cursor-default">
@@ -53,7 +59,7 @@ export const CertificationsHub: React.FC = () => {
           </div>
           <div className="flex gap-4 mt-8 md:mt-0 relative z-10">
              <div className="flex bg-slate-50 border border-slate-200 rounded-2xl p-1 shadow-inner">
-                {(['ONBOARDING', 'PERFORMANCE', 'COI'] as const).map(tab => (
+                {(['FRAMEWORKS', 'ONBOARDING', 'PERFORMANCE', 'COI'] as const).map(tab => (
                   <button 
                     key={tab}
                     onClick={() => setActiveSubTab(tab)}
@@ -77,6 +83,65 @@ export const CertificationsHub: React.FC = () => {
             exit={{ opacity: 0, y: -20 }}
             className="space-y-10"
           >
+            {activeSubTab === 'FRAMEWORKS' && (
+              <div className="space-y-10">
+                <div className="flex items-center justify-between mb-8">
+                  <div>
+                    <h2 className="text-2xl font-black text-[#091426] uppercase tracking-tighter">Compliance Frameworks</h2>
+                    <p className="text-xs text-slate-500 font-bold tracking-widest uppercase mt-1">Live integration with Prisma Policy Controls</p>
+                  </div>
+                </div>
+                {isLoading ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <SkeletonCard /><SkeletonCard /><SkeletonCard />
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {frameworks.map((fw: any) => (
+                      <div key={fw.id} className="bg-white border border-slate-200 rounded-[3rem] p-10 shadow-sm relative overflow-hidden group hover:shadow-xl transition-all">
+                        <div className="flex justify-between items-start mb-10 relative z-10">
+                          <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
+                            <ShieldCheck size={32} />
+                          </div>
+                          <span className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-[0.2em] border ${
+                            fw.status === 'MAINTAINED' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' :
+                            fw.status === 'IN_REVIEW' ? 'bg-amber-50 text-amber-600 border-amber-200' :
+                            'bg-blue-50 text-blue-600 border-blue-200'
+                          }`}>
+                            {fw.status}
+                          </span>
+                        </div>
+                        <div className="relative z-10">
+                          <h3 className="text-2xl font-black text-[#091426] uppercase tracking-tighter group-hover:text-blue-600 transition-colors">{fw.name}</h3>
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">
+                            {fw.details}
+                          </p>
+                        </div>
+                        <div className="mt-10 relative z-10">
+                          <div className="flex justify-between items-center mb-3 text-[10px] font-black uppercase tracking-widest">
+                            <span className="text-slate-500">Readiness Score</span>
+                            <span className="text-[#091426]">{fw.progress}%</span>
+                          </div>
+                          <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
+                            <motion.div 
+                              initial={{ width: 0 }} 
+                              animate={{ width: `${fw.progress}%` }} 
+                              className={`h-full rounded-full shadow-[0_0_10px_rgba(37,99,235,0.3)] transition-all duration-1000 ${
+                                fw.progress === 100 ? 'bg-emerald-500' : 'bg-blue-600'
+                              }`} 
+                            />
+                          </div>
+                        </div>
+                        <div className="absolute right-0 bottom-0 p-10 opacity-5 group-hover:scale-110 transition-transform pointer-events-none">
+                          <Globe size={120} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {activeSubTab === 'ONBOARDING' && (
               <div className="space-y-10">
                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
