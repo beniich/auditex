@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useApiQuery } from '../hooks/useApiQuery';
 import { GlassCard } from './common/GlassCard';
+import { QuotaDashboard } from './QuotaDashboard';
 
 const MetricBox = ({ title, value, detail, icon: Icon, color, trend }: any) => (
   <GlassCard className="p-6 border-white/5 relative overflow-hidden group">
@@ -220,6 +221,8 @@ export const AiAnalyticsHub = () => {
                </div>
                <RefreshCw size={24} className="group-hover:rotate-180 transition-transform duration-700 relative z-10" />
             </button>
+
+            <QuotaDashboard />
          </div>
       </div>
     </div>

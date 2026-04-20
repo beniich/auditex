@@ -49,4 +49,11 @@ export class AiApiService {
       body: JSON.stringify({ gapDescription }),
     });
   }
+
+  static async advancedAudit(question: string, context: string, mode: string, auditId?: string) {
+    return this.fetchWithAuth(`${this.BASE_URL}/advanced-audit`, {
+      method: 'POST',
+      body: JSON.stringify({ question, context, mode, auditId }),
+    });
+  }
 }

@@ -126,5 +126,118 @@ export class AIService {
       return 'AI synthesis failed during report generation.';
     }
   }
-}
 
+  /**
+   * MODEL 6: The Logician (DSL Logic Generation)
+   */
+  static async generateLogicRule(question: string, context: string) {
+    const prompt = `You are a strict compliance auditor. Read the following audit question and context context.
+    Return ONLY a JSON object representing a logic rule to evaluate compliance.
+    JSON format:
+    {
+      "fact": "string (the field name to check, e.g., 'password_length')",
+      "operator": "lt" | "gt" | "eq" | "gte" | "lte" | "contains" | "not_contains",
+      "value": any (the threshold or expected value),
+      "severity": "CRITICAL" | "MAJOR" | "MINOR"
+    }
+    
+    Q: ${question}
+    Context: ${context}`;
+
+    try {
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4o',
+        temperature: 0.1,
+        messages: [{ role: 'system', content: prompt }],
+        response_format: { type: 'json_object' },
+      });
+      return JSON.parse(response.choices[0].message.content || '{}');
+    } catch (error) {
+      console.error('AIService.generateLogicRule error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Simple Validation (Low cost, probabilistic)
+   */
+  static async validateSimple(question: string, context: string) {
+    const prompt = `You are an auditor. Quickly evaluate this question based on the context. Return a simple JSON with a boolean 'compliant' and string 'reason'.`;
+    try {
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4o',
+        temperature: 0.7,
+        messages: [
+          { role: 'system', content: prompt },
+          { role: 'user', content: `Q: ${question}\nContext: ${context}` }
+        ],
+        response_format: { type: 'json_object' },
+      });
+      return JSON.parse(response.choices[0].message.content || '{}');
+    } catch (error) {
+      console.error('AIService.validateSimple error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * AGENTIC ENGINE - Worker
+   */
+  static async generateDraft(question: string, context: string) {
+    try {
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4o',
+        temperature: 0.6,
+        messages: [
+          { role: 'system', content: AI_PROMPTS.WORKER_AUDITOR.system },
+          { role: 'user', content: `Q: ${question}\nContext: ${context}` }
+        ]
+      });
+      return response.choices[0].message.content || '';
+    } catch (error) {
+      console.error('AIService.generateDraft error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * AGENTIC ENGINE - Critic
+   */
+  static async criticizeDraft(draft: string, context: string) {
+    try {
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4o',
+        temperature: 0.2,
+        messages: [
+          { role: 'system', content: AI_PROMPTS.CRITIC_AUDITOR.system },
+          { role: 'user', content: `Context: ${context}\nDraft to criticize:\n${draft}` }
+        ],
+        response_format: { type: 'json_object' }
+      });
+      return JSON.parse(response.choices[0].message.content || '{"hasMajorErrors": false, "feedback": "OK"}');
+    } catch (error) {
+      console.error('AIService.criticizeDraft error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * AGENTIC ENGINE - Finalizer
+   */
+  static async refineDraft(draft: string, critique: string) {
+    try {
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4o',
+        temperature: 0.4,
+        messages: [
+          { role: 'system', content: AI_PROMPTS.FINALIZER_AUDITOR.system },
+          { role: 'user', content: `Draft:\n${draft}\n\nCritique:\n${critique}` }
+        ]
+      });
+      return response.choices[0].message.content || draft;
+    } catch (error) {
+      console.error('AIService.refineDraft error:', error);
+      throw error;
+    }
+  }
+}

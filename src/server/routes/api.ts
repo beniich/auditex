@@ -78,6 +78,8 @@ apiRouter.get('/ai/forensics/:entityId', AIController.forensic);
 apiRouter.post('/ai/remediate', AIController.remediate);
 apiRouter.get('/ai/analytics', AIAnalyticsController.getDashboardStats);
 apiRouter.post('/ai/track', AIAnalyticsController.trackAction);
+apiRouter.post('/ai/advanced-audit', AIController.advancedAudit);
+apiRouter.get('/ai/quota', AIController.getQuotaBalance);
 
 // Report Routes
 apiRouter.get('/reports/download/:auditId', ReportController.downloadReport);

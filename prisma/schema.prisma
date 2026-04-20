@@ -39,6 +39,7 @@ model User {
 
   auditEvents    AuditEvent[]
   assignedTasks  CAPATask[]   @relation("TaskAssignee")
+  userAccount    UserAccount?
 }
 
 enum SystemRole {
@@ -223,4 +224,45 @@ enum TaskStatus {
   IN_PROGRESS
   REVIEW
   DONE
+}
+
+// -----------------------------------------------------------------------------
+// PHASE 7: AGENTIC ENGINE & BILLING
+// -----------------------------------------------------------------------------
+
+model UserAccount {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id])
+  balance        Float    @default(10.0)
+  totalSpent     Float    @default(0.0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  usageLogs      AIUsageLog[]
+}
+
+model AIUsageLog {
+  id            String      @id @default(uuid())
+  userAccountId String
+  userAccount   UserAccount @relation(fields: [userAccountId], references: [id])
+  action        String     // 'SIMPLE' | 'DSL' | 'AGENTIC'
+  cost          Float
+  auditId       String?
+  loopCount     Int        @default(1)
+  promptVersion String     @default("v1.0.0")
+  timestamp     DateTime   @default(now())
+}
+
+model LogicRule {
+  id          String   @id @default(uuid())
+  auditId     String
+  questionId  String
+  fact        String
+  operator    String   // 'lt' | 'gt' | 'eq' | 'contains'
+  value       String   // JSON serialized
+  severity    String   // 'CRITICAL' | 'MAJOR' | 'MINOR'
+  compliant   Boolean
+  reason      String
+  createdAt   DateTime @default(now())
 }

@@ -1,6 +1,9 @@
 import { Request, Response } from 'express';
 import { AIService } from '../services/AIService';
 import { prisma } from '../../lib/prisma';
+import { quotaService, AIActionType } from '../services/QuotaService';
+import { agentOrchestrator } from '../services/AgentOrchestrator';
+import { LogicExecutor } from '../services/LogicExecutor';
 
 export class AIController {
   /**
@@ -76,6 +79,57 @@ export class AIController {
     } catch (error: any) {
       console.error('AIController.remediate error:', error);
       res.status(500).json({ error: 'Remediation generation failed', message: error.message });
+    }
+  }
+
+  /**
+   * Advanced Audit Engine with Quota and Strategies
+   */
+  static async advancedAudit(req: Request, res: Response) {
+    const { question, context, mode, auditId } = req.body;
+    const userId = (req as any).auth?.userId || (req as any).user?.id || 'inspector-123';
+
+    try {
+      // 1. Quota management before execution
+      await quotaService.chargeAction(userId, mode as AIActionType, 1, auditId);
+
+      if (mode === 'DSL') {
+        const rule = await AIService.generateLogicRule(question, context);
+        const result = LogicExecutor.evaluate(rule, req.body.userData || {});
+        return res.json({ rule, result });
+      } 
+      
+      if (mode === 'AGENTIC') {
+        const agenticResult = await agentOrchestrator.executeComplexAudit(question, context);
+        
+        // If it looped more than once, we charge for additional agentic loops
+        if (agenticResult.loopCount > 1) {
+          await quotaService.chargeAction(userId, AIActionType.AGENTIC_LOOP, agenticResult.loopCount - 1, auditId);
+        }
+        return res.json(agenticResult);
+      }
+
+      // SIMPLE mode
+      const simple = await AIService.validateSimple(question, context);
+      return res.json(simple);
+
+    } catch (error: any) {
+      if (error.message === 'INSUFFICIENT_QUOTA') return res.status(402).json({ error: 'Payment Required: Insufficient AI Quota' });
+      if (error.message === 'USER_NOT_FOUND') return res.status(404).json({ error: 'User mapping failed for quota creation' });
+      console.error('AIController.advancedAudit error:', error);
+      return res.status(500).json({ error: 'Advanced AI execution failed', message: error.message });
+    }
+  }
+
+  static async getQuotaBalance(req: Request, res: Response) {
+    try {
+      const userId = (req as any).auth?.userId || (req as any).user?.id || 'inspector-123';
+      const balance = await quotaService.getBalance(userId);
+      const logs = await quotaService.getUsageLogs(userId);
+      return res.json({ balance, logs });
+    } catch (error: any) {
+      console.error('AIController.getQuotaBalance error:', error);
+      return res.status(500).json({ error: 'Failed to fetch quota info' });
     }
   }
 }

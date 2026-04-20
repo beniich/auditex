@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'motion/react';
-import { Check, X, Camera, ChevronRight, ChevronLeft, Save, Send, Sparkles, AlertTriangle, RefreshCw, FileText } from 'lucide-react';
+import { Check, X, Camera, ChevronRight, ChevronLeft, Save, Send, Sparkles, AlertTriangle, RefreshCw, FileText, Zap, Cpu, Bot } from 'lucide-react';
 import { Audit, AuditTemplate, AuditQuestion } from '../types';
 import { AuditService } from '../services/AuditService';
 import { GlassCard } from './common/GlassCard';
@@ -9,6 +9,7 @@ import { StorageService } from '../services/StorageService';
 import { AiApiService } from '../services/AiApiService';
 import { toast } from '../hooks/useToast';
 import { FindingsPanel } from './FindingsPanel';
+import { useQuota } from '../hooks/useQuota';
 
 interface AuditRunnerProps {
   auditId: string;
@@ -16,11 +17,21 @@ interface AuditRunnerProps {
   onComplete: () => void;
 }
 
+type AIMode = 'SIMPLE' | 'DSL' | 'AGENTIC';
+
+const MODE_CONFIG: Record<AIMode, { label: string; color: string; cost: string; description: string; icon: React.ElementType }> = {
+  SIMPLE:  { label: 'Simple',  color: 'text-slate-400',   cost: '$0.01', description: 'Fast probabilistic validation', icon: Zap },
+  DSL:     { label: 'Logic',   color: 'text-indigo-500',  cost: '$0.05', description: 'Deterministic rule engine',     icon: Cpu },
+  AGENTIC: { label: 'Agentic', color: 'text-blue-500',    cost: '$0.15', description: 'Self-correcting AI loop',        icon: Bot },
+};
+
 export const AuditRunner = ({ auditId, template, onComplete }: AuditRunnerProps) => {
   const [currentSectionIdx, setCurrentSectionIdx] = useState(0);
   const [audit, setAudit] = useState<Audit | null>(null);
   const [saving, setSaving] = useState(false);
-  const [aiDiagnostics, setAiDiagnostics] = useState<Record<string, { type: 'success' | 'warning' | 'info', status: string, message: string, suggestion?: string, loading?: boolean }>>({});
+  const [aiMode, setAiMode] = useState<AIMode>('SIMPLE');
+  const [aiDiagnostics, setAiDiagnostics] = useState<Record<string, { type: 'success' | 'warning' | 'info', status: string, message: string, suggestion?: string, loading?: boolean, selfCorrected?: boolean }>>({});
+  const { balance, refreshQuota } = useQuota();
 
   useEffect(() => {
     loadAudit();
@@ -73,27 +84,44 @@ export const AuditRunner = ({ auditId, template, onComplete }: AuditRunnerProps)
 
   const runAIDiagnostic = async (questionId: string, value: any) => {
     const questionText = template.sections.flatMap(s => s.questions).find(q => q.id === questionId)?.text || '';
-    
+    const modeLabel = aiMode;
+
     setAiDiagnostics(prev => ({
       ...prev,
-      [questionId]: { ...prev[questionId], loading: true, type: 'info', status: 'ANALYZING', message: 'Agentic AI analyzing response alignment...' }
+      [questionId]: { loading: true, type: 'info', status: `${modeLabel} · ANALYZING`, message: 'AI engine processing compliance alignment...' }
     }));
 
     try {
-      // Find associated policy for RAG context (simple lookup for demo)
-      const result = await AiApiService.validateResponse(questionText, String(value));
-      
-      setAiDiagnostics(prev => ({
-        ...prev,
-        [questionId]: {
-          loading: false,
-          type: result.status === 'CONFORM' ? 'success' : 'warning',
-          status: result.status,
-          message: result.reasoning,
-          suggestion: result.suggestion
-        }
-      }));
-    } catch (err) {
+      if (aiMode === 'SIMPLE') {
+        const result = await AiApiService.validateResponse(questionText, String(value));
+        setAiDiagnostics(prev => ({
+          ...prev,
+          [questionId]: {
+            loading: false,
+            type: result.status === 'CONFORM' ? 'success' : 'warning',
+            status: result.status,
+            message: result.reasoning,
+            suggestion: result.suggestion
+          }
+        }));
+      } else {
+        const result = await AiApiService.advancedAudit(questionText, String(value), aiMode, auditId);
+        setAiDiagnostics(prev => ({
+          ...prev,
+          [questionId]: {
+            loading: false,
+            type: 'success',
+            status: aiMode === 'AGENTIC' && result.selfCorrected ? 'SELF-CORRECTED' : aiMode === 'DSL' ? 'DSL-RULE' : 'ANALYZED',
+            message: result.result || result.reasoning || JSON.stringify(result.rule),
+            selfCorrected: result.selfCorrected
+          }
+        }));
+        refreshQuota();
+      }
+    } catch (err: any) {
+      if (err.message?.includes('402')) {
+        toast.error('Quota AI insuffisant. Rechargez votre balance.', 'Quota Épuisé');
+      }
       setAiDiagnostics(prev => {
         const next = { ...prev };
         delete next[questionId];
@@ -417,38 +445,71 @@ export const AuditRunner = ({ auditId, template, onComplete }: AuditRunnerProps)
         <div className="col-span-12 lg:col-span-3 space-y-6">
           <GlassCard className="p-8 flex flex-col gap-8 h-full bg-slate-900/10 backdrop-blur-2xl border-white/5">
             <div>
-               <div className="flex items-center justify-between mb-8">
+               <div className="flex items-center justify-between mb-6">
                   <h3 className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.25em]">AI Decision Hub</h3>
-                  <div className="flex items-center gap-2">
-                     <span className="text-[8px] font-black px-2 py-1 bg-emerald-500/10 text-emerald-500 rounded-lg border border-emerald-500/20 uppercase tracking-tighter">Live Agent</span>
+                  <span className="text-[8px] font-black px-2 py-1 bg-emerald-500/10 text-emerald-500 rounded-lg border border-emerald-500/20 uppercase tracking-tighter">Live</span>
+               </div>
+
+               {/* Mode Selector */}
+               <div className="mb-6">
+                  <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-3">Precision Mode</p>
+                  <div className="flex flex-col gap-2">
+                    {(Object.keys(MODE_CONFIG) as AIMode[]).map(mode => {
+                      const cfg = MODE_CONFIG[mode];
+                      const Icon = cfg.icon;
+                      const isActive = aiMode === mode;
+                      return (
+                        <button
+                          key={mode}
+                          onClick={() => setAiMode(mode)}
+                          className={`flex items-center gap-3 p-3 rounded-2xl border transition-all text-left ${
+                            isActive
+                              ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/20'
+                              : 'bg-white/5 border-white/10 text-slate-400 hover:border-blue-500/30 hover:text-white'
+                          }`}
+                        >
+                          <div className={`p-1.5 rounded-lg ${isActive ? 'bg-white/20' : 'bg-white/5'}`}>
+                            <Icon size={12} />
+                          </div>
+                          <div className="flex flex-col flex-1">
+                            <span className="text-[9px] font-black uppercase tracking-widest">{cfg.label}</span>
+                            <span className={`text-[7px] font-bold uppercase tracking-tighter ${isActive ? 'opacity-70' : 'opacity-50'}`}>{cfg.description}</span>
+                          </div>
+                          <span className={`text-[9px] font-black font-mono ${isActive ? 'text-white/80' : 'text-slate-500'}`}>{cfg.cost}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                </div>
 
-               {/* AI Co-pilot Logic */}
-               <div className="space-y-6">
+               {/* AI Diagnostics Results */}
+               <div className="space-y-4">
                   {visibleQuestions.map(q => (
                     <AnimatePresence key={q.id}>
                       {aiDiagnostics[q.id] && (
-                        <motion.div 
+                        <motion.div
                            initial={{ opacity:0, x: 20 }} animate={{ opacity:1, x:0 }}
-                           className={`p-5 rounded-3xl border-2 transition-all ${
+                           className={`p-4 rounded-2xl border transition-all ${
+                             aiDiagnostics[q.id].loading ? 'bg-slate-500/5 border-slate-500/20 animate-pulse' :
                              aiDiagnostics[q.id].type === 'warning' ? 'bg-amber-500/5 border-amber-500/20' : 'bg-emerald-500/5 border-emerald-500/20'
                            }`}
                         >
-                           <div className="flex items-center justify-between mb-4">
-                              <span className={`text-[9px] font-black uppercase tracking-[0.1em] ${
+                           <div className="flex items-center justify-between mb-3">
+                              <span className={`text-[8px] font-black uppercase tracking-[0.1em] ${
+                                aiDiagnostics[q.id].loading ? 'text-slate-400' :
                                 aiDiagnostics[q.id].type === 'warning' ? 'text-amber-600' : 'text-emerald-600'
                               }`}>
                                  {aiDiagnostics[q.id].status}
                               </span>
-                              <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter opacity-50">Conf: 98%</span>
+                              {aiDiagnostics[q.id].selfCorrected && (
+                                <span className="text-[7px] font-black px-1.5 py-0.5 bg-blue-500/10 text-blue-400 rounded border border-blue-500/20 uppercase">Auto-Fixed</span>
+                              )}
                            </div>
-                           <p className="text-[10px] font-medium leading-relaxed dark:text-white/80 line-clamp-3 mb-4 italic">"{aiDiagnostics[q.id].message}"</p>
-                           
-                           {aiDiagnostics[q.id].status !== 'CONFORM' && (
-                             <div className="flex gap-2">
-                                <button onClick={() => handleAcceptFinding(q.id)} className="flex-1 py-2 bg-[#091426] text-white rounded-lg text-[8px] font-black uppercase tracking-widest hover:opacity-80 transition-all">Accept</button>
-                                <button onClick={() => handleReportError(q.id)} className="px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-[8px] font-black text-slate-400 uppercase tracking-widest hover:bg-white/10 transition-all">Reject</button>
+                           <p className="text-[9px] font-medium leading-relaxed dark:text-white/80 line-clamp-4 italic">"{aiDiagnostics[q.id].message}"</p>
+                           {!aiDiagnostics[q.id].loading && aiDiagnostics[q.id].type === 'warning' && (
+                             <div className="flex gap-2 mt-3">
+                                <button onClick={() => handleAcceptFinding(q.id)} className="flex-1 py-1.5 bg-[#091426] text-white rounded-lg text-[7px] font-black uppercase tracking-widest hover:opacity-80 transition-all">Accept</button>
+                                <button onClick={() => handleReportError(q.id)} className="px-3 py-1.5 border border-slate-200 dark:border-white/10 rounded-lg text-[7px] font-black text-slate-400 uppercase tracking-widest hover:bg-white/10 transition-all">Reject</button>
                              </div>
                            )}
                         </motion.div>
@@ -458,15 +519,15 @@ export const AuditRunner = ({ auditId, template, onComplete }: AuditRunnerProps)
                </div>
             </div>
 
-            <div className="mt-auto space-y-6">
-               <div className="p-5 bg-white/20 dark:bg-white/5 rounded-3xl border border-white/10">
-                  <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-4">Token Cost Allocation</h4>
-                  <div className="flex justify-between items-end mb-1">
-                     <span className="text-xl font-black text-[#091426] dark:text-white">$0.14</span>
-                     <span className="text-[8px] font-bold text-blue-500 uppercase">Per Section</span>
+            <div className="mt-auto space-y-4">
+               {/* Live Balance Widget */}
+               <div className="p-4 bg-white/10 dark:bg-white/5 rounded-2xl border border-white/10">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">AI Budget</span>
+                    <span className={`text-[10px] font-black font-mono ${balance < 0.5 ? 'text-red-500 animate-pulse' : 'text-emerald-500'}`}>${balance.toFixed(2)}</span>
                   </div>
-                  <div className="h-1 w-full bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
-                     <div className="h-full bg-blue-500 w-[40%]" />
+                  <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                    <div className={`h-full rounded-full transition-all ${balance < 0.5 ? 'bg-red-500' : 'bg-emerald-500'}`} style={{ width: `${Math.min(100, (balance / 10) * 100)}%` }} />
                   </div>
                </div>
 
@@ -474,7 +535,7 @@ export const AuditRunner = ({ auditId, template, onComplete }: AuditRunnerProps)
                   <div className="p-2 bg-white/20 rounded-lg"><Save size={16} /></div>
                   <div className="flex flex-col">
                      <span className="text-[10px] font-black uppercase tracking-widest">Auto-Registry</span>
-                     <span className="text-[8px] font-bold opacity-80 uppercase tracking-tighter">Everything Anchored to Ledger</span>
+                     <span className="text-[8px] font-bold opacity-80 uppercase tracking-tighter">Anchored to Ledger</span>
                   </div>
                </div>
             </div>

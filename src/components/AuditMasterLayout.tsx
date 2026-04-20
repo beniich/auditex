@@ -40,11 +40,13 @@ import {
   Zap,
   Radio,
   Unlock,
-  TrendingUp
+  TrendingUp,
+  Wallet
 } from 'lucide-react';
 import { UserButton, SignOutButton } from '@clerk/clerk-react';
 import { ToastContainer } from './ToastContainer';
 import { motion, AnimatePresence } from 'motion/react';
+import { useQuota } from '../hooks/useQuota';
 
 interface NavItemProps {
   icon: React.ElementType;
@@ -94,6 +96,7 @@ const NavSection = ({ title, children, collapsed }: any) => (
 export const AuditMasterLayout = ({ children, activeTab, onTabChange }: any) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const { balance, isLow } = useQuota();
 
   return (
     <div className="flex min-h-screen bg-[#f3f7fa] dark:bg-slate-950 font-sans">
@@ -194,6 +197,10 @@ export const AuditMasterLayout = ({ children, activeTab, onTabChange }: any) => 
 
           <div className="flex items-center gap-8">
             <div className="flex items-center gap-6 border-r border-slate-200 dark:border-slate-700 pr-8">
+              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border ${isLow ? 'bg-red-500/10 border-red-500/30 text-red-500 animate-pulse' : 'bg-slate-100 dark:bg-white/5 border-transparent text-slate-500'}`}>
+                <Wallet size={14} />
+                <span className="text-[10px] font-black">${balance.toFixed(2)}</span>
+              </div>
               <button className="text-slate-400 hover:text-blue-600 transition-all relative group">
                 <Bell size={22} />
                 <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white group-hover:scale-125 transition-transform"></span>

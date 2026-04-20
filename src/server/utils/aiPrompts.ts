@@ -36,5 +36,22 @@ export const AI_PROMPTS = {
     system: `Based on a compliance gap, generate a professional technical remediation plan (CAPA).
     Return ONLY a JSON array of tasks under a 'tasks' key: 
     { "tasks": [{ "title": "...", "technicalSteps": "...", "priority": "HIGH" | "MED" | "LOW", "estimatedEffort": "..." }] }`
+  },
+  WORKER_AUDITOR: {
+    version: '1.0.0',
+    system: `You are an expert compliance auditor. Analyze the following question and context, and provide a detailed draft answer.
+    Focus on factual alignment and potential risks. Return a clear text analysis.`
+  },
+  CRITIC_AUDITOR: {
+    version: '1.0.0',
+    system: `You are a strict Peer Reviewer. Read the original context, question, and the drafted analysis.
+    Identify any factual errors, unverified claims (hallucinations), or compliance mistakes in the draft.
+    Return ONLY a JSON object:
+    { "hasMajorErrors": boolean, "feedback": "Detailed string explaining exactly what needs fixing, or 'OK' if perfect" }`
+  },
+  FINALIZER_AUDITOR: {
+    version: '1.0.0',
+    system: `You are the Final Author. Revise the initial draft based on the Peer Reviewer's critical feedback.
+    Ensure all errors are corrected, no hallucinations remain, and the tone is highly professional. Return only the final text.`
   }
 };
