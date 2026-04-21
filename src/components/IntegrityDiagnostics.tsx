@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { useQuery } from '@tanstack/react-query';
 import { useQueryClient } from '@tanstack/react-query';
@@ -14,8 +14,10 @@ import { useApiQuery } from '../hooks/useApiQuery';
 import { toast } from '../hooks/useToast';
 import { Skeleton } from './Skeleton';
 
-const IntegrityDiagnostics: React.FC = () => {
+export const IntegrityDiagnostics: React.FC = () => {
   const queryClient = useQueryClient();
+  const [verificationResult, setVerificationResult] = useState<any>(null);
+  const [isVerifying, setIsVerifying] = useState(false);
 
   const { data: nodes = [], isLoading: nodesLoading } = useApiQuery(
     ['nodes'],
@@ -38,11 +40,38 @@ const IntegrityDiagnostics: React.FC = () => {
   const logsWithHash = logs.filter(l => l.sha256Hash);
   const hashCoverage = logs.length > 0 ? Math.round((logsWithHash.length / logs.length) * 100) : 100;
 
-  const resync = () => {
+   const resync = () => {
     queryClient.invalidateQueries({ queryKey: ['nodes'] });
     queryClient.invalidateQueries({ queryKey: ['audit-logs'] });
     toast.info('Re-syncing all nodes and integrity data...', 'Sync');
     setTimeout(() => toast.success('All nodes re-synchronized successfully.', 'Sync Complete'), 1500);
+  };
+
+  const verifyChain = async () => {
+    setIsVerifying(true);
+    setVerificationResult(null);
+    try {
+      // We pick the first audit ID from logs to verify as a sample
+      const sampleAuditId = logs[0]?.auditId;
+      if (!sampleAuditId) {
+        toast.warning('No active audit logs found to verify.', 'Forensics');
+        setIsVerifying(false);
+        return;
+      }
+      
+      const result = await AuditService.verifyAudit(sampleAuditId);
+      setVerificationResult(result);
+      
+      if (result.valid) {
+        toast.success(`Cryptographic chain for audit ${sampleAuditId.slice(0,8)} is valid.`, 'Verification Success');
+      } else {
+        toast.error(`Tampering detected at block ${result.compromisedAt?.slice(0,8)}`, 'Security Breach');
+      }
+    } catch (error) {
+      toast.error('Forensic verification failed. Check connectivity.', 'System Error');
+    } finally {
+      setIsVerifying(false);
+    }
   };
 
   return (
@@ -65,16 +94,47 @@ const IntegrityDiagnostics: React.FC = () => {
               Real-time cryptographic verification of the global event store ledger. Monitor immutability health, hash coverage, and cross-node synchronization levels.
             </p>
           </div>
-          <div className="flex gap-4">
+           <div className="flex gap-4">
+            <button 
+              onClick={verifyChain}
+              disabled={isVerifying || logs.length === 0}
+              className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:bg-blue-700 transition-all disabled:opacity-50"
+            >
+              {isVerifying ? <RefreshCw size={14} className="animate-spin" /> : <ShieldCheck size={14} />} 
+              {isVerifying ? 'Verifying Chain...' : 'Verify Crypto Chain'}
+            </button>
             <button onClick={resync}
               className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-[#091426] rounded-xl font-black text-[10px] uppercase tracking-[0.2em] shadow-sm hover:bg-slate-50 transition-all group">
               <RefreshCw size={14} className="group-hover:rotate-180 transition-transform duration-700" /> Re-Sync Nodes
             </button>
-            <button className="flex items-center gap-2 px-6 py-3 bg-[#091426] text-white rounded-xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:bg-slate-800 transition-all">
-              <Download size={14} /> Export Audit Log
-            </button>
           </div>
         </div>
+
+        {verificationResult && (
+          <motion.div 
+            initial={{ opacity: 0, h: 0 }} animate={{ opacity: 1, h: 'auto' }}
+            className={`p-6 rounded-2xl border ${verificationResult.valid ? 'bg-emerald-50 border-emerald-100' : 'bg-red-50 border-red-100'} flex items-center justify-between`}
+          >
+             <div className="flex items-center gap-4">
+                {verificationResult.valid ? <ShieldCheck size={24} className="text-emerald-600" /> : <AlertCircle size={24} className="text-red-600" />}
+                <div>
+                   <p className={`text-[11px] font-black uppercase tracking-widest ${verificationResult.valid ? 'text-emerald-900' : 'text-red-900'}`}>
+                      {verificationResult.valid ? 'Cryptographic Integrity Confirmed' : 'Chain Integrity Compromised'}
+                   </p>
+                   <p className={`text-[10px] ${verificationResult.valid ? 'text-emerald-700' : 'text-red-700'} mt-1`}>
+                      {verificationResult.valid 
+                        ? `All ${verificationResult.eventCount} blocks in audit chain verified successfully at ${new Date(verificationResult.verifiedAt).toLocaleTimeString()}.`
+                        : `Vulnerability detected at block ${verificationResult.compromisedAt}. Automated quarantine initiated.`}
+                   </p>
+                </div>
+             </div>
+             {!verificationResult.valid && (
+               <button className="px-4 py-2 bg-red-600 text-white rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-red-700 transition-all">
+                  Initiate Self-Healing
+               </button>
+             )}
+          </motion.div>
+        )}
 
         <div className="grid grid-cols-12 gap-8 items-start">
 

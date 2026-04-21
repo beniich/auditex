@@ -41,12 +41,16 @@ import {
   Radio,
   Unlock,
   TrendingUp,
-  Wallet
+  Wallet,
+  Skull
 } from 'lucide-react';
 import { UserButton, SignOutButton } from '@clerk/clerk-react';
 import { ToastContainer } from './ToastContainer';
 import { motion, AnimatePresence } from 'motion/react';
 import { useQuota } from '../hooks/useQuota';
+import { useApiQuery } from '../hooks/useApiQuery';
+import { NotificationService } from '../services/NotificationService';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface NavItemProps {
   icon: React.ElementType;
@@ -95,8 +99,27 @@ const NavSection = ({ title, children, collapsed }: any) => (
 
 export const AuditMasterLayout = ({ children, activeTab, onTabChange }: any) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const { balance, isLow } = useQuota();
+  const queryClient = useQueryClient();
+
+  const { data: notifications = [] } = useApiQuery(
+    ['notifications'],
+    () => NotificationService.getNotifications(),
+    { refetchInterval: 30000 }
+  );
+
+  const unreadCount = notifications.filter((n: any) => !n.read).length;
+
+  const markReadMutation = useMutation({
+    mutationFn: (id: string) => NotificationService.markAsRead(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] })
+  });
+
+  const markAllReadMutation = useMutation({
+    mutationFn: () => NotificationService.markAllAsRead(),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] })
+  });
 
   return (
     <div className="flex min-h-screen bg-[#f3f7fa] dark:bg-slate-950 font-sans">
@@ -150,7 +173,12 @@ export const AuditMasterLayout = ({ children, activeTab, onTabChange }: any) => 
 
           <NavSection title="Analytics" collapsed={isCollapsed}>
             <NavItem icon={Brain} label="Risk Prediction" active={activeTab === 'analytics'} onClick={() => onTabChange('analytics')} collapsed={isCollapsed}/>
+            <NavItem icon={Wallet} label="CFO Dashboard" active={activeTab === 'financial_dashboard'} onClick={() => onTabChange('financial_dashboard')} collapsed={isCollapsed}/>
             <NavItem icon={BarChart3} label="BI Reporting" active={activeTab === 'stakeholder_reporting'} onClick={() => onTabChange('stakeholder_reporting')} collapsed={isCollapsed}/>
+          </NavSection>
+
+          <NavSection title="Red Team" collapsed={isCollapsed}>
+            <NavItem icon={Skull} label="Chaos Lab" active={activeTab === 'chaos_lab'} onClick={() => onTabChange('chaos_lab')} collapsed={isCollapsed}/>
           </NavSection>
         </nav>
 
@@ -201,10 +229,75 @@ export const AuditMasterLayout = ({ children, activeTab, onTabChange }: any) => 
                 <Wallet size={14} />
                 <span className="text-[10px] font-black">${balance.toFixed(2)}</span>
               </div>
-              <button className="text-slate-400 hover:text-blue-600 transition-all relative group">
-                <Bell size={22} />
-                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white group-hover:scale-125 transition-transform"></span>
-              </button>
+               <div className="relative">
+                 <button 
+                   onClick={() => setNotificationsOpen(!notificationsOpen)}
+                   className="text-slate-400 hover:text-blue-600 transition-all relative group"
+                 >
+                   <Bell size={22} className={unreadCount > 0 ? 'animate-[bounce_2s_infinite]' : ''} />
+                   {unreadCount > 0 && (
+                     <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-600 text-[8px] font-black text-white flex items-center justify-center rounded-full border-2 border-white dark:border-slate-900 group-hover:scale-125 transition-transform">
+                       {unreadCount}
+                     </span>
+                   )}
+                 </button>
+
+                 <AnimatePresence>
+                   {notificationsOpen && (
+                     <motion.div 
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        className="absolute right-0 mt-4 w-96 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden z-50 overflow-y-auto max-h-[600px] custom-scrollbar"
+                     >
+                        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/50">
+                           <h3 className="text-[10px] font-black text-[#091426] dark:text-white uppercase tracking-[0.2em]">Signal Stream</h3>
+                           <button 
+                             onClick={() => markAllReadMutation.mutate()}
+                             className="text-[9px] font-black text-blue-600 uppercase hover:underline"
+                           >
+                             Clear All
+                           </button>
+                        </div>
+                        <div className="divide-y divide-slate-50 dark:divide-slate-800">
+                           {notifications.length === 0 ? (
+                             <div className="p-10 text-center text-slate-400 text-[10px] uppercase font-bold tracking-widest">No signals detected</div>
+                           ) : notifications.map((n: any) => (
+                             <div 
+                               key={n.id} 
+                               className={`p-6 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors cursor-pointer group ${!n.read ? 'bg-blue-50/30' : ''}`}
+                               onClick={() => markReadMutation.mutate(n.id)}
+                             >
+                                <div className="flex gap-4">
+                                   <div className={`mt-1 h-2 w-2 rounded-full shrink-0 ${
+                                     n.type === 'CRITICAL' ? 'bg-red-500' : 
+                                     n.type === 'WARNING' ? 'bg-amber-500' : 
+                                     n.type === 'SUCCESS' ? 'bg-emerald-500' : 'bg-blue-500'
+                                   } ${!n.read ? 'animate-pulse' : 'opacity-40'}`} />
+                                   <div className="flex-1">
+                                      <div className="flex justify-between items-start mb-1">
+                                         <p className={`text-[11px] font-black uppercase tracking-tight ${!n.read ? 'text-[#091426] dark:text-white' : 'text-slate-400'}`}>
+                                            {n.title}
+                                         </p>
+                                         <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">
+                                            {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                         </span>
+                                      </div>
+                                      <p className={`text-[10px] leading-relaxed ${!n.read ? 'text-slate-600 dark:text-slate-300 font-medium' : 'text-slate-400 font-normal'}`}>
+                                         {n.message}
+                                      </p>
+                                   </div>
+                                </div>
+                             </div>
+                           ))}
+                        </div>
+                        <div className="p-4 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 text-center">
+                           <button className="text-[9px] font-black text-slate-400 uppercase tracking-widest hover:text-blue-600 transition-all">View Intelligence Log</button>
+                        </div>
+                     </motion.div>
+                   )}
+                 </AnimatePresence>
+               </div>
               <button className="text-slate-400 hover:text-blue-600 transition-all">
                 <Zap size={22} className="fill-current" />
               </button>

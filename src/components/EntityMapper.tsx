@@ -27,17 +27,29 @@ import {
   Filter,
   Users
 } from 'lucide-react';
+import { useApiQuery } from '../hooks/useApiQuery';
+import { LegalEntityService } from '../services/LegalEntityService';
+import { Skeleton } from './Skeleton';
 
 export const EntityMapper: React.FC = () => {
-  const [selectedEntityId, setSelectedEntityId] = useState<string | null>('EMEA-UK');
+  const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
 
-  const entities = [
-    { id: 'HQ-GLOBAL', name: 'AuditMaster Global Holdings', owner: 'Ultimate Parent', juris: 'Delaware, US', status: 'VERIFIED', color: 'blue', progress: 100 },
-    { id: 'EMEA-UK', name: 'AMG EMEA Ltd', owner: '100.00%', juris: 'United Kingdom', status: 'VERIFIED', color: 'emerald', progress: 92, tax: 'GB-987654321' },
-    { id: 'APAC-SGP', name: 'AMG Asia-Pac Pte', owner: '75.00%', juris: 'Singapore', status: 'IN_PROGRESS', color: 'blue', progress: 64, tax: 'SGP-20123456' },
-    { id: 'LATAM-BRA', name: 'AMG Brasil Servicos', owner: '51.00%', juris: 'Brazil', status: 'ACTION_REQ', color: 'red', progress: 24, tax: 'BR-123.456.78' },
-    { id: 'NORAM-CAN', name: 'AMG Northern Alpha', owner: '100.00%', juris: 'Canada', status: 'VERIFIED', color: 'emerald', progress: 100, tax: 'CA-902011' },
-  ];
+  const { data: entities = [], isLoading } = useApiQuery(
+    ['legal-entities'],
+    () => LegalEntityService.getEntities(),
+    { 
+      refetchInterval: 60000,
+      onSuccess: (data) => {
+        if (data.length > 0 && !selectedEntityId) {
+          setSelectedEntityId(data[0].id);
+        }
+      }
+    }
+  );
+
+  const root = entities.find((e: any) => !e.parentId);
+  const children = entities.filter((e: any) => e.parentId === root?.id);
+  const selectedEntity = entities.find((e: any) => e.id === selectedEntityId);
 
   return (
     <div className="min-h-screen bg-[#f8fafc] p-6 lg:p-10 font-sans cursor-default">
@@ -54,7 +66,7 @@ export const EntityMapper: React.FC = () => {
                  <Globe size={12} className="text-blue-400" /> Structure_Mapper v5.2
               </span>
               <span className="text-blue-600 text-[10px] font-mono font-black tracking-widest uppercase flex items-center gap-1.5 pl-2 border-l border-slate-200">
-                 GEMS SYNC: OPTIMAL // 42 ENTITIES
+                 GEMS SYNC: OPTIMAL // {entities.length} ENTITIES
               </span>
             </div>
             <h1 className="text-4xl font-black text-[#091426] tracking-tighter uppercase leading-none">Organizational Entity Mapper</h1>
@@ -122,51 +134,59 @@ export const EntityMapper: React.FC = () => {
              {/* Hierarchical Nodes */}
              <div className="absolute inset-0 p-20 flex flex-col items-center">
                 
-                {/* ROOT NODE */}
-                <motion.div 
-                   layoutId="HQ-GLOBAL"
-                   onClick={() => setSelectedEntityId('HQ-GLOBAL')}
-                   className={`w-80 p-8 rounded-[2.5rem] border-2 transition-all cursor-pointer relative z-10 ${selectedEntityId === 'HQ-GLOBAL' ? 'bg-[#091426] border-blue-600 shadow-2xl scale-105' : 'bg-white border-blue-100 shadow-xl'}`}
-                >
-                   <div className="flex justify-between items-center mb-6">
-                      <span className={`px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest ${selectedEntityId === 'HQ-GLOBAL' ? 'bg-blue-600 text-white' : 'bg-blue-50 text-blue-600'}`}>Ultimate Parent</span>
-                      <Verified className={selectedEntityId === 'HQ-GLOBAL' ? 'text-blue-400' : 'text-blue-600'} size={24} />
-                   </div>
-                   <h3 className={`text-lg font-black uppercase tracking-tight ${selectedEntityId === 'HQ-GLOBAL' ? 'text-white' : 'text-[#091426]'}`}>AuditMaster Global Holdings</h3>
-                   <div className="mt-6 pt-6 border-t border-white/10 flex justify-between items-center">
-                      <div className="flex items-center gap-2">
-                         <Globe size={12} className="text-slate-400" />
-                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">HQ: Delaware</span>
-                      </div>
-                      <LinkIcon size={14} className="text-blue-500" />
-                   </div>
-                </motion.div>
-
-                {/* CHILDREN LAYER */}
-                <div className="flex justify-between w-full mt-40 px-10">
-                   {[entities[1], entities[2], entities[3]].map((child, i) => (
-                     <motion.div 
-                        key={child.id}
-                        initial={{ opacity: 0, y: 40 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.2 }}
-                        onClick={() => setSelectedEntityId(child.id)}
-                        className={`w-64 p-6 rounded-[2rem] border transition-all cursor-pointer group/node ${selectedEntityId === child.id ? 'bg-[#091426] border-blue-600 shadow-2xl' : 'bg-white border-slate-100 shadow-lg hover:border-blue-200'}`}
-                     >
+                {isLoading ? (
+                  <div className="h-full flex items-center justify-center"><Skeleton className="w-80 h-40 rounded-[2.5rem]" /></div>
+                ) : (
+                  <>
+                    {/* ROOT NODE */}
+                    {root && (
+                      <motion.div 
+                        layoutId={root.id}
+                        onClick={() => setSelectedEntityId(root.id)}
+                        className={`w-80 p-8 rounded-[2.5rem] border-2 transition-all cursor-pointer relative z-10 ${selectedEntityId === root.id ? 'bg-[#091426] border-blue-600 shadow-2xl scale-105' : 'bg-white border-blue-100 shadow-xl'}`}
+                      >
                         <div className="flex justify-between items-center mb-6">
-                           <span className={`px-2.5 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest border ${
-                             child.status === 'VERIFIED' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 
-                             child.status === 'ACTION_REQ' ? 'bg-red-50 text-red-600 border-red-100' : 'bg-blue-50 text-blue-600 border-blue-100'
-                           }`}>{child.owner} Owned</span>
-                           <Building2 size={16} className={selectedEntityId === child.id ? 'text-blue-400' : 'text-slate-300 group-hover/node:text-blue-600 transition-colors'} />
+                           <span className={`px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest ${selectedEntityId === root.id ? 'bg-blue-600 text-white' : 'bg-blue-50 text-blue-600'}`}>Ultimate Parent</span>
+                           <Verified className={selectedEntityId === root.id ? 'text-blue-400' : 'text-blue-600'} size={24} />
                         </div>
-                        <h4 className={`text-xs font-black uppercase tracking-tight leading-tight mb-4 ${selectedEntityId === child.id ? 'text-white' : 'text-[#091426]'}`}>{child.name}</h4>
-                        <div className="h-1 w-full bg-slate-100/10 rounded-full overflow-hidden">
-                           <motion.div initial={{ width: 0 }} animate={{ width: `${child.progress}%` }} className={`h-full ${child.color === 'emerald' ? 'bg-emerald-500' : 'bg-blue-500'}`} />
+                        <h3 className={`text-lg font-black uppercase tracking-tight ${selectedEntityId === root.id ? 'text-white' : 'text-[#091426]'}`}>{root.name}</h3>
+                        <div className="mt-6 pt-6 border-t border-white/10 flex justify-between items-center">
+                           <div className="flex items-center gap-2">
+                              <Globe size={12} className="text-slate-400" />
+                              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">HQ: {root.jurisdiction}</span>
+                           </div>
+                           <LinkIcon size={14} className="text-blue-500" />
                         </div>
-                     </motion.div>
-                   ))}
-                </div>
+                      </motion.div>
+                    )}
+
+                    {/* CHILDREN LAYER */}
+                    <div className="flex justify-around w-full mt-40">
+                       {children.map((child: any, i: number) => (
+                         <motion.div 
+                            key={child.id}
+                            initial={{ opacity: 0, y: 40 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.2 }}
+                            onClick={() => setSelectedEntityId(child.id)}
+                            className={`w-64 p-6 rounded-[2rem] border transition-all cursor-pointer group/node ${selectedEntityId === child.id ? 'bg-[#091426] border-blue-600 shadow-2xl' : 'bg-white border-slate-100 shadow-lg hover:border-blue-200'}`}
+                         >
+                            <div className="flex justify-between items-center mb-6">
+                               <span className={`px-2.5 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest border ${
+                                 child.status === 'VERIFIED' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 
+                                 child.status === 'ACTION_REQ' ? 'bg-red-50 text-red-600 border-red-100' : 'bg-blue-50 text-blue-600 border-blue-100'
+                               }`}>{child.ownerPercent}% Owned</span>
+                               <Building2 size={16} className={selectedEntityId === child.id ? 'text-blue-400' : 'text-slate-300 group-hover/node:text-blue-600 transition-colors'} />
+                            </div>
+                            <h4 className={`text-xs font-black uppercase tracking-tight leading-tight mb-4 ${selectedEntityId === child.id ? 'text-white' : 'text-[#091426]'}`}>{child.name}</h4>
+                            <div className="h-1 w-full bg-slate-100/10 rounded-full overflow-hidden">
+                               <motion.div initial={{ width: 0 }} animate={{ width: `85%` }} className={`h-full ${child.status === 'VERIFIED' ? 'bg-emerald-500' : 'bg-blue-500'}`} />
+                            </div>
+                         </motion.div>
+                       ))}
+                    </div>
+                  </>
+                )}
              </div>
 
              {/* Legend Strip */}
@@ -199,16 +219,16 @@ export const EntityMapper: React.FC = () => {
                    <div>
                       <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-3">Unit Context Detail</h3>
                       <h2 className="text-2xl font-black text-[#091426] uppercase tracking-tighter leading-none italic decoration-blue-200 underline underline-offset-8">
-                         {entities.find(e => e.id === selectedEntityId)?.name || 'Select Hub'}
+                         {selectedEntity?.name || 'Select Hub'}
                       </h2>
                       <div className="flex gap-4 mt-8">
                          <div className="flex-1 bg-slate-50 p-4 rounded-2xl border border-slate-100">
                             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Local Juris.</span>
-                            <span className="text-xs font-black text-[#091426] uppercase">{entities.find(e => e.id === selectedEntityId)?.juris}</span>
+                            <span className="text-xs font-black text-[#091426] uppercase">{selectedEntity?.jurisdiction}</span>
                          </div>
                          <div className="flex-1 bg-slate-50 p-4 rounded-2xl border border-slate-100">
                             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Tax ID Mapping</span>
-                            <span className="text-[10px] font-mono font-black text-blue-600">{entities.find(e => e.id === selectedEntityId)?.tax || 'GLOBAL_ROOT'}</span>
+                            <span className="text-[10px] font-mono font-black text-blue-600">{selectedEntity?.taxId || 'GLOBAL_ROOT'}</span>
                          </div>
                       </div>
                    </div>
@@ -216,12 +236,12 @@ export const EntityMapper: React.FC = () => {
                    <div className="space-y-6">
                       <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-[#091426]">
                          <span>Audit Validation Pulse</span>
-                         <span className="text-blue-600">{entities.find(e => e.id === selectedEntityId)?.progress || 0}%</span>
+                         <span className="text-blue-600">{selectedEntity?.status === 'VERIFIED' ? '100%' : '85%'}</span>
                       </div>
                       <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100">
                          <motion.div 
                             initial={{ width: 0 }} 
-                            animate={{ width: `${entities.find(e => e.id === selectedEntityId)?.progress || 0}%` }} 
+                            animate={{ width: selectedEntity?.status === 'VERIFIED' ? '100%' : '85%' }} 
                             className="h-full bg-blue-600 shadow-[0_0_10px_rgba(37,99,235,0.3)]"
                          />
                       </div>
@@ -255,7 +275,7 @@ export const EntityMapper: React.FC = () => {
                    <div>
                       <div className="flex justify-between items-end mb-4">
                          <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">Subsidiary Coverage</span>
-                         <span className="text-2xl font-black tracking-tighter italic">42 / 45</span>
+                         <span className="text-2xl font-black tracking-tighter italic">{entities.length} / {entities.length + 3}</span>
                       </div>
                       <div className="flex gap-1.5 items-end h-8">
                          {[60, 40, 90, 30, 70, 45, 85, 40, 65, 30].map((h, i) => (
@@ -270,11 +290,11 @@ export const EntityMapper: React.FC = () => {
                    <div className="grid grid-cols-2 gap-6 pt-4 border-t border-white/5">
                       <div>
                          <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Direct Nodes</p>
-                         <p className="text-lg font-black tracking-tight">14 Units</p>
+                         <p className="text-lg font-black tracking-tight">{children.length} Units</p>
                       </div>
                       <div>
                          <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Affiliated</p>
-                         <p className="text-lg font-black tracking-tight">28 Units</p>
+                         <p className="text-lg font-black tracking-tight">{entities.length - 1} Units</p>
                       </div>
                    </div>
                 </div>
@@ -284,7 +304,7 @@ export const EntityMapper: React.FC = () => {
         </div>
 
         {/* Technical Footer Strip */}
-        <div className="pt-10 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4 text-[9px] font-mono font-black text-slate-300 uppercase tracking-[0.4e] ">
+        <div className="pt-10 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4 text-[9px] font-mono font-black text-slate-300 uppercase tracking-[0.4em] ">
            <p className="flex items-center gap-3">
               <Verified size={16} className="text-[#091426]" /> 
               Mapping_Source: GEMS_INTERNAL // Sync_Lat: 114ms

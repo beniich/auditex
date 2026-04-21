@@ -15,6 +15,8 @@ model Organization {
   id          String   @id @default(uuid())
   name        String
   domain      String?  @unique
+  annualTurnover Float @default(0.0)
+  legalJurisdiction String @default("EU")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
@@ -22,7 +24,10 @@ model Organization {
   audits      Audit[]
   incidents   Incident[]
   nodes       NetworkNode[]
-  policies    Policy[]
+  policies      Policy[]
+  vaultKeys     VaultKey[]
+  notifications Notification[]
+  entities      LegalEntity[]
 }
 
 model User {
@@ -97,6 +102,9 @@ model AuditEvent {
   payload     Json
   sha256Hash  String   @unique
   previousHash String? // Blockchain-style chained hashes for forensics
+  signature    String? // Cryptographic signature of the hash
+  signer2Id    String? // For Two-Man Rule
+  signature2   String? // Second signature for critical actions
 
   @@index([auditId, timestamp])
 }
@@ -161,6 +169,23 @@ model Control {
   description String
   frequency   String   // e.g., 'ANNUAL', 'CONTINUOUS'
   status      String   // e.g., 'COMPLIANT', 'NON_COMPLIANT', 'NOT_TESTED'
+  
+  entityId    String?
+  entity      LegalEntity? @relation(fields: [entityId], references: [id])
+  
+  impact      ComplianceGapImpact?
+}
+
+model ComplianceGapImpact {
+  id               String   @id @default(uuid())
+  controlId        String   @unique
+  control          Control  @relation(fields: [controlId], references: [id])
+  potentialFine    Float    @default(0.0)
+  interruptionCost Float    @default(0.0) 
+  remediationCost  Float    @default(0.0)
+  probability      Float    @default(0.05)
+  currency         String   @default("EUR")
+  updatedAt        DateTime @updatedAt
 }
 
 model RiskAssessment {
@@ -265,4 +290,49 @@ model LogicRule {
   compliant   Boolean
   reason      String
   createdAt   DateTime @default(now())
+}
+
+model VaultKey {
+  id             String       @id @default(uuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  name           String
+  type           String       // 'AES-256-GCM', 'RSA-2048', 'ED25519'
+  status         String       @default("ACTIVE") // 'ACTIVE', 'ROTATING', 'DEPRECATED'
+  encryptedValue String       // In a real app, this would be highly protected
+  entropy        Float        @default(0.98)
+  lastUsedAt     DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model LegalEntity {
+  id             String       @id @default(uuid())
+  name           String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  parentId       String?
+  parent         LegalEntity? @relation("Hierarchy", fields: [parentId], references: [id])
+  children       LegalEntity[] @relation("Hierarchy")
+  jurisdiction   String
+  countryCode    String       @default("US")
+  localTurnover  Float        @default(0.0)
+  liabilityType  String       @default("LIMITED") // FULL or LIMITED
+  ownerPercent   Float        @default(100.0)
+  status         String       @default("VERIFIED")
+  taxId          String?
+  createdAt      DateTime     @default(now())
+  
+  controls       Control[]
+}
+
+model Notification {
+  id             String       @id @default(uuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  title          String
+  message        String
+  type           String       // 'INFO', 'WARNING', 'CRITICAL', 'SUCCESS'
+  read           Boolean      @default(false)
+  createdAt      DateTime     @default(now())
 }

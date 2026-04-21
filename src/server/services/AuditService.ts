@@ -2,6 +2,7 @@ import { prisma } from '../../lib/prisma';
 import { v4 as uuidv4 } from 'uuid';
 import { computeEventHash, verifyEventChain } from '../../lib/cryptoIntegrity';
 import { projectAudit } from '../../lib/auditProjection';
+import { IdentityService } from './IdentityService';
 
 export class AuditService {
   /**
@@ -68,8 +69,9 @@ export class AuditService {
   /**
    * Append a new event to the audit event sourcing ledger.
    * Calculates the cryptographically secure hash to prevent tampering.
+   * Now includes digital signatures for Sovereign ID.
    */
-  static async createEvent(auditId: string, userId: string, type: string, payload: any) {
+  static async createEvent(auditId: string, userId: string, type: string, payload: any, secondSigner?: { userId: string, signature: string }) {
     const previousEvent = await prisma.auditEvent.findFirst({
       where: { auditId },
       orderBy: { timestamp: 'desc' },
@@ -89,6 +91,9 @@ export class AuditService {
 
     const hash = computeEventHash(eventObj as any, previousHash);
     
+    // Sovereign ID: Sign the hash with primary user key
+    const signature = IdentityService.signData(hash, userId);
+    
     return await prisma.auditEvent.create({
       data: {
         id: eventObj.id,
@@ -98,7 +103,10 @@ export class AuditService {
         userId: eventObj.userId,
         payload: eventObj.payload as any,
         sha256Hash: hash,
-        previousHash
+        previousHash,
+        signature,
+        signer2Id: secondSigner?.userId,
+        signature2: secondSigner?.signature
       }
     });
   }

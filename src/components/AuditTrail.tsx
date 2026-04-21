@@ -142,10 +142,45 @@ export const AuditTrail = ({ audits }: { audits: Audit[] }) => {
                                   {new Date(event.timestamp).toISOString()}
                                </span>
                             </div>
-                            
-                            <p className="text-[10px] text-slate-500 font-mono mt-3 p-2 bg-black/30 rounded border border-white/5 break-all">
-                               SIG: {event.sha256Hash}
-                            </p>
+
+                            {/* Sovereign ID Proof */}
+                            <div className="flex flex-wrap gap-2 mt-4">
+                               <div className="flex items-center gap-1.5 px-2 py-1 bg-[#1a2b4b] border border-blue-900/50 rounded-lg">
+                                  <Fingerprint size={10} className="text-blue-400" />
+                                  <span className="text-[7px] font-black text-blue-300 uppercase tracking-widest font-mono">
+                                     SIGNED_BY: {event.userId.substring(0, 12)}
+                                  </span>
+                               </div>
+                               {event.signer2Id && (
+                                 <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-900/20 border border-emerald-900/40 rounded-lg">
+                                    <ShieldCheck size={10} className="text-emerald-400" />
+                                    <span className="text-[7px] font-black text-emerald-400 uppercase tracking-widest font-mono">
+                                       2-MAN_RULE: OK // SIGNER: {event.signer2Id.substring(0, 12)}
+                                    </span>
+                                 </div>
+                               )}
+                             </div>
+                             
+                             <div className="mt-4 p-3 bg-black/40 rounded-lg border border-white/5 space-y-2">
+                                <div className="flex justify-between items-center opacity-40">
+                                   <span className="text-[7px] font-black uppercase text-slate-300">Block_Hash (SHA-256)</span>
+                                   <Lock size={8} className="text-slate-500" />
+                                </div>
+                                <p className="text-[9px] text-blue-500 font-mono break-all leading-tight">
+                                   {event.sha256Hash}
+                                </p>
+                                {event.signature && (
+                                  <>
+                                    <div className="pt-2 mt-2 border-t border-white/5 flex justify-between items-center opacity-40">
+                                       <span className="text-[7px] font-black uppercase text-slate-300">Sovereign_Signature</span>
+                                       <ShieldCheck size={8} className="text-blue-400" />
+                                    </div>
+                                    <p className="text-[9px] text-slate-400 font-mono break-all leading-tight italic">
+                                       {event.signature}
+                                    </p>
+                                  </>
+                                )}
+                             </div>
                           </div>
                           
                           {idx !== audit.events.length - 1 && (

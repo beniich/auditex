@@ -32,6 +32,8 @@ const RegionalRiskDrilldown = lazy(() => import('./components/RegionalRiskDrilld
 const StakeholderReporting = lazy(() => import('./components/StakeholderReporting'));
 const NewAuditModal = lazy(() => import('./components/NewAuditModal').then(m => ({ default: m.NewAuditModal })));
 const WarRoom = lazy(() => import('./components/WarRoom').then(m => ({ default: m.WarRoom })));
+const ChaosLab = lazy(() => import('./components/ChaosLab'));
+const FinancialDashboard = lazy(() => import('./components/FinancialDashboard').then(m => ({ default: m.FinancialDashboard })));
 
 export default function App() {
   useLiveUpdates();
@@ -197,6 +199,8 @@ export default function App() {
           {activeTab === 'network_topology' && <NetworkNodeTopology />}
           {activeTab === 'regional_risk' && <RegionalRiskDrilldown />}
           {activeTab === 'stakeholder_reporting' && <StakeholderReporting />}
+          {activeTab === 'chaos_lab' && <ChaosLab />}
+          {activeTab === 'financial_dashboard' && <FinancialDashboard />}
         </Suspense>
       </AuditMasterLayout>
     </ProtectedRoute>

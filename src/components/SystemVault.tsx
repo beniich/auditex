@@ -25,18 +25,45 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useApiQuery } from '../hooks/useApiQuery';
-import { InfrastructureService } from '../services/InfrastructureService';
+import { VaultService } from '../services/VaultService';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from '../hooks/useToast';
+import { SkeletonCard, SkeletonTable } from './Skeleton';
 
 export const SystemVault: React.FC = () => {
-  const [showSecret, setShowSecret] = useState<string | null>(null);
-  
-  // Mock vault data for now, would be connected to a secure backend like HashiCorp Vault or similar
-  const secrets = [
-    { id: 'SK-7721-XA', name: 'Global_Audit_Ledger_Key', type: 'ED25519', status: 'ACTIVE', lastUsed: '3m ago', entropy: '98%' },
-    { id: 'SK-9902-QB', name: 'Identity_Oracle_Bypass_Token', type: 'JWT_RSA', status: 'ROTATING', lastUsed: '1h ago', entropy: '94%' },
-    { id: 'SK-4410-LM', name: 'Regional_Backup_Encryption_Salt', type: 'AES-256-GCM', status: 'ACTIVE', lastUsed: '12h ago', entropy: '100%' },
-    { id: 'SK-8812-PV', name: 'Stakeholder_Report_Signature_Root', type: 'ECDSA_P256', status: 'DEPRECATED', lastUsed: '23d ago', entropy: '91%' },
-  ];
+  const [showSecret, setShowSecret] = useState<{ id: string, name: string, value: string } | null>(null);
+  const queryClient = useQueryClient();
+
+  const { data: secrets = [], isLoading } = useApiQuery(
+    ['vault-keys'],
+    () => VaultService.getKeys(),
+    { refetchInterval: 15000 }
+  );
+
+  const rotateMutation = useMutation({
+    mutationFn: (id: string) => VaultService.rotateKey(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vault-keys'] });
+      toast.success('Key rotation sequence completed successfully.', 'Vault Security');
+    }
+  });
+
+  const accessMutation = useMutation({
+    mutationFn: (id: string) => VaultService.accessKey(id),
+    onSuccess: (data, variables) => {
+      const key = secrets.find((s: any) => s.id === variables);
+      setShowSecret({ id: data.id, name: key?.name || 'Unknown Key', value: data.value });
+      toast.info('Secret material accessed. Logging focal point.', 'Security Audit');
+    }
+  });
+
+  const createMutation = useMutation({
+    mutationFn: () => VaultService.createKey(`Key_${Math.floor(Math.random()*1000)}`, 'AES-256-GCM'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vault-keys'] });
+      toast.success('New cryptographic material deployed to HSM.', 'Vault Security');
+    }
+  });
 
   return (
     <div className="min-h-screen bg-[#f8fafc] p-6 lg:p-10 font-sans cursor-default">
@@ -63,7 +90,13 @@ export const SystemVault: React.FC = () => {
             </p>
           </div>
           <div className="flex gap-4 mt-8 md:mt-0 relative z-10">
-             <button className="px-8 py-4 bg-white text-[#091426] rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-50 transition-all shadow-xl">Deploy New Key</button>
+             <button 
+               onClick={() => createMutation.mutate()}
+               disabled={createMutation.isPending}
+               className="px-8 py-4 bg-white text-[#091426] rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-50 transition-all shadow-xl disabled:opacity-50"
+             >
+               {createMutation.isPending ? 'Deploying...' : 'Deploy New Key'}
+             </button>
           </div>
         </div>
 
@@ -86,41 +119,57 @@ export const SystemVault: React.FC = () => {
              </div>
 
              <div className="p-6">
-                <div className="space-y-4">
-                   {secrets.map((secret) => (
-                     <div key={secret.id} className="p-8 bg-white border border-slate-100 rounded-[2.5rem] flex items-center justify-between group hover:shadow-xl hover:border-blue-100 transition-all cursor-default">
-                        <div className="flex items-center gap-8">
-                           <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-inner ${
-                             secret.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-600' : 
-                             secret.status === 'ROTATING' ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-400'
-                           }`}>
-                              <Fingerprint size={28} />
+                {isLoading ? (
+                   <div className="space-y-4">
+                      <SkeletonTable rows={4} />
+                   </div>
+                ) : (
+                   <div className="space-y-4">
+                      {secrets.map((secret: any) => (
+                        <div key={secret.id} className="p-8 bg-white border border-slate-100 rounded-[2.5rem] flex items-center justify-between group hover:shadow-xl hover:border-blue-100 transition-all cursor-default">
+                           <div className="flex items-center gap-8">
+                              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-inner ${
+                                secret.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-600' : 
+                                secret.status === 'ROTATING' ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-400'
+                              }`}>
+                                 <Fingerprint size={28} />
+                              </div>
+                              <div>
+                                 <div className="flex items-center gap-3">
+                                    <span className="text-[10px] font-mono font-black text-slate-400">ID: {secret.id.slice(0, 13)}</span>
+                                    <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border ${
+                                      secret.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-blue-50 text-blue-600 border-blue-100'
+                                    }`}>{secret.status}</span>
+                                 </div>
+                                 <h4 className="text-lg font-black text-[#091426] uppercase mt-1 tracking-tight">{secret.name}</h4>
+                                 <div className="flex gap-4 mt-2">
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><Cpu size={12} /> {secret.type}</span>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                                      <RefreshCw size={12} /> {secret.lastUsedAt ? `Used ${new Date(secret.lastUsedAt).toLocaleTimeString()}` : 'Never used'}
+                                    </span>
+                                 </div>
+                              </div>
                            </div>
-                           <div>
-                              <div className="flex items-center gap-3">
-                                 <span className="text-[10px] font-mono font-black text-slate-400">ID: {secret.id}</span>
-                                 <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border ${
-                                   secret.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-blue-50 text-blue-600 border-blue-100'
-                                 }`}>{secret.status}</span>
-                              </div>
-                              <h4 className="text-lg font-black text-[#091426] uppercase mt-1 tracking-tight">{secret.name}</h4>
-                              <div className="flex gap-4 mt-2">
-                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><Cpu size={12} /> {secret.type}</span>
-                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><RefreshCw size={12} /> Used {secret.lastUsed}</span>
-                              </div>
+                           <div className="flex items-center gap-3">
+                              <button 
+                                onClick={() => accessMutation.mutate(secret.id)} 
+                                disabled={accessMutation.isPending}
+                                className="p-4 bg-slate-50 border border-slate-100 rounded-2xl text-slate-400 hover:text-blue-600 hover:bg-white transition-all shadow-sm"
+                              >
+                                 <Eye size={18} />
+                              </button>
+                              <button 
+                                onClick={() => rotateMutation.mutate(secret.id)}
+                                disabled={rotateMutation.isPending}
+                                className="p-4 bg-slate-50 border border-slate-100 rounded-2xl text-slate-400 hover:text-slate-900 hover:bg-white transition-all shadow-sm"
+                              >
+                                 <RefreshCw size={18} className={rotateMutation.isPending ? 'animate-spin' : ''} />
+                              </button>
                            </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                           <button onClick={() => setShowSecret(secret.id)} className="p-4 bg-slate-50 border border-slate-100 rounded-2xl text-slate-400 hover:text-blue-600 hover:bg-white transition-all shadow-sm">
-                              <Eye size={18} />
-                           </button>
-                           <button className="p-4 bg-slate-50 border border-slate-100 rounded-2xl text-slate-400 hover:text-slate-900 hover:bg-white transition-all shadow-sm">
-                              <RefreshCw size={18} />
-                           </button>
-                        </div>
-                     </div>
-                   ))}
-                </div>
+                      ))}
+                   </div>
+                )}
              </div>
           </div>
 
@@ -228,14 +277,14 @@ export const SystemVault: React.FC = () => {
                   <div>
                     <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] mb-4">Cryptographic_Material_Access</h3>
                     <h2 className="text-3xl font-black text-[#091426] uppercase tracking-tighter italic underline decoration-blue-200 underline-offset-8">
-                       {secrets.find(s => s.id === showSecret)?.name}
+                       {showSecret?.name}
                     </h2>
                   </div>
                   
                   <div className="bg-slate-50 border border-slate-100 p-10 rounded-[3rem] group">
                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6">Master_Key_Ciphertext</p>
                      <p className="font-mono text-lg font-black text-[#091426] break-all group-hover:text-blue-600 transition-colors">
-                        7f8e9a2b4c1d0f5e6a3b8d9c2e1f0a5b8c9d2e1f0a5b8c9d2e1f0a5b8c9d2e1f0a5b...
+                        {showSecret?.value}
                      </p>
                      <button className="mt-10 px-8 py-4 bg-[#091426] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:opacity-90 flex items-center justify-center gap-3 mx-auto shadow-xl shadow-slate-900/20 transition-all">
                         <Copy size={16} /> Copy Secret Material

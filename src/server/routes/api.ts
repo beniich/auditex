@@ -8,6 +8,11 @@ import { AIController } from '../controllers/AIController';
 import { ReportController } from '../controllers/ReportController';
 import { AIAnalyticsController } from '../controllers/AIAnalyticsController';
 import { CertificationController } from '../controllers/CertificationController';
+import { VaultController } from '../controllers/VaultController';
+import { NotificationController } from '../controllers/NotificationController';
+import { LegalEntityController } from '../controllers/LegalEntityController';
+import { ChaosController } from '../controllers/ChaosController';
+import { FinancialController } from '../controllers/FinancialController';
 import multer from 'multer';
 
 // Configure Multer for local storage (mimicking S3)
@@ -92,3 +97,29 @@ apiRouter.get('/reports/download/:auditId', ReportController.downloadReport);
 // Storage Routes
 apiRouter.post('/storage/upload', upload.single('file'), StorageController.upload);
 apiRouter.get('/storage/url/:key', StorageController.getUrl);
+
+// Vault Routes
+apiRouter.get('/vault/keys', VaultController.listKeys);
+apiRouter.post('/vault/keys', VaultController.createKey);
+apiRouter.post('/vault/keys/:id/rotate', VaultController.rotateKey);
+apiRouter.get('/vault/keys/:id/access', VaultController.accessKey);
+
+// Notification Routes
+apiRouter.get('/notifications', NotificationController.list);
+apiRouter.post('/notifications/:id/read', NotificationController.markRead);
+apiRouter.post('/notifications/read-all', NotificationController.markAllRead);
+
+// Entity Routes
+apiRouter.get('/entities', LegalEntityController.list);
+
+// Chaos Engineering / Red Team Routes (guarded by env flag in production)
+apiRouter.get('/chaos/status', ChaosController.getStatus);
+apiRouter.post('/chaos/corrupt', ChaosController.injectCorruption);
+apiRouter.post('/chaos/scan', ChaosController.triggerScan);
+apiRouter.post('/chaos/reset', ChaosController.resetCorrectionBlocks);
+
+// Financial Impact / CFO Routes
+apiRouter.get('/financial/summary', FinancialController.getSummary);
+apiRouter.get('/financial/heatmap', FinancialController.getJurisdictionalHeatmap);
+apiRouter.put('/financial/controls/:controlId', FinancialController.update);
+apiRouter.post('/financial/turnover', FinancialController.updateTurnover);

@@ -6,6 +6,7 @@ import path from 'path';
 import { apiRouter } from './src/server/routes/api';
 import { prisma } from './src/lib/prisma';
 import { WSManager } from './src/server/lib/ws';
+import { IntegrityWatchdog } from './src/server/services/IntegrityWatchdog';
 
 async function startServer() {
   const app = express();
@@ -119,6 +120,10 @@ async function startServer() {
 
   // Initialize WebSockets
   WSManager.initialize(server);
+
+  // Boot Integrity Watchdog — autonomous SHA-256 chain monitor
+  IntegrityWatchdog.start();
+  console.log('[IntegrityWatchdog] Autonomous ledger monitor active.');
 
   // Background Simulator: Keeping the "Command Center" alive with real-time anomalies
   if (process.env.NODE_ENV !== 'production') {
