@@ -53,7 +53,7 @@ export class ChaosController {
       // Pick a target audit
       let auditId = req.body.auditId;
       if (!auditId) {
-        const latest = await prisma.audit.findFirst({ orderBy: { createdAt: 'desc' } });
+        const latest = await prisma.audit.findFirst({ orderBy: { startedAt: 'desc' } });
         if (!latest) return res.status(404).json({ error: 'No audits found. Create an audit first.' });
         auditId = latest.id;
       }
