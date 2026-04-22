@@ -34,6 +34,7 @@ const NewAuditModal = lazy(() => import('./components/NewAuditModal').then(m => 
 const WarRoom = lazy(() => import('./components/WarRoom').then(m => ({ default: m.WarRoom })));
 const ChaosLab = lazy(() => import('./components/ChaosLab'));
 const FinancialDashboard = lazy(() => import('./components/FinancialDashboard').then(m => ({ default: m.FinancialDashboard })));
+const CapabilityCenter = lazy(() => import('./components/CapabilityCenter').then(m => ({ default: m.CapabilityCenter })));
 
 export default function App() {
   useLiveUpdates();
@@ -201,6 +202,7 @@ export default function App() {
           {activeTab === 'stakeholder_reporting' && <StakeholderReporting />}
           {activeTab === 'chaos_lab' && <ChaosLab />}
           {activeTab === 'financial_dashboard' && <FinancialDashboard />}
+          {activeTab === 'capability_center' && <CapabilityCenter onNavigate={setActiveTab} />}
         </Suspense>
       </AuditMasterLayout>
     </ProtectedRoute>

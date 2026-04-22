@@ -144,6 +144,10 @@ export const AuditMasterLayout = ({ children, activeTab, onTabChange }: any) => 
         </div>
 
         <nav className="flex-1 overflow-y-auto px-2 custom-scrollbar py-4 overflow-x-hidden">
+          <NavSection title="System Guide" collapsed={isCollapsed}>
+            <NavItem icon={AppWindow} label="Capability Center" active={activeTab === 'capability_center'} onClick={() => onTabChange('capability_center')} collapsed={isCollapsed}/>
+          </NavSection>
+
           <NavSection title="Command Center" collapsed={isCollapsed}>
             <NavItem icon={LayoutDashboard} label="Global Board" active={activeTab === 'dashboard'} onClick={() => onTabChange('dashboard')} collapsed={isCollapsed}/>
             <NavItem icon={Radio} label="Live War Room" active={activeTab === 'war_room'} onClick={() => onTabChange('war_room')} collapsed={isCollapsed}/>
