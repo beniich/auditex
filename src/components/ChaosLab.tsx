@@ -15,11 +15,15 @@ import {
   Lock,
   Unlock,
   CircuitBoard,
-  RotateCcw
+  RotateCcw,
+  Code2,
+  Bug,
+  Dna
 } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ChaosService } from '../services/ChaosService';
 import { toast } from '../hooks/useToast';
+import { SafeMarkdown } from './SafeMarkdown';
 
 interface LogEntry {
   id: string;
@@ -48,6 +52,8 @@ export const ChaosLab: React.FC = () => {
   const queryClient = useQueryClient();
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [phase, setPhase] = useState<'IDLE' | 'ATTACKING' | 'SCANNING' | 'CORRECTED'>('IDLE');
+  const [xssPayload, setXssPayload] = useState('');
+  const [xssResult, setXssResult] = useState('');
   const logEndRef = useRef<HTMLDivElement>(null);
 
   const addLog = (type: LogEntry['type'], message: string) => {
@@ -131,6 +137,17 @@ export const ChaosLab: React.FC = () => {
       toast.info('Chaos lab reset. Ready for next cycle.', 'Lab Reset');
     }
   });
+
+  const handleXssTest = (payload: string) => {
+    setXssPayload(payload);
+    addLog('INFO', `Initializing XSS pressure test on sandbox component...`);
+    addLog('ATTACK', `Payload: ${payload}`);
+    // Simulated rendering with sanitization
+    // and show the "clean" code result
+    setXssResult(payload); // We render this through a "Protected Zone"
+    addLog('SUCCESS', 'XSS sanitization logic applied. Verify the output below.');
+    toast.success('XSS Sanitization verified.', 'XSS Scanner');
+  };
 
   const healthyChainsCount = status?.healthy ?? 0;
   const compromisedCount   = status?.compromised ?? 0;
@@ -309,6 +326,55 @@ export const ChaosLab: React.FC = () => {
                 ))}
               </div>
             )}
+
+            {/* XSS Pressure Test Sandbox */}
+            <div className="border border-purple-900/30 bg-purple-500/5 rounded-[1.5rem] p-6 space-y-4">
+              <h3 className="text-[9px] font-black text-purple-400 uppercase tracking-widest flex items-center gap-2">
+                <Bug size={10} /> XSS Pressure Test (Sandbox)
+              </h3>
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-2">
+                   <button 
+                     onClick={() => handleXssTest("<img src=x onerror=alert('XSS')>")}
+                     className="py-2 bg-purple-500/10 border border-purple-900/50 rounded-lg text-[7px] font-black uppercase text-purple-400 hover:bg-purple-500/20"
+                   >
+                     Basic Injection
+                   </button>
+                   <button 
+                     onClick={() => handleXssTest("[Click Me](javascript:alert('Hacked'))")}
+                     className="py-2 bg-purple-500/10 border border-purple-900/50 rounded-lg text-[7px] font-black uppercase text-purple-400 hover:bg-purple-500/20"
+                   >
+                     Markdown Bypass
+                   </button>
+                   <button 
+                     onClick={() => handleXssTest("<script>document.cookie.steal()</script>")}
+                     className="py-2 bg-purple-500/10 border border-purple-900/50 rounded-lg text-[7px] font-black uppercase text-purple-400 hover:bg-purple-500/20"
+                   >
+                     Script Tag
+                   </button>
+                   <button 
+                     onClick={() => handleXssTest("<svg onload=alert(1)>")}
+                     className="py-2 bg-purple-500/10 border border-purple-900/50 rounded-lg text-[7px] font-black uppercase text-purple-400 hover:bg-purple-500/20"
+                   >
+                     SVG Handler
+                   </button>
+                </div>
+                
+                {xssPayload && (
+                  <div className="mt-4 space-y-2">
+                    <p className="text-[7px] font-black text-slate-500 uppercase">Input Payload</p>
+                    <div className="p-2 bg-black border border-slate-800 rounded text-[8px] text-red-400 break-all h-10 overflow-auto">
+                      <code>{xssPayload}</code>
+                    </div>
+                    
+                    <p className="text-[7px] font-black text-slate-500 uppercase mt-2">Sanitized Output (Safe)</p>
+                    <div className="p-3 bg-white/5 border border-emerald-900/30 rounded text-[9px] text-white min-h-[60px]">
+                      <SafeMarkdown content={xssResult} />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 

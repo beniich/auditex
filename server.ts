@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import { createServer as createViteServer } from 'vite';
 import path from 'path';
 import { apiRouter } from './src/server/routes/api';
@@ -13,6 +14,20 @@ async function startServer() {
   const PORT = process.env.PORT || 3000;
 
   // Global Middlewares
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "https://*.clerk.accounts.dev", "https://clerk.auditax.dev"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        imgSrc: ["'self'", "data:", "blob:", "https://images.unsplash.com", "https://*.clerk.com"],
+        connectSrc: ["'self'", "https://*.clerk.accounts.dev", "wss://*"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: [],
+      },
+    },
+  }));
   app.use(cors());
   app.use(express.json());
 

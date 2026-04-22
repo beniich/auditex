@@ -10,6 +10,7 @@ import { AiApiService } from '../services/AiApiService';
 import { toast } from '../hooks/useToast';
 import { FindingsPanel } from './FindingsPanel';
 import { useQuota } from '../hooks/useQuota';
+import { SafeMarkdown } from './SafeMarkdown';
 
 interface AuditRunnerProps {
   auditId: string;
@@ -505,7 +506,10 @@ export const AuditRunner = ({ auditId, template, onComplete }: AuditRunnerProps)
                                 <span className="text-[7px] font-black px-1.5 py-0.5 bg-blue-500/10 text-blue-400 rounded border border-blue-500/20 uppercase">Auto-Fixed</span>
                               )}
                            </div>
-                           <p className="text-[9px] font-medium leading-relaxed dark:text-white/80 line-clamp-4 italic">"{aiDiagnostics[q.id].message}"</p>
+                            <SafeMarkdown 
+                              content={aiDiagnostics[q.id].message} 
+                              className="text-[9px] font-medium leading-relaxed dark:text-white/80 italic cursor-default" 
+                            />
                            {!aiDiagnostics[q.id].loading && aiDiagnostics[q.id].type === 'warning' && (
                              <div className="flex gap-2 mt-3">
                                 <button onClick={() => handleAcceptFinding(q.id)} className="flex-1 py-1.5 bg-[#091426] text-white rounded-lg text-[7px] font-black uppercase tracking-widest hover:opacity-80 transition-all">Accept</button>
