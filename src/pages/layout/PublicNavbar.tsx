@@ -104,12 +104,12 @@ export const PublicNavbar = () => {
 
         {/* CTAs */}
         <div className="hidden lg:flex items-center gap-4">
-          <Link to="/auth/login" className="text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-blue-600 transition-colors">
+          <Link to="/app" className="text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-blue-600 transition-colors">
             Connexion
           </Link>
-          <button className="px-6 py-3 bg-blue-600 text-white text-sm font-black uppercase tracking-widest rounded-full hover:bg-blue-700 hover:shadow-xl hover:shadow-blue-600/20 transition-all active:scale-95">
-            Demander une Démo
-          </button>
+          <Link to="/app" className="px-6 py-3 bg-blue-600 text-white text-sm font-black uppercase tracking-widest rounded-full hover:bg-blue-700 hover:shadow-xl hover:shadow-blue-600/20 transition-all active:scale-95">
+            Accéder au Dashboard
+          </Link>
         </div>
 
         {/* Mobile Toggle */}
@@ -151,8 +151,8 @@ export const PublicNavbar = () => {
                 </div>
               ))}
               <div className="pt-6 grid gap-4">
-                <button className="w-full py-4 rounded-2xl border border-slate-200 dark:border-slate-800 text-sm font-black uppercase tracking-widest">Connexion</button>
-                <button className="w-full py-4 rounded-2xl bg-blue-600 text-white text-sm font-black uppercase tracking-widest shadow-xl shadow-blue-600/20">Demander une Démo</button>
+                <Link to="/app" className="w-full py-4 text-center rounded-2xl border border-slate-200 dark:border-slate-800 text-sm font-black uppercase tracking-widest">Connexion</Link>
+                <Link to="/app" className="w-full py-4 text-center rounded-2xl bg-blue-600 text-white text-sm font-black uppercase tracking-widest shadow-xl shadow-blue-600/20">Accéder au Dashboard</Link>
               </div>
             </div>
           </motion.div>
