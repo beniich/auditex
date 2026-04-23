@@ -73,3 +73,30 @@ export interface KPI {
   trend: 'up' | 'down' | 'neutral';
   color: string;
 }
+
+export type RubricStatus = 'LOCKED' | 'ACTIVE' | 'COMPLETED' | 'AI_VALIDATED';
+
+export interface Rubric {
+  id: string;
+  label: string;
+  description?: string;
+  questionIds: string[];   // Mapping to AuditQuestion IDs
+  required: boolean;
+  status?: RubricStatus;
+}
+
+export interface JourneyStep {
+  step: number;
+  title: string;
+  icon: string;            // Lucide icon name
+  description: string;
+  rubrics: Rubric[];
+}
+
+export interface JourneyState {
+  currentStep: number;
+  rubricStatuses: Record<string, RubricStatus>;  // rubricId -> status
+  stepValidations: Record<number, boolean>;        // stepIdx -> isComplete
+  aiTransitionInsights: Record<number, string>;    // stepIdx -> AI message
+  lockedResponses: Set<string>;                    // questionIds that are locked
+}

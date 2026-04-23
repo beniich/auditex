@@ -35,6 +35,7 @@ const WarRoom = lazy(() => import('./components/WarRoom').then(m => ({ default: 
 const ChaosLab = lazy(() => import('./components/ChaosLab'));
 const FinancialDashboard = lazy(() => import('./components/FinancialDashboard').then(m => ({ default: m.FinancialDashboard })));
 const CapabilityCenter = lazy(() => import('./components/CapabilityCenter').then(m => ({ default: m.CapabilityCenter })));
+const GuidedAuditRunner = lazy(() => import('./components/GuidedAuditRunner').then(m => ({ default: m.GuidedAuditRunner })));
 
 export default function App() {
   useLiveUpdates();
@@ -44,6 +45,7 @@ export default function App() {
   const [templates, setTemplates] = useState<AuditTemplate[]>([]);
   const [selectedAuditId, setSelectedAuditId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isGuidedMode, setIsGuidedMode] = useState(true); // Default to true for the new experience
 
   useEffect(() => {
     getToken().then(t => {
@@ -165,21 +167,48 @@ export default function App() {
                 </div>
               ) : (
                 <div className="max-w-[1200px] mx-auto">
-                  <button 
-                    onClick={() => setSelectedAuditId(null)}
-                    className="mb-10 text-slate-400 hover:text-[#091426] flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] transition-all bg-white px-6 py-3 rounded-xl border border-slate-200 shadow-sm"
-                  >
-                    ← Exit to Registry
-                  </button>
+                  <div className="flex justify-between items-center mb-10">
+                    <button 
+                      onClick={() => setSelectedAuditId(null)}
+                      className="text-slate-400 hover:text-[#091426] flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] transition-all bg-white px-6 py-3 rounded-xl border border-slate-200 shadow-sm"
+                    >
+                      ← Exit to Registry
+                    </button>
+                    <div className="flex items-center gap-4 bg-slate-50 p-1.5 rounded-2xl border border-slate-200">
+                      <button 
+                        onClick={() => setIsGuidedMode(false)}
+                        className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${!isGuidedMode ? 'bg-[#091426] text-white shadow-lg' : 'text-slate-400 hover:bg-slate-100'}`}
+                      >
+                        Classic
+                      </button>
+                      <button 
+                        onClick={() => setIsGuidedMode(true)}
+                        className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${isGuidedMode ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:bg-slate-100'}`}
+                      >
+                        Guided
+                      </button>
+                    </div>
+                  </div>
                   {selectedAuditId && (
-                    <AuditRunner 
-                      auditId={selectedAuditId} 
-                      template={templates.find(t => t.id === audits.find(a => a.id === selectedAuditId)?.templateId) || templates[0]} 
-                      onComplete={() => {
-                        setSelectedAuditId(null);
-                        refreshAudits();
-                      }} 
-                    />
+                    isGuidedMode ? (
+                      <GuidedAuditRunner 
+                        auditId={selectedAuditId} 
+                        template={templates.find(t => t.id === audits.find(a => a.id === selectedAuditId)?.templateId) || templates[0]} 
+                        onComplete={() => {
+                          setSelectedAuditId(null);
+                          refreshAudits();
+                        }} 
+                      />
+                    ) : (
+                      <AuditRunner 
+                        auditId={selectedAuditId} 
+                        template={templates.find(t => t.id === audits.find(a => a.id === selectedAuditId)?.templateId) || templates[0]} 
+                        onComplete={() => {
+                          setSelectedAuditId(null);
+                          refreshAudits();
+                        }} 
+                      />
+                    )
                   )}
                 </div>
               )}

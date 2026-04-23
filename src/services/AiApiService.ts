@@ -56,4 +56,11 @@ export class AiApiService {
       body: JSON.stringify({ question, context, mode, auditId }),
     });
   }
+
+  static async analyzeStepTransition(auditId: string, currentStepIdx: number) {
+    return this.fetchWithAuth(`${this.BASE_URL}/analyze-transition`, {
+      method: 'POST',
+      body: JSON.stringify({ auditId, currentStepIdx }),
+    });
+  }
 }
