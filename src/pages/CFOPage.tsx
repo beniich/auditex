@@ -1,141 +1,80 @@
-import React from 'react';
-import { motion } from 'motion/react';
-import { TrendingUp, DollarSign, PieChart, ShieldCheck, ArrowUpRight, CheckCircle2, Calculator } from 'lucide-react';
+import React, { useEffect, useState, useRef } from 'react';
+import { DollarSign, TrendingUp, ShieldAlert, BarChart3 } from 'lucide-react';
+import { motion, useInView } from 'motion/react';
 
-const kpis = [
-  { label: 'Real-Time Financial Exposure', value: '$1.2B', description: 'Actifs monitorés en continu.' },
-  { label: 'Compliance ROI', value: '320%', description: 'Retour sur investissement moyen.' },
-  { label: 'Audit Readiness Score', value: '94/100', description: 'Prêt pour l\'audit instantanément.' }
-];
+const CountUp = ({ end }: { end: number }) => {
+  const [count, setCount] = useState(0);
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-50px" });
+
+  useEffect(() => {
+    if (isInView) {
+      let start = 0;
+      const duration = 2000;
+      const increment = end / (duration / 16);
+      const timer = setInterval(() => {
+        start += increment;
+        if (start >= end) {
+          clearInterval(timer);
+          setCount(end);
+        } else {
+          setCount(Math.floor(start));
+        }
+      }, 16);
+      return () => clearInterval(timer);
+    }
+  }, [isInView, end]);
+
+  return <span ref={ref}>{count}</span>;
+}
 
 export const CFOPage = () => {
   return (
-    <div className="bg-[#f8fafc] text-[#091426] pt-32 pb-24">
-      {/* --- HERO --- */}
-      <section className="max-w-7xl mx-auto px-6 grid lg:grid-cols-12 gap-16 items-center mb-32">
-        <div className="lg:col-span-7 space-y-10">
-          <div className="inline-flex items-center gap-2 text-blue-600">
-            <Calculator size={20} />
-            <span className="text-xs font-black uppercase tracking-[0.3em]">CFO Financial Strategy</span>
-          </div>
-          <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.9] uppercase">
-            Quantify Your <br />
-            Regulatory Risk <br />
-            <span className="text-blue-600">in Dollars,</span> <br />
-            Not Just Alerts.
-          </h1>
-          <p className="text-xl text-slate-500 font-medium leading-relaxed max-w-xl">
-            Transformez la conformité d'un centre de coût en un avantage stratégique. 
-            Visibilité en temps réel sur l'exposition financière et ROI prouvé.
-          </p>
-          <div className="flex flex-wrap gap-4 pt-4">
-             <button className="px-10 py-5 bg-blue-600 text-white font-black uppercase tracking-widest rounded-full hover:bg-blue-700 transition-all shadow-xl shadow-blue-600/20">
-                Calculate Your ROI
-             </button>
-             <button className="px-10 py-5 bg-white text-[#091426] font-black uppercase tracking-widest rounded-full border border-slate-200 hover:bg-slate-50 transition-all">
-                Watch Overview
-             </button>
-          </div>
+    <div className="bg-[#f0fdf4] text-slate-900 min-h-screen">
+      <section className="pt-32 pb-20 px-6 max-w-7xl mx-auto text-center">
+        <div className="w-16 h-16 bg-emerald-500/10 text-emerald-600 rounded-2xl flex items-center justify-center mb-6 mx-auto">
+          <DollarSign size={32} />
         </div>
+        <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-6 text-[#091426]">
+          Quantify Your Regulatory Risk in <span className="text-emerald-500">Dollars</span>.<br /> Not Just Alerts.
+        </h1>
+        <p className="text-xl text-slate-600 max-w-2xl mx-auto font-medium mb-12">
+          Passez de la conformité "coût" à la conformité "ROI". Notre IA cartographie l'impact financier d'une potentielle faille avant qu'elle ne survienne.
+        </p>
 
-        <div className="lg:col-span-5">
-           <motion.div 
-             initial={{ opacity: 0, x: 20 }}
-             animate={{ opacity: 1, x: 0 }}
-             className="relative p-1 bg-white rounded-[3.5rem] border border-slate-200 shadow-2xl"
-           >
-              <div className="bg-slate-50 rounded-[3.2rem] p-10 space-y-8">
-                 <div className="flex justify-between items-start">
-                    <div>
-                        <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Current Risk Exposure</div>
-                        <div className="text-5xl font-black text-[#091426] tracking-tighter">$2.4M</div>
-                    </div>
-                    <div className="px-3 py-1 bg-rose-50 text-rose-600 rounded-lg text-[10px] font-black uppercase tracking-widest border border-rose-100 flex items-center gap-1">
-                        <TrendingUp size={12} /> High
-                    </div>
-                 </div>
-                 
-                 <div className="h-48 flex items-end gap-3">
-                    {[40, 70, 45, 90, 65, 80, 55].map((h, i) => (
-                        <div key={i} className="flex-1 bg-blue-600/20 rounded-t-lg relative group">
-                            <motion.div 
-                              initial={{ height: 0 }}
-                              animate={{ height: `${h}%` }}
-                              transition={{ delay: i * 0.1 }}
-                              className="absolute bottom-0 w-full bg-blue-600 rounded-t-lg group-hover:bg-blue-700 transition-colors"
-                            />
-                        </div>
-                    ))}
-                 </div>
-                 
-                 <div className="flex justify-between items-center pt-6 border-t border-slate-200">
-                    <div className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Potential Savings</div>
-                    <div className="text-emerald-500 font-black text-xl">$850k</div>
-                 </div>
-              </div>
-           </motion.div>
+        {/* KPIs */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 flex flex-col items-center">
+             <div className="bg-red-50 text-red-500 p-3 rounded-xl mb-4"><ShieldAlert size={24}/></div>
+             <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2">Exposure Mapping</p>
+             <h2 className="text-5xl font-black text-[#091426] mb-2">$<CountUp end={1200} />M</h2>
+             <p className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">-34% mitigated this quarter</p>
+          </div>
+          <div className="bg-white p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 flex flex-col items-center relative overflow-hidden border-b-4 border-b-emerald-500">
+             <div className="bg-emerald-50 text-emerald-600 p-3 rounded-xl mb-4"><TrendingUp size={24}/></div>
+             <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2">Compliance ROI</p>
+             <h2 className="text-5xl font-black text-[#091426] mb-2"><CountUp end={320} />%</h2>
+             <p className="text-xs font-semibold text-slate-500">Compared to manual external audits</p>
+          </div>
+          <div className="bg-white p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 flex flex-col items-center">
+             <div className="bg-blue-50 text-blue-500 p-3 rounded-xl mb-4"><BarChart3 size={24}/></div>
+             <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2">Audit Readiness</p>
+             <h2 className="text-5xl font-black text-[#091426] mb-2"><CountUp end={94} />/100</h2>
+             <p className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">Score excellent - Ready for SOC2</p>
+          </div>
         </div>
       </section>
 
-      {/* --- KPI GRID --- */}
-      <section className="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-8 mb-32">
-         {kpis.map((k, i) => (
-            <motion.div 
-              key={k.label}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              className="p-10 bg-white rounded-[2.5rem] border border-slate-200 shadow-sm space-y-4"
-            >
-               <div className="text-xs font-black uppercase tracking-widest text-slate-400">{k.label}</div>
-               <div className="text-5xl font-black text-[#091426] tracking-tighter">{k.value}</div>
-               <p className="text-slate-500 font-medium text-sm">{k.description}</p>
-            </motion.div>
-         ))}
-      </section>
-
-      {/* --- STRATEGIC VALUE --- */}
-      <section className="bg-[#091426] text-white py-32 rounded-[5rem] mx-6">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-16">
-           <div className="flex-1 space-y-6">
-              <h2 className="text-4xl font-black uppercase tracking-tight">Financial Impact & <br />Strategic Value</h2>
-              <ul className="space-y-6">
-                 {[
-                   { title: 'Unify Risk Data', desc: 'Consolidez les systèmes fragmentés en une source unique de vérité financière.' },
-                   { title: 'Forecast Penalties', desc: 'Prédisez les amendes réglementaires potentielles et allouez les ressources efficacement.' },
-                   { title: 'Automate Board Reporting', desc: 'Générez des rapports exécutifs en un clic, focalisés sur les indicateurs de performance financiers.' }
-                 ].map(item => (
-                   <li key={item.title} className="flex gap-4">
-                      <div className="w-8 h-8 rounded-full bg-blue-600 flex-shrink-0 flex items-center justify-center text-white">
-                         <CheckCircle2 size={20} />
-                      </div>
-                      <div>
-                         <div className="font-extrabold text-lg uppercase tracking-tight">{item.title}</div>
-                         <p className="text-slate-400 font-medium">{item.desc}</p>
-                      </div>
-                   </li>
-                 ))}
-              </ul>
-           </div>
-           
-           <div className="flex-1 grid grid-cols-2 gap-8 opacity-40 grayscale group hover:grayscale-0 transition-all">
-              <div className="flex flex-col items-center gap-4">
-                 <div className="w-20 h-20 bg-white/10 rounded-3xl" />
-                 <span className="font-black text-[10px] uppercase tracking-widest">GlobalBank</span>
-              </div>
-              <div className="flex flex-col items-center gap-4">
-                 <div className="w-20 h-20 bg-white/10 rounded-3xl" />
-                 <span className="font-black text-[10px] uppercase tracking-widest">PharmaGiant</span>
-              </div>
-              <div className="flex flex-col items-center gap-4">
-                 <div className="w-20 h-20 bg-white/10 rounded-3xl" />
-                 <span className="font-black text-[10px] uppercase tracking-widest">TechCorp</span>
-              </div>
-              <div className="flex flex-col items-center gap-4">
-                 <div className="w-20 h-20 bg-white/10 rounded-3xl" />
-                 <span className="font-black text-[10px] uppercase tracking-widest">EnergyDyn</span>
-              </div>
-           </div>
-        </div>
+      <section className="py-20 bg-white border-t border-slate-200">
+         <div className="max-w-7xl mx-auto px-6 text-center">
+            <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-10">Faisant gagner des millions en audits manuels à</h3>
+            <div className="flex flex-wrap justify-center items-center gap-12 opacity-40 grayscale font-black text-2xl tracking-tighter text-[#091426]">
+               <span>GLOBALBANK</span>
+               <span>TECHCORP</span>
+               <span>PHARMAGIANT</span>
+               <span>ENERGYDYNAMICS</span>
+            </div>
+         </div>
       </section>
     </div>
   );

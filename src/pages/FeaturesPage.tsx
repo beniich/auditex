@@ -1,108 +1,67 @@
 import React from 'react';
-import { motion } from 'motion/react';
-import { Cpu, Zap, Lock, Shield, Network, Database, Fingerprint, Code, Server } from 'lucide-react';
-
-const technicalFeatures = [
-  {
-    icon: Cpu,
-    title: 'Agentic AI RA6',
-    description: 'Système d\'agents autonomes analysant en continu les flux de données pour détecter les anomalies de conformité avant qu\'elles ne deviennent critiques.',
-    tags: ['Intelligence', 'Autonome']
-  },
-  {
-    icon: Zap,
-    title: 'RAG Validation',
-    description: 'Retrieval-Augmented Generation couplé à une vérification stricte par le ledger. Zéro hallucination, 100% précision.',
-    tags: ['Précision', 'Vérifié']
-  },
-  {
-    icon: Lock,
-    title: 'SHA-256 Immutability',
-    description: 'Chaque audit est scellé cryptographiquement. Une preuve mathématique de l\'intégrité des données à chaque instant.',
-    tags: ['Cryptographie', 'Immuable']
-  },
-  {
-    icon: Network,
-    title: 'Force Graph Analytics',
-    description: 'Visualisation des dépendances complexes entre actifs, politiques et risques pour une vision panoramique de l\'entreprise.',
-    tags: ['Visualisation', 'Force-Graph']
-  }
-];
+import { Server, Lock, Globe, Shield, Cpu, Zap, Key } from 'lucide-react';
 
 export const FeaturesPage = () => {
-  return (
-    <div className="bg-[#f8fafc] text-[#091426] pt-32 pb-24">
-      {/* --- HERO --- */}
-      <section className="max-w-7xl mx-auto px-6 text-center space-y-10 mb-32">
-        <div className="inline-flex items-center gap-2 text-blue-600 bg-blue-50 px-4 py-2 rounded-full border border-blue-100">
-          <Code size={18} />
-          <span className="text-xs font-black uppercase tracking-[0.3em]">Platform Architecture & Features</span>
+    return (
+        <div className="bg-[#0a0e1a] text-white min-h-screen">
+            <section className="pt-32 pb-20 px-6 max-w-7xl mx-auto text-center border-b border-white/10">
+                <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-6 relative">
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">AuditAX</span> Platform Features
+                </h1>
+                <p className="text-xl text-slate-400 max-w-2xl mx-auto font-medium">
+                    Une architecture monolithique conçue pour encaisser l'échelle des entreprises Fortune 500, tout en garantissant zero trust et secrèt absolu.
+                </p>
+            </section>
+
+            {/* Section A */}
+            <section id="agentic" className="py-24 px-6 max-w-7xl mx-auto border-b border-white/10">
+                <div className="mb-16">
+                    <h2 className="text-3xl font-black text-white uppercase tracking-tight mb-4">A. Intelligence Agentique & RAG</h2>
+                    <p className="text-slate-400">Le cerveau de la plateforme. Analyse des milliers de logs par seconde.</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="bg-white/5 border border-white/10 p-8 rounded-3xl hover:border-indigo-500/50 transition duration-300">
+                        <Cpu className="text-indigo-400 mb-6" size={40} />
+                        <h3 className="text-2xl font-bold mb-4">Agentic AI Core</h3>
+                        <p className="text-slate-400">Des agents autonomes surveillent des sous-ensembles spécifiques de l'infrastructure (IAM, Réseau, DB). Ils déclenchent des audits ciblés à chaque changement d'état (Event-driven validation).</p>
+                    </div>
+                    <div className="bg-white/5 border border-white/10 p-8 rounded-3xl hover:border-indigo-500/50 transition duration-300">
+                        <Zap className="text-indigo-400 mb-6" size={40} />
+                        <h3 className="text-2xl font-bold mb-4">RAG Validation Engine</h3>
+                        <p className="text-slate-400">Plutôt que des requêtes LLM génériques, chaque question de conformité est validée contre un RAG (Retrieval-Augmented Generation) strictement limité à vos documents internes et logs serveurs.</p>
+                    </div>
+                </div>
+            </section>
+
+            {/* Section B */}
+            <section id="security" className="py-24 px-6 max-w-7xl mx-auto">
+                <div className="mb-16">
+                    <h2 className="text-3xl font-black text-white uppercase tracking-tight mb-4">B. Enterprise-Grade Security</h2>
+                    <p className="text-slate-400">La sécurité par design n'est pas une option.</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="bg-[#111827] border border-blue-500/20 p-6 rounded-3xl">
+                        <Lock className="text-emerald-400 mb-4" size={32} />
+                        <h4 className="text-lg font-bold mb-2">AES-256 Ledger</h4>
+                        <p className="text-sm text-slate-400">Aucune donnée n'est altérable. Tout est chiffré at rest et in transit.</p>
+                    </div>
+                    <div className="bg-[#111827] border border-blue-500/20 p-6 rounded-3xl">
+                        <Shield className="text-emerald-400 mb-4" size={32} />
+                        <h4 className="text-lg font-bold mb-2">SOC2 & ISO 27001</h4>
+                        <p className="text-sm text-slate-400">Built-in mapping pour les plus hauts standards internationaux.</p>
+                    </div>
+                    <div className="bg-[#111827] border border-blue-500/20 p-6 rounded-3xl">
+                        <Key className="text-emerald-400 mb-4" size={32} />
+                        <h4 className="text-lg font-bold mb-2">Granular RBAC</h4>
+                        <p className="text-sm text-slate-400">Modèle de permissions poussé pour différencier Partenaires, Auditeurs et Viewers.</p>
+                    </div>
+                    <div className="bg-[#111827] border border-blue-500/20 p-6 rounded-3xl">
+                        <Globe className="text-emerald-400 mb-4" size={32} />
+                        <h4 className="text-lg font-bold mb-2">Data Residency</h4>
+                        <p className="text-sm text-slate-400">Choix de la région de stockage (EU, US) pour stricte conformité RGPD.</p>
+                    </div>
+                </div>
+            </section>
         </div>
-        <h1 className="text-7xl md:text-9xl font-black tracking-tighter leading-none uppercase">
-          Technical <br />
-          <span className="text-blue-600 italic">Superiority</span> <br />
-          by Design.
-        </h1>
-        <p className="text-xl text-slate-500 font-medium leading-relaxed max-w-3xl mx-auto">
-          Plongez au cœur de l'infrastructure AuditAX. Une alliance unique d'IA agentique, de cryptographie avancée et de visualisation de données massivement interconnectées.
-        </p>
-      </section>
-
-      {/* --- FEATURES GRID --- */}
-      <section className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-8 mb-32">
-         {technicalFeatures.map((f, i) => (
-            <motion.div 
-              key={f.title}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              className="p-12 bg-white rounded-[3rem] border border-slate-200 shadow-sm hover:shadow-xl transition-all group"
-            >
-               <div className="flex justify-between items-start mb-10">
-                  <div className="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-blue-600/20 group-hover:scale-110 transition-transform">
-                     <f.icon size={32} />
-                  </div>
-                  <div className="flex gap-2">
-                     {f.tags.map(tag => (
-                        <span key={tag} className="px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[9px] font-black uppercase tracking-widest">{tag}</span>
-                     ))}
-                  </div>
-               </div>
-               <h3 className="text-3xl font-black uppercase tracking-tight mb-6">{f.title}</h3>
-               <p className="text-slate-500 text-lg leading-relaxed font-medium">
-                  {f.description}
-               </p>
-            </motion.div>
-         ))}
-      </section>
-
-      {/* --- SECURITY STACK --- */}
-      <section className="bg-[#091426] text-white py-32 rounded-[5rem] mx-6">
-         <div className="max-w-7xl mx-auto px-6">
-            <div className="text-center mb-24 space-y-4">
-               <h2 className="text-xs font-black uppercase tracking-[0.4em] text-blue-500">Enterprise-Grade Security</h2>
-               <h3 className="text-4xl md:text-6xl font-black uppercase tracking-tight">Multi-Layer Protection</h3>
-            </div>
-
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-12 text-center">
-               {[
-                 { icon: Database, title: 'Data Residency', desc: 'Souveraineté totale des données par région.' },
-                 { icon: Fingerprint, title: 'Identity Assurance', desc: 'Gestion avancée des rôles et accès via RBAC.' },
-                 { icon: Server, title: 'Node Integrity', desc: 'Chaque noeud du système est audité en temps réel.' },
-                 { icon: Shield, title: 'Zero-Trust Arc', desc: 'Architecture de sécurité à confiance nulle par défaut.' }
-               ].map((item, i) => (
-                 <div key={item.title} className="space-y-6">
-                    <div className="w-20 h-20 bg-white/5 rounded-3xl mx-auto flex items-center justify-center text-blue-500 border border-white/10">
-                       <item.icon size={36} />
-                    </div>
-                    <div className="space-y-2">
-                       <h4 className="font-extrabold text-xl uppercase tracking-tight">{item.title}</h4>
-                       <p className="text-slate-400 text-sm font-medium">{item.desc}</p>
-                    </div>
-                 </div>
-               ))}
-            </div>
-         </div>
-      </section>
-    </div>
-  );
+    );
 };

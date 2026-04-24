@@ -19,6 +19,8 @@ export interface FinancialSummary {
   nonCompliantCount: number;
   roi: string;
   currency: string;
+  turnover: number;
+  exposureToTurnoverLimit: number;
 }
 
 export const FinancialService = {

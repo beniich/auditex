@@ -1,41 +1,46 @@
 import React from 'react';
+import { Sparkles, Check, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, X, Check } from 'lucide-react';
 
 interface AIPrefillBannerProps {
-  count: number;
-  onDismiss: () => void;
+  prefills: Array<{ questionId: string; suggestedValue: string; confidence: number; label: string }>;
+  onAcceptAll: () => void;
+  onRejectAll: () => void;
+  visible: boolean;
 }
 
-export const AIPrefillBanner = ({ count, onDismiss }: AIPrefillBannerProps) => {
-  if (count <= 0) return null;
+export const AIPrefillBanner: React.FC<AIPrefillBannerProps> = ({ prefills, onAcceptAll, onRejectAll, visible }) => {
+  if (!visible || prefills.length === 0) return null;
 
   return (
-    <motion.div 
-      initial={{ height: 0, opacity: 0 }}
-      animate={{ height: 'auto', opacity: 1 }}
-      exit={{ height: 0, opacity: 0 }}
-      className="overflow-hidden"
-    >
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-4 rounded-3xl text-white shadow-xl shadow-blue-500/10 mb-8 flex items-center justify-between">
-        <div className="flex items-center gap-4 px-4">
-          <div className="bg-white/20 p-2 rounded-xl">
-             <Sparkles size={18} className="animate-pulse" />
-          </div>
-          <div className="flex flex-col">
-             <span className="text-[10px] font-black uppercase tracking-widest">Optimisation Intelligence Artificielle</span>
-             <span className="text-[9px] font-bold opacity-80 uppercase tracking-tighter">
-                {count} questions ont été pré-remplies par l'IA basées sur vos réponses précédentes.
-             </span>
-          </div>
-        </div>
-        <button 
-          onClick={onDismiss}
-          className="p-3 hover:bg-white/10 rounded-xl transition-colors"
-        >
-          <X size={16} />
-        </button>
-      </div>
-    </motion.div>
+    <AnimatePresence>
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="w-full bg-indigo-600 text-white p-6 rounded-[2.5rem] shadow-xl shadow-indigo-900/20 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden"
+      >
+         <div className="absolute top-0 right-0 p-8 opacity-10">
+           <Sparkles size={100} />
+         </div>
+         <div className="flex items-center gap-4 relative z-10 w-full md:w-auto">
+           <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center shrink-0">
+             <Sparkles size={24} className="text-indigo-200" />
+           </div>
+           <div>
+             <h4 className="font-black uppercase tracking-widest text-[11px] text-indigo-200 mb-1">Assistance IA Détectée</h4>
+             <p className="text-sm font-medium leading-tight">J'ai pré-rempli {prefills.length} questions basées sur vos politiques précédentes.</p>
+           </div>
+         </div>
+         <div className="flex items-center gap-3 relative z-10 w-full md:w-auto shrink-0">
+           <button onClick={onRejectAll} className="flex-1 md:flex-none px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition-all text-[10px] font-black uppercase tracking-widest flex justify-center items-center gap-2">
+             <X size={14} /> Ignorer
+           </button>
+           <button onClick={onAcceptAll} className="flex-1 md:flex-none px-6 py-3 rounded-xl bg-white text-indigo-900 hover:bg-indigo-50 transition-all text-[10px] font-black uppercase tracking-widest flex justify-center items-center gap-2">
+             <Check size={14} /> Tout Accepter
+           </button>
+         </div>
+      </motion.div>
+    </AnimatePresence>
   );
 };

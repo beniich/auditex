@@ -3,7 +3,7 @@ import {createRoot} from 'react-dom/client';
 import { ClerkProvider } from '@clerk/clerk-react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App.tsx';
-import { ErrorBoundary } from './components/ErrorBoundary.tsx';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 import './i18n/config'; // Add this line
 import './index.css';
 

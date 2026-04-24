@@ -28,10 +28,32 @@ import {
   Radio,
   Wallet,
   Skull,
-  Globe
+  Globe,
+  CreditCard,
+  Bot,
+  Award,
+  Tag,
+  BellDot,
+  MessageSquare,
+  Blocks,
+  ShieldCheck,
+  Database,
+  FileEdit,
+  Route,
+  Building2,
+  AlertTriangle,
+  FileSearch,
+  UserPlus,
+  Key,
+  Lightbulb,
+  Wrench,
+  HelpCircle,
+  AreaChart,
+  Scale,
+  BringToFront
 } from 'lucide-react';
 import { UserButton } from '@clerk/clerk-react';
-import { ToastContainer } from './ToastContainer';
+import { ToastContainer } from './common/ToastContainer';
 import { motion, AnimatePresence } from 'motion/react';
 import { useQuota } from '../hooks/useQuota';
 import { useApiQuery } from '../hooks/useApiQuery';
@@ -129,45 +151,52 @@ export const AuditMasterLayout = ({ children, activeTab, onTabChange }: any) => 
         </div>
 
         <nav className="flex-1 overflow-y-auto px-2 custom-scrollbar py-4 overflow-x-hidden">
-          <NavSection title={t('sidebar.sections.system')} collapsed={isCollapsed}>
-            <NavItem icon={AppWindow} label={t('sidebar.links.capability')} active={activeTab === 'capability_center'} onClick={() => onTabChange('capability_center')} collapsed={isCollapsed}/>
+          <NavSection title="COMMAND" collapsed={isCollapsed}>
+            <NavItem icon={LayoutDashboard} label="Main Dashboard" active={activeTab === 'dashboard'} onClick={() => onTabChange('dashboard')} collapsed={isCollapsed}/>
+            <NavItem icon={Radio} label="War Room" active={activeTab === 'war_room'} onClick={() => onTabChange('war_room')} collapsed={isCollapsed}/>
+            <NavItem icon={Zap} label="Chaos Lab" active={activeTab === 'chaos_lab'} onClick={() => onTabChange('chaos_lab')} collapsed={isCollapsed}/>
+            <NavItem icon={BellDot} label="Action Center" active={activeTab === 'action_center'} onClick={() => onTabChange('action_center')} collapsed={isCollapsed}/>
+            <NavItem icon={AlertTriangle} label="Incidents" active={activeTab === 'incidents'} onClick={() => onTabChange('incidents')} collapsed={isCollapsed}/>
+            <NavItem icon={MessageSquare} label="Collaboration" active={activeTab === 'collaboration'} onClick={() => onTabChange('collaboration')} collapsed={isCollapsed}/>
           </NavSection>
 
-          <NavSection title={t('sidebar.sections.command')} collapsed={isCollapsed}>
-            <NavItem icon={LayoutDashboard} label={t('sidebar.links.global_board')} active={activeTab === 'dashboard'} onClick={() => onTabChange('dashboard')} collapsed={isCollapsed}/>
-            <NavItem icon={Radio} label={t('sidebar.links.war_room')} active={activeTab === 'war_room'} onClick={() => onTabChange('war_room')} collapsed={isCollapsed}/>
-            <NavItem icon={ClipboardList} label={t('sidebar.links.audit_runner')} active={activeTab === 'audits'} onClick={() => onTabChange('audits')} collapsed={isCollapsed}/>
-            <NavItem icon={CheckCircle2} label={t('sidebar.links.compliance_hub')} active={activeTab === 'compliance'} onClick={() => onTabChange('compliance')} collapsed={isCollapsed}/>
+          <NavSection title="GOVERNANCE & AUDIT" collapsed={isCollapsed}>
+            <NavItem icon={Library} label="Policy Library" active={activeTab === 'policy_center'} onClick={() => onTabChange('policy_center')} collapsed={isCollapsed}/>
+            <NavItem icon={CheckCircle2} label="Ready Scorecard" active={activeTab === 'certification_scorecard'} onClick={() => onTabChange('certification_scorecard')} collapsed={isCollapsed}/>
+            <NavItem icon={History} label="Immutable Ledger" active={activeTab === 'ledger_browser'} onClick={() => onTabChange('ledger_browser')} collapsed={isCollapsed}/>
+            <NavItem icon={Workflow} label="Task Board" active={activeTab === 'remediation_workflow'} onClick={() => onTabChange('remediation_workflow')} collapsed={isCollapsed}/>
+            <NavItem icon={Scale} label="Regulator Portal" active={activeTab === 'regulator'} onClick={() => onTabChange('regulator')} collapsed={isCollapsed}/>
+            <NavItem icon={FileSearch} label="Security Logs" active={activeTab === 'security_log'} onClick={() => onTabChange('security_log')} collapsed={isCollapsed}/>
+            <NavItem icon={Shield} label="Sovereignty" active={activeTab === 'sovereignty'} onClick={() => onTabChange('sovereignty')} collapsed={isCollapsed}/>
+            <NavItem icon={Award} label="Badge Center" active={activeTab === 'badge_center'} onClick={() => onTabChange('badge_center')} collapsed={isCollapsed}/>
+            <NavItem icon={BringToFront} label="Batch Processing" active={activeTab === 'batch_center'} onClick={() => onTabChange('batch_center')} collapsed={isCollapsed}/>
+            <NavItem icon={ShieldCheck} label="Control Library" active={activeTab === 'control_library'} onClick={() => onTabChange('control_library')} collapsed={isCollapsed}/>
+            <NavItem icon={Database} label="AI Knowledge (RAG)" active={activeTab === 'rag_knowledge'} onClick={() => onTabChange('rag_knowledge')} collapsed={isCollapsed}/>
+            <NavItem icon={FileEdit} label="Report Builder" active={activeTab === 'report_builder'} onClick={() => onTabChange('report_builder')} collapsed={isCollapsed}/>
           </NavSection>
 
-          <NavSection title={t('sidebar.sections.forensics')} collapsed={isCollapsed}>
-            <NavItem icon={Workflow} label={t('sidebar.links.remediation')} active={activeTab === 'remediation_workflow'} onClick={() => onTabChange('remediation_workflow')} collapsed={isCollapsed}/>
-            <NavItem icon={Terminal} label={t('sidebar.links.integrity_diag')} active={activeTab === 'integrity_diagnostics'} onClick={() => onTabChange('integrity_diagnostics')} collapsed={isCollapsed}/>
-            <NavItem icon={Activity} label={t('sidebar.links.forensics')} active={activeTab === 'forensics'} onClick={() => onTabChange('forensics')} collapsed={isCollapsed}/>
-            <NavItem icon={History} label={t('sidebar.links.audit_trail')} active={activeTab === 'trail'} onClick={() => onTabChange('trail')} collapsed={isCollapsed}/>
+          <NavSection title="INFRASTRUCTURE" collapsed={isCollapsed}>
+            <NavItem icon={Server} label="Org Hierarchy" active={activeTab === 'entities'} onClick={() => onTabChange('entities')} collapsed={isCollapsed}/>
+            <NavItem icon={MapPin} label="Discovery Hub" active={activeTab === 'discovery_center'} onClick={() => onTabChange('discovery_center')} collapsed={isCollapsed}/>
+            <NavItem icon={Tag} label="Smart Tagging" active={activeTab === 'asset_tagging'} onClick={() => onTabChange('asset_tagging')} collapsed={isCollapsed}/>
+            <NavItem icon={Activity} label="Risk Register" active={activeTab === 'regional_risk'} onClick={() => onTabChange('regional_risk')} collapsed={isCollapsed}/>
+            <NavItem icon={Route} label="Data Mapping" active={activeTab === 'data_mapping'} onClick={() => onTabChange('data_mapping')} collapsed={isCollapsed}/>
+            <NavItem icon={Building2} label="Subsidiary Detail" active={activeTab === 'subsidiary_detail'} onClick={() => onTabChange('subsidiary_detail')} collapsed={isCollapsed}/>
+            <NavItem icon={Blocks} label="Marketplace" active={activeTab === 'integrations'} onClick={() => onTabChange('integrations')} collapsed={isCollapsed}/>
           </NavSection>
 
-          <NavSection title={t('sidebar.sections.governance')} collapsed={isCollapsed}>
-            <NavItem icon={Gavel} label={t('sidebar.links.governance_portal')} active={activeTab === 'governance'} onClick={() => onTabChange('governance')} collapsed={isCollapsed}/>
-            <NavItem icon={Library} label={t('sidebar.links.policy_vault')} active={activeTab === 'policy_library'} onClick={() => onTabChange('policy_library')} collapsed={isCollapsed}/>
-            <NavItem icon={Users} label={t('sidebar.links.certifications')} active={activeTab === 'users'} onClick={() => onTabChange('users')} collapsed={isCollapsed}/>
-          </NavSection>
-
-          <NavSection title={t('sidebar.sections.infra')} collapsed={isCollapsed}>
-            <NavItem icon={Network} label={t('sidebar.links.topology')} active={activeTab === 'network_topology'} onClick={() => onTabChange('network_topology')} collapsed={isCollapsed}/>
-            <NavItem icon={Lock} label={t('sidebar.links.system_vault')} active={activeTab === 'vault'} onClick={() => onTabChange('vault')} collapsed={isCollapsed}/>
-            <NavItem icon={Server} label={t('sidebar.links.asset_mapper')} active={activeTab === 'entities'} onClick={() => onTabChange('entities')} collapsed={isCollapsed}/>
-            <NavItem icon={MapPin} label={t('sidebar.links.regional_risk')} active={activeTab === 'regional_risk'} onClick={() => onTabChange('regional_risk')} collapsed={isCollapsed}/>
-          </NavSection>
-
-          <NavSection title={t('sidebar.sections.analytics')} collapsed={isCollapsed}>
-            <NavItem icon={Brain} label={t('sidebar.links.risk_prediction')} active={activeTab === 'analytics'} onClick={() => onTabChange('analytics')} collapsed={isCollapsed}/>
-            <NavItem icon={Wallet} label={t('sidebar.links.cfo_dashboard')} active={activeTab === 'financial_dashboard'} onClick={() => onTabChange('financial_dashboard')} collapsed={isCollapsed}/>
-            <NavItem icon={BarChart3} label={t('sidebar.links.bi_reporting')} active={activeTab === 'stakeholder_reporting'} onClick={() => onTabChange('stakeholder_reporting')} collapsed={isCollapsed}/>
-          </NavSection>
-
-          <NavSection title={t('sidebar.sections.red_team')} collapsed={isCollapsed}>
-            <NavItem icon={Skull} label={t('sidebar.links.chaos_lab')} active={activeTab === 'chaos_lab'} onClick={() => onTabChange('chaos_lab')} collapsed={isCollapsed}/>
+          <NavSection title="SYSTEM" collapsed={isCollapsed}>
+            <NavItem icon={BarChart3} label="Financial Ops" active={activeTab === 'financial_dashboard'} onClick={() => onTabChange('financial_dashboard')} collapsed={isCollapsed}/>
+            <NavItem icon={Bot} label="AI Agents" active={activeTab === 'ai_agents'} onClick={() => onTabChange('ai_agents')} collapsed={isCollapsed}/>
+            <NavItem icon={AreaChart} label="AI Analytics" active={activeTab === 'ai_analytics'} onClick={() => onTabChange('ai_analytics')} collapsed={isCollapsed}/>
+            <NavItem icon={Users} label="Access Control" active={activeTab === 'access_control'} onClick={() => onTabChange('access_control')} collapsed={isCollapsed}/>
+            <NavItem icon={UserPlus} label="IDP Setup" active={activeTab === 'identity_setup'} onClick={() => onTabChange('identity_setup')} collapsed={isCollapsed}/>
+            <NavItem icon={Key} label="API Security" active={activeTab === 'api_security'} onClick={() => onTabChange('api_security')} collapsed={isCollapsed}/>
+            <NavItem icon={Lightbulb} label="Innovation Lab" active={activeTab === 'innovation_lab'} onClick={() => onTabChange('innovation_lab')} collapsed={isCollapsed}/>
+            <NavItem icon={Wrench} label="Maintenance" active={activeTab === 'maintenance'} onClick={() => onTabChange('maintenance')} collapsed={isCollapsed}/>
+            <NavItem icon={CreditCard} label="Billing & Usage" active={activeTab === 'billing'} onClick={() => onTabChange('billing')} collapsed={isCollapsed}/>
+            <NavItem icon={Settings} label="System Config" active={activeTab === 'profile'} onClick={() => onTabChange('profile')} collapsed={isCollapsed}/>
+            <NavItem icon={HelpCircle} label="Help & Support" active={activeTab === 'help'} onClick={() => onTabChange('help')} collapsed={isCollapsed}/>
           </NavSection>
         </nav>
 

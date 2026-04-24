@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { AuditMasterLayout } from '../components/AuditMasterLayout';
-import { Skeleton } from '../components/Skeleton';
+import { Skeleton } from '../components/common/Skeleton';
 import { AuditService } from '../services/AuditService';
 import { Audit, AuditTemplate } from '../types';
 import { ClipboardCheck, List, Plus } from 'lucide-react';
@@ -8,28 +8,57 @@ import { useAuth } from '@clerk/clerk-react';
 import { useLiveUpdates } from '../hooks/useLiveUpdates';
 
 // Lazy Load Modules
-const Dashboard = lazy(() => import('../components/Dashboard').then(m => ({ default: m.Dashboard })));
-const AuditRunner = lazy(() => import('../components/AuditRunner').then(m => ({ default: m.AuditRunner })));
-const AuditTrail = lazy(() => import('../components/AuditTrail').then(m => ({ default: m.AuditTrail })));
-const ComplianceHub = lazy(() => import('../components/ComplianceHub').then(m => ({ default: m.ComplianceHub })));
-const SystemVault = lazy(() => import('../components/SystemVault').then(m => ({ default: m.SystemVault })));
-const PredictiveAnalytics = lazy(() => import('../components/PredictiveAnalytics').then(m => ({ default: m.PredictiveAnalytics })));
-const GovernancePortal = lazy(() => import('../components/GovernancePortal').then(m => ({ default: m.GovernancePortal })));
-const CertificationsHub = lazy(() => import('../components/CertificationsHub').then(m => ({ default: m.CertificationsHub })));
-const RemediationWorkflow = lazy(() => import('../components/RemediationWorkflow'));
-const ForensicView = lazy(() => import('../components/ForensicView'));
-const EntityMapper = lazy(() => import('../components/EntityMapper'));
-const PolicyLibrary = lazy(() => import('../components/PolicyLibrary'));
-const IntegrityDiagnostics = lazy(() => import('../components/IntegrityDiagnostics'));
-const NetworkNodeTopology = lazy(() => import('../components/NetworkNodeTopology'));
-const RegionalRiskDrilldown = lazy(() => import('../components/RegionalRiskDrilldown'));
-const StakeholderReporting = lazy(() => import('../components/StakeholderReporting'));
-const NewAuditModal = lazy(() => import('../components/NewAuditModal').then(m => ({ default: m.NewAuditModal })));
-const WarRoom = lazy(() => import('../components/WarRoom').then(m => ({ default: m.WarRoom })));
-const ChaosLab = lazy(() => import('../components/ChaosLab'));
-const FinancialDashboard = lazy(() => import('../components/FinancialDashboard').then(m => ({ default: m.FinancialDashboard })));
-const CapabilityCenter = lazy(() => import('../components/CapabilityCenter').then(m => ({ default: m.CapabilityCenter })));
-const GuidedAuditRunner = lazy(() => import('../components/GuidedAuditRunner').then(m => ({ default: m.GuidedAuditRunner })));
+const Dashboard = lazy(() => import('../components/common/Dashboard').then(m => ({ default: m.Dashboard })));
+const AuditRunner = lazy(() => import('../components/audit/AuditRunner').then(m => ({ default: m.AuditRunner })));
+const AuditTrail = lazy(() => import('../components/audit/AuditTrail').then(m => ({ default: m.AuditTrail })));
+const ComplianceHub = lazy(() => import('../components/governance/ComplianceHub').then(m => ({ default: m.ComplianceHub })));
+const SystemVault = lazy(() => import('../components/admin/SystemVault').then(m => ({ default: m.SystemVault })));
+const PredictiveAnalytics = lazy(() => import('../components/ai/PredictiveAnalytics').then(m => ({ default: m.PredictiveAnalytics })));
+const GovernancePortal = lazy(() => import('../components/governance/GovernancePortal').then(m => ({ default: m.GovernancePortal })));
+const CertificationsHub = lazy(() => import('../components/governance/CertificationsHub').then(m => ({ default: m.CertificationsHub })));
+const ForensicView = lazy(() => import('../components/forensics/ForensicView'));
+const PolicyLibrary = lazy(() => import('../components/governance/PolicyLibrary'));
+const IntegrityDiagnostics = lazy(() => import('../components/forensics/IntegrityDiagnostics'));
+const NetworkNodeTopology = lazy(() => import('../components/infrastructure/NetworkNodeTopology'));
+const StakeholderReporting = lazy(() => import('../components/governance/StakeholderReporting'));
+const OrganizationHierarchy = lazy(() => import('../components/infrastructure/OrganizationHierarchy').then(m => ({ default: m.OrganizationHierarchy })));
+const DiscoveryCenter = lazy(() => import('../components/infrastructure/DiscoveryCenter').then(m => ({ default: m.DiscoveryCenter })));
+const RiskRegisterDashboard = lazy(() => import('../components/risk/RiskRegisterDashboard').then(m => ({ default: m.RiskRegisterDashboard })));
+const RemediationTaskBoard = lazy(() => import('../components/operations/RemediationTaskBoard'));
+const AIAgentConfiguration = lazy(() => import('../components/ai/AIAgentConfiguration'));
+const ImmutableLedgerBrowser = lazy(() => import('../components/governance/ImmutableLedgerBrowser').then(m => ({ default: m.ImmutableLedgerBrowser })));
+const IntegrationsMarketplace = lazy(() => import('../components/infrastructure/IntegrationsMarketplace'));
+const CertificationScorecard = lazy(() => import('../components/governance/CertificationScorecard'));
+const AccessControlManagement = lazy(() => import('../components/admin/AccessControlManagement'));
+const PolicyManagementCenter = lazy(() => import('../components/governance/PolicyManagementCenter').then(m => ({ default: m.PolicyManagementCenter })));
+const AssetClassification = lazy(() => import('../components/infrastructure/AssetClassification').then(m => ({ default: m.AssetClassification })));
+const UsageBillingDashboard = lazy(() => import('../components/admin/UsageBillingDashboard'));
+const TeamCollaboration = lazy(() => import('../components/operations/TeamCollaboration'));
+const AuditActionCenter = lazy(() => import('../components/operations/AuditActionCenter').then(m => ({ default: m.AuditActionCenter })));
+const VerifiedBadgeCenter = lazy(() => import('../components/governance/VerifiedBadgeCenter').then(m => ({ default: m.VerifiedBadgeCenter })));
+const ControlLibrary = lazy(() => import('../components/governance/ControlLibrary'));
+const RAGKnowledgeBase = lazy(() => import('../components/governance/RAGKnowledgeBase').then(m => ({ default: m.RAGKnowledgeBase })));
+const ReportBuilder = lazy(() => import('../components/governance/ReportBuilder'));
+const DataMappingExplorer = lazy(() => import('../components/infrastructure/DataMappingExplorer').then(m => ({ default: m.DataMappingExplorer })));
+const SubsidiaryDetail = lazy(() => import('../components/infrastructure/SubsidiaryDetail'));
+const NewAuditModal = lazy(() => import('../components/audit/NewAuditModal').then(m => ({ default: m.NewAuditModal })));
+const WarRoom = lazy(() => import('../components/operations/WarRoom'));
+const ChaosLab = lazy(() => import('../components/operations/ChaosLab'));
+const FinancialDashboard = lazy(() => import('../components/admin/FinancialDashboard').then(m => ({ default: m.FinancialDashboard })));
+const CapabilityCenter = lazy(() => import('../components/operations/CapabilityCenter').then(m => ({ default: m.CapabilityCenter })));
+const GuidedAuditRunner = lazy(() => import('../components/audit/GuidedAuditRunner').then(m => ({ default: m.GuidedAuditRunner })));
+const AIAnalyticsHub = lazy(() => import('../components/ai/AIAnalyticsHub').then(m => ({ default: m.AiAnalyticsHub })));
+const APISecurity = lazy(() => import('../components/admin/APISecurity'));
+const BatchCenter = lazy(() => import('../components/audit/BatchCenter'));
+const IdentityProviderSetup = lazy(() => import('../components/admin/IdentityProviderSetup'));
+const InnovationLab = lazy(() => import('../components/ai/InnovationLab'));
+const IncidentWorkspace = lazy(() => import('../components/operations/IncidentWorkspace'));
+const RegulatorPortal = lazy(() => import('../components/governance/RegulatorPortal'));
+const SecurityAuditLog = lazy(() => import('../components/forensics/SecurityAuditLog'));
+const SovereigntyMonitor = lazy(() => import('../components/forensics/SovereigntyMonitor'));
+const MaintenanceUpgrades = lazy(() => import('../components/admin/MaintenanceUpgrades'));
+const SystemHelp = lazy(() => import('../components/admin/SystemHelp'));
+
 
 export const DashboardContainer = () => {
   useLiveUpdates();
@@ -211,17 +240,45 @@ export const DashboardContainer = () => {
         {activeTab === 'analytics' && <PredictiveAnalytics />}
         {activeTab === 'governance' && <GovernancePortal />}
         {activeTab === 'users' && <CertificationsHub />}
-        {activeTab === 'remediation_workflow' && <RemediationWorkflow />}
+        {activeTab === 'remediation_workflow' && <RemediationTaskBoard />}
         {activeTab === 'forensics' && <ForensicView />}
-        {activeTab === 'entities' && <EntityMapper />}
+        {activeTab === 'entities' && <OrganizationHierarchy />}
         {activeTab === 'policy_library' && <PolicyLibrary />}
         {activeTab === 'integrity_diagnostics' && <IntegrityDiagnostics />}
         {activeTab === 'network_topology' && <NetworkNodeTopology />}
-        {activeTab === 'regional_risk' && <RegionalRiskDrilldown />}
+        {activeTab === 'regional_risk' && <RiskRegisterDashboard />}
+        {activeTab === 'discovery_center' && <DiscoveryCenter />}
+        {activeTab === 'ai_agents' && <AIAgentConfiguration />}
+        {activeTab === 'ledger_browser' && <ImmutableLedgerBrowser />}
+        {activeTab === 'integrations' && <IntegrationsMarketplace />}
+        {activeTab === 'certification_scorecard' && <CertificationScorecard />}
+        {activeTab === 'access_control' && <AccessControlManagement />}
         {activeTab === 'stakeholder_reporting' && <StakeholderReporting />}
         {activeTab === 'chaos_lab' && <ChaosLab />}
         {activeTab === 'financial_dashboard' && <FinancialDashboard />}
         {activeTab === 'capability_center' && <CapabilityCenter onNavigate={setActiveTab} />}
+        {activeTab === 'billing' && <UsageBillingDashboard />}
+        {activeTab === 'policy_center' && <PolicyManagementCenter />}
+        {activeTab === 'asset_tagging' && <AssetClassification />}
+        {activeTab === 'collaboration' && <TeamCollaboration />}
+        {activeTab === 'action_center' && <AuditActionCenter />}
+        {activeTab === 'badge_center' && <VerifiedBadgeCenter />}
+        {activeTab === 'control_library' && <ControlLibrary />}
+        {activeTab === 'rag_knowledge' && <RAGKnowledgeBase />}
+        {activeTab === 'report_builder' && <ReportBuilder />}
+        {activeTab === 'data_mapping' && <DataMappingExplorer />}
+                {activeTab === 'subsidiary_detail' && <SubsidiaryDetail />}
+        {activeTab === 'ai_analytics' && <AIAnalyticsHub />}
+        {activeTab === 'api_security' && <APISecurity />}
+        {activeTab === 'batch_center' && <BatchCenter />}
+        {activeTab === 'identity_setup' && <IdentityProviderSetup />}
+        {activeTab === 'innovation_lab' && <InnovationLab />}
+        {activeTab === 'incidents' && <IncidentWorkspace />}
+        {activeTab === 'regulator' && <RegulatorPortal />}
+        {activeTab === 'security_log' && <SecurityAuditLog />}
+        {activeTab === 'sovereignty' && <SovereigntyMonitor />}
+        {activeTab === 'maintenance' && <MaintenanceUpgrades />}
+        {activeTab === 'help' && <SystemHelp />}
       </Suspense>
     </AuditMasterLayout>
   );

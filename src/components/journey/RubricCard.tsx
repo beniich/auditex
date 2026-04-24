@@ -1,137 +1,151 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Rubric, RubricStatus, AuditQuestion } from '../../types';
+import { CheckCircle2, Lock, ChevronDown, ChevronUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Check, Lock, ChevronDown, ChevronRight, AlertCircle, Camera, RefreshCw } from 'lucide-react';
-import { Rubric, RubricStatus, Audit, AuditQuestion } from '../../types';
 
 interface RubricCardProps {
   rubric: Rubric;
   status: RubricStatus;
   questions: AuditQuestion[];
-  responses: any;
-  onQuestionResponse: (questionId: string, value: any) => void | Promise<void>;
-  onComplete: () => void | Promise<void>;
-  isSaving?: boolean;
+  responses: Record<string, any>;
+  onComplete: (rubricId: string, questionIds: string[]) => void;
+  onQuestionResponse: (questionId: string, value: any) => void;
 }
 
-export const RubricCard = ({ 
+export const RubricCard: React.FC<RubricCardProps> = ({ 
   rubric, 
   status, 
   questions, 
   responses, 
-  onQuestionResponse, 
-  onComplete,
-  isSaving 
-}: RubricCardProps) => {
+  onComplete, 
+  onQuestionResponse 
+}) => {
+  const [isHovered, setIsHovered] = useState(false);
   const isLocked = status === 'LOCKED';
   const isCompleted = status === 'COMPLETED' || status === 'AI_VALIDATED';
   const isActive = status === 'ACTIVE';
 
   const allRequiredAnswered = questions
     .filter(q => q.required)
-    .every(q => responses[q.id]?.value !== undefined);
+    .every(q => responses[q.id] !== undefined && responses[q.id] !== '');
+
+  const handleValidate = () => {
+    if (allRequiredAnswered) {
+      onComplete(rubric.id, rubric.questionIds);
+    }
+  };
 
   return (
-    <div className={`overflow-hidden transition-all duration-500 border rounded-[2.5rem] ${
-      isActive 
-        ? 'bg-white border-blue-200 shadow-xl shadow-blue-900/5' 
-        : isCompleted
-        ? 'bg-slate-50/50 border-slate-100 opacity-80'
-        : 'bg-slate-50/30 border-slate-100 opacity-50 grayscale'
-    }`}>
-      {/* Header */}
-      <div className="p-8 flex items-center justify-between">
-        <div className="flex items-center gap-6">
-          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${
-            isCompleted ? 'bg-emerald-500 text-white animate-lock-seal' : isActive ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-400'
-          }`}>
-            {isCompleted ? <Check size={24} /> : isLocked ? <Lock size={20} /> : <ChevronRight size={20} />}
-          </div>
-          <div>
-            <h3 className={`text-xl font-black uppercase tracking-tight ${isActive ? 'text-[#091426]' : 'text-slate-500'}`}>
-              {rubric.label}
-            </h3>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
-              {questions.length} Points de Contrôle • {isCompleted ? 'Validé' : isActive ? 'En cours' : 'Verrouillé'}
-            </p>
-          </div>
+    <div 
+      className={`border rounded-[2.5rem] overflow-hidden transition-all duration-500 ${
+        isLocked 
+          ? 'bg-slate-50 border-slate-100 opacity-60 grayscale' 
+          : isActive 
+             ? 'bg-white border-blue-200 shadow-xl shadow-blue-900/5' 
+             : 'bg-emerald-50/30 border-emerald-100 shadow-sm'
+      }`}
+    >
+      <div 
+        className="p-8 pb-6 flex items-center justify-between cursor-default"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        <div className="flex flex-col">
+           <div className="flex items-center gap-3 mb-2">
+             <span className={`text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-lg border ${
+               isLocked ? 'bg-slate-100 text-slate-400 border-slate-200' :
+               isActive ? 'bg-blue-50 text-blue-600 border-blue-100' :
+               'bg-emerald-50 text-emerald-600 border-emerald-100'
+             }`}>
+               {status.replace('_', ' ')}
+             </span>
+             {rubric.required && <span className="text-[9px] font-bold text-red-500 uppercase tracking-widest bg-red-50 px-2 py-0.5 rounded">Requis</span>}
+           </div>
+           <h3 className={`text-xl font-black uppercase tracking-tight ${isLocked ? 'text-slate-400' : 'text-[#091426]'}`}>
+             {rubric.label}
+           </h3>
+           <p className="text-slate-500 text-sm mt-1">{rubric.description}</p>
         </div>
-
-        {isActive && allRequiredAnswered && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            onClick={onComplete}
-            disabled={isSaving}
-            className="px-8 py-3 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20 hover:scale-105 transition-all flex items-center gap-2"
-          >
-            {isSaving ? <RefreshCw size={14} className="animate-spin" /> : <Check size={14} />}
-            Sceller l'analyse
-          </motion.button>
-        )}
+        
+        <div>
+          {isCompleted ? (
+            <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center">
+               <Lock size={24} />
+            </div>
+          ) : isLocked ? (
+             <div className="w-14 h-14 bg-slate-100 text-slate-300 rounded-2xl flex items-center justify-center">
+               <Lock size={24} />
+             </div>
+          ) : (
+             <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-colors ${allRequiredAnswered ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-400'}`}>
+                {isHovered ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
+             </div>
+          )}
+        </div>
       </div>
 
-      {/* Content */}
       <AnimatePresence>
         {isActive && (
-          <motion.div
+          <motion.div 
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="border-t border-slate-50 p-8 space-y-10"
+            className="px-8 pb-8"
           >
-            {questions.map((q) => (
-              <div key={q.id} className="space-y-6">
-                <div className="flex justify-between items-start gap-6">
-                  <div className="flex-1">
-                    <h4 className="text-lg font-black text-[#091426] leading-tight uppercase tracking-tight">
-                      {q.text}
-                      {q.required && <span className="text-red-500 ml-1">*</span>}
-                    </h4>
-                  </div>
-                </div>
+            <div className="space-y-6 pt-4 border-t border-slate-100">
+               {questions.map((q) => (
+                 <div key={q.id} className="p-6 bg-slate-50/50 border border-slate-100 rounded-3xl group hover:bg-white transition-colors">
+                    <label className="flex items-start justify-between gap-4">
+                       <span className="text-sm font-bold text-[#091426] w-2/3 leading-relaxed">{q.text} {q.required && <span className="text-red-500">*</span>}</span>
+                       <div className="w-1/3 flex justify-end">
+                          {q.type === 'YES_NO' ? (
+                             <div className="flex bg-slate-100 p-1 rounded-xl">
+                                <button
+                                  onClick={() => onQuestionResponse(q.id, true)}
+                                  className={`px-6 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${responses[q.id] === true ? 'bg-emerald-500 text-white shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
+                                >Oui</button>
+                                <button
+                                  onClick={() => onQuestionResponse(q.id, false)}
+                                  className={`px-6 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${responses[q.id] === false ? 'bg-red-500 text-white shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
+                                >Non</button>
+                             </div>
+                          ) : q.type === 'SCORE' ? (
+                             <input 
+                               type="number" 
+                               min="0" max="100" 
+                               value={responses[q.id] || ''}
+                               onChange={(e) => onQuestionResponse(q.id, parseInt(e.target.value))}
+                               className="w-24 text-center py-2 bg-white border border-slate-200 rounded-xl text-sm font-bold focus:ring-4 focus:ring-blue-100 outline-none"
+                               placeholder="0-100"
+                             />
+                          ) : (
+                             <input
+                               type="text"
+                               value={responses[q.id] || ''}
+                               onChange={(e) => onQuestionResponse(q.id, e.target.value)}
+                               className="w-full bg-white py-2 px-4 border border-slate-200 rounded-xl text-sm font-medium focus:ring-4 focus:ring-blue-100 outline-none"
+                               placeholder="Réponse étudiée..."
+                             />
+                          )}
+                       </div>
+                    </label>
+                 </div>
+               ))}
+            </div>
 
-                <div className="space-y-4">
-                  {q.type === 'YES_NO' && (
-                    <div className="grid grid-cols-2 gap-4">
-                      {[true, false].map((val) => (
-                        <button
-                          key={String(val)}
-                          onClick={() => onQuestionResponse(q.id, val)}
-                          className={`flex items-center gap-4 p-5 rounded-2xl border-2 transition-all ${
-                            responses[q.id]?.value === val
-                              ? val 
-                                ? 'bg-emerald-50 border-emerald-500 text-emerald-700' 
-                                : 'bg-red-50 border-red-500 text-red-700'
-                              : 'bg-slate-50/50 border-transparent text-slate-400 hover:border-slate-200'
-                          }`}
-                        >
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                            responses[q.id]?.value === val 
-                              ? val ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'
-                              : 'bg-white text-slate-300'
-                          }`}>
-                            {val ? <Check size={18} /> : <AlertCircle size={18} />}
-                          </div>
-                          <span className="text-[10px] font-black uppercase tracking-widest">
-                            {val ? 'Conforme' : 'Écart'}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {q.type === 'TEXT' && (
-                    <textarea
-                      rows={3}
-                      defaultValue={responses[q.id]?.value || ''}
-                      onBlur={(e) => onQuestionResponse(q.id, e.target.value)}
-                      placeholder="Commentaires techniques..."
-                      className="w-full p-6 bg-slate-50/50 border border-slate-100 rounded-2xl text-sm font-medium focus:ring-4 focus:ring-blue-500/5 outline-none transition-all"
-                    />
-                  )}
-                </div>
-              </div>
-            ))}
+            <div className="mt-8 flex justify-end">
+               <button
+                 onClick={handleValidate}
+                 disabled={!allRequiredAnswered}
+                 className={`flex items-center gap-2 px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-xl ${
+                   allRequiredAnswered 
+                     ? 'bg-[#091426] text-white hover:bg-slate-800' 
+                     : 'bg-slate-100 text-slate-400 cursor-not-allowed opacity-60'
+                 }`}
+               >
+                 <CheckCircle2 size={16} /> Verrouiller la Rubrique
+               </button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

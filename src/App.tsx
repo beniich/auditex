@@ -1,6 +1,6 @@
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { ProtectedRoute } from './components/ProtectedRoute';
+import { ProtectedRoute } from './components/common/ProtectedRoute';
 import { PublicLayout } from './pages/layout/PublicLayout';
 import { LandingPage } from './pages/LandingPage';
 import { AboutPage } from './pages/AboutPage';
@@ -12,7 +12,7 @@ import { PartnerPortalPage } from './pages/PartnerPortalPage';
 import { WebinarPage } from './pages/WebinarPage';
 import { RiskCalculatorPage } from './pages/RiskCalculatorPage';
 import { ChaosLabPublic } from './pages/ChaosLabPublic';
-import { Skeleton } from './components/Skeleton';
+import { Skeleton } from './components/common/Skeleton';
 
 // Lazy load the internal app container
 const DashboardContainer = lazy(() => import('./pages/DashboardContainer').then(m => ({ default: m.DashboardContainer })));

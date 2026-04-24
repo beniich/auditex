@@ -1,111 +1,71 @@
 import React from 'react';
+import { Shield, Fingerprint, Lock, Server, Cpu, Command, Brain, ArrowRight } from 'lucide-react';
 import { motion } from 'motion/react';
-import { Shield, Lock, Cpu, Network, Zap, CheckCircle2, ArrowRight } from 'lucide-react';
-
-const securityFeatures = [
-  {
-    icon: Lock,
-    title: 'Immutable SHA-256 Ledger',
-    description: 'Chaque transaction, mise à jour de politique ou changement de configuration est ancré dans un ledger protégé contre toute altération.'
-  },
-  {
-    icon: Zap,
-    title: 'Agentic AI Zero-Hallucination',
-    description: 'Nos modèles IA sont entraînés sur des données vérifiées, fournissant une détection des menaces et une analyse de conformité sans erreur.'
-  },
-  {
-    icon: Network,
-    title: 'Dynamic Force Graph',
-    description: 'Visualisation interactive et en temps réel des interdépendances à travers tout votre écosystème d\'entreprise.'
-  }
-];
 
 export const CISOPage = () => {
   return (
-    <div className="bg-white text-[#091426] pt-32 pb-24">
-      {/* --- HERO --- */}
-      <section className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-20 items-center mb-32">
-        <div className="space-y-8">
-          <div className="inline-flex items-center gap-2 text-blue-600">
-            <Shield size={20} />
-            <span className="text-xs font-black uppercase tracking-[0.3em]">CISO Strategy & Resilience</span>
-          </div>
-          <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.9] uppercase">
-            Military-Grade <br />
-            Infrastructure, <br />
-            <span className="text-blue-600">Agentic AI Defense.</span>
-          </h1>
-          <p className="text-xl text-slate-500 font-medium leading-relaxed max-w-xl">
-            Sécurisez votre entreprise avec l'OS de conformité AuditAX, doté d'un ledger SHA-256 immuable pour une gestion des risques inégalée.
-          </p>
-          <div className="flex flex-wrap gap-4 pt-4">
-             <button className="px-8 py-4 bg-[#091426] text-white font-black uppercase tracking-widest rounded-full hover:bg-blue-600 transition-all shadow-xl">
-                Explore Security Architecture
-             </button>
-             <button className="px-8 py-4 bg-slate-100 text-[#091426] font-black uppercase tracking-widest rounded-full hover:bg-slate-200 transition-all">
-                Speak to a Peer
-             </button>
-          </div>
+    <div className="bg-[#0a0e1a] text-white min-h-screen">
+      {/* Hero */}
+      <section className="pt-32 pb-20 px-6 max-w-7xl mx-auto flex flex-col items-center text-center">
+        <div className="w-16 h-16 bg-blue-500/10 border border-blue-500/30 rounded-2xl flex items-center justify-center mb-6">
+          <Shield className="text-blue-400" size={32} />
         </div>
-
-        <div className="relative">
-           {/* Graphical element representing the "Defense Pipeline" */}
-           <motion.div 
-             initial={{ opacity: 0, scale: 0.9 }}
-             animate={{ opacity: 1, scale: 1 }}
-             className="p-12 rounded-[3.5rem] bg-slate-50 border border-slate-100 shadow-sm relative overflow-hidden"
-           >
-              <div className="absolute top-0 right-0 w-64 h-64 bg-blue-100/50 rounded-full -mr-32 -mt-32 blur-3xl" />
-              <div className="relative z-10 space-y-8">
-                 <div className="flex justify-center mb-12">
-                   <div className="w-24 h-24 bg-white rounded-3xl shadow-xl flex items-center justify-center text-blue-600">
-                     <Cpu size={48} className="animate-pulse" />
-                   </div>
-                 </div>
-                 
-                 {/* Logic Engine diagram simulation */}
-                 <div className="flex items-center gap-4">
-                    <div className="flex-1 h-16 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-[10px] font-black uppercase tracking-widest text-slate-400">Ingest</div>
-                    <ArrowRight size={16} className="text-slate-300" />
-                    <div className="flex-1 h-16 rounded-xl bg-blue-600 text-white flex items-center justify-center text-[10px] font-black uppercase tracking-widest">Logic Engine</div>
-                    <ArrowRight size={16} className="text-slate-300" />
-                    <div className="flex-1 h-16 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-[10px] font-black uppercase tracking-widest text-slate-400">Output</div>
-                 </div>
-                 
-                 <div className="text-center">
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-600">Zero Hallucination AI Defense Pipeline</p>
-                 </div>
-              </div>
-           </motion.div>
+        <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-6 relative">
+          Military-Grade <span className="text-blue-500">Infrastructure</span>.<br /> Agentic AI Defense.
+        </h1>
+        <p className="text-xl text-slate-400 max-w-2xl mx-auto font-medium mb-10">
+          Laissez vos équipes de sécurité se concentrer sur l'investigation, notre IA s'occupe de la corrélation et des logs d'audit 24/7 sans la moindre faille.
+        </p>
+        <div className="flex gap-4">
+           <button className="px-8 py-3 rounded-full bg-blue-600 hover:bg-blue-500 font-bold uppercase tracking-widest text-xs transition">
+             Explore Architecture
+           </button>
+           <button className="px-8 py-3 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 font-bold uppercase tracking-widest text-xs transition">
+             Parler à un confrère
+           </button>
         </div>
       </section>
 
-      {/* --- FEATURES --- */}
-      <section className="bg-slate-50 py-32">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid md:grid-cols-3 gap-12">
-             {securityFeatures.map((f, i) => (
-                <div key={f.title} className="p-10 bg-white rounded-[2.5rem] border border-slate-200 shadow-sm space-y-6">
-                   <div className="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center">
-                      <f.icon size={32} />
-                   </div>
-                   <h3 className="text-2xl font-black uppercase tracking-tight">{f.title}</h3>
-                   <p className="text-slate-500 font-medium leading-relaxed">{f.description}</p>
-                </div>
-             ))}
-          </div>
-        </div>
+      {/* Grid */}
+      <section className="py-20 px-6 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+         <div className="bg-[#111827] border border-blue-500/20 p-8 rounded-3xl relative overflow-hidden group hover:border-blue-500 transition">
+            <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition"><Fingerprint size={120} /></div>
+            <Lock className="text-blue-400 mb-6" size={32} />
+            <h3 className="text-2xl font-black mb-3">SHA-256 Ledger</h3>
+            <p className="text-slate-400 text-sm leading-relaxed">Immutabilité totale. Chaque événement système est haché en SHA-256 formant une chaîne forensique incorruptible pour l'audit.</p>
+         </div>
+         <div className="bg-[#111827] border border-blue-500/20 p-8 rounded-3xl relative overflow-hidden group hover:border-blue-500 transition">
+            <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition"><Cpu size={120} /></div>
+            <Brain className="text-blue-400 mb-6" size={32} />
+            <h3 className="text-2xl font-black mb-3">AI Agentic 0 Hallucination</h3>
+            <p className="text-slate-400 text-sm leading-relaxed">Notre moteur RAG analyse les frameworks (ISO 27001, SOC2) et valide vos contrôles uniquement avec des preuves factuelles d'infrastructure.</p>
+         </div>
+         <div className="bg-[#111827] border border-blue-500/20 p-8 rounded-3xl relative overflow-hidden group hover:border-blue-500 transition">
+            <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition"><Server size={120} /></div>
+            <Command className="text-blue-400 mb-6" size={32} />
+            <h3 className="text-2xl font-black mb-3">API-First Integration</h3>
+            <p className="text-slate-400 text-sm leading-relaxed">Connecteurs directs natifs vers AWS, GCP, et Azure pour lire vos configurations cloud de manière continue sans friction (Read-only).</p>
+         </div>
       </section>
 
-      {/* --- CERTIFICATIONS --- */}
-      <section className="max-w-5xl mx-auto px-6 py-32 text-center space-y-16">
-         <h2 className="text-sm font-black uppercase tracking-[0.4em] text-slate-400">Global Security Standards</h2>
-         <div className="flex flex-wrap justify-between gap-12 opacity-40 grayscale items-center">
-            <span className="text-4xl font-black tracking-tighter uppercase whitespace-nowrap">ISO 27001</span>
-            <span className="text-4xl font-black tracking-tighter uppercase whitespace-nowrap">SOC 2 Type II</span>
-            <span className="text-4xl font-black tracking-tighter uppercase whitespace-nowrap">GDPR</span>
-            <span className="text-4xl font-black tracking-tighter uppercase whitespace-nowrap">PCI DSS</span>
-            <span className="text-4xl font-black tracking-tighter uppercase whitespace-nowrap">AES-256</span>
+      {/* Trust & Pipeline */}
+      <section className="py-20 px-6 max-w-7xl mx-auto text-center border-t border-white/10">
+         <h2 className="text-sm font-black text-slate-500 uppercase tracking-[0.3em] mb-12">Zero Hallucination Defense Pipeline</h2>
+         <div className="bg-[#111827] border border-white/10 rounded-3xl p-10 flex flex-col md:flex-row items-center justify-between gap-6 overflow-hidden">
+            <div className="flex-1 border border-white/5 bg-[#0a0e1a] rounded-2xl p-6 text-center">
+               <span className="text-xs font-mono text-emerald-400 uppercase">Input Node</span>
+               <div className="text-xl font-bold mt-2">Cloud Connectors</div>
+            </div>
+            <ArrowRight className="text-slate-500 hidden md:block" />
+            <div className="flex-1 border border-blue-500/30 bg-blue-900/10 rounded-2xl p-6 text-center relative shadow-[0_0_30px_rgba(59,130,246,0.1)]">
+               <span className="text-xs font-mono text-blue-400 uppercase">Vérification</span>
+               <div className="text-xl font-bold mt-2">Agentic RAG Engine</div>
+            </div>
+            <ArrowRight className="text-slate-500 hidden md:block" />
+            <div className="flex-1 border border-white/5 bg-[#0a0e1a] rounded-2xl p-6 text-center">
+               <span className="text-xs font-mono text-white uppercase">Output Node</span>
+               <div className="text-xl font-bold mt-2">Ledger Inscription</div>
+            </div>
          </div>
       </section>
     </div>

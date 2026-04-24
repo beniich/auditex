@@ -1,58 +1,46 @@
 import React from 'react';
-import { motion } from 'motion/react';
 
 interface ProgressRingProps {
-  progress: number; // 0 to 100
+  progress: number;
   size?: number;
-  strokeWidth?: number;
   label?: string;
 }
 
-export const ProgressRing = ({ progress, size = 120, strokeWidth = 8, label }: ProgressRingProps) => {
+export const ProgressRing: React.FC<ProgressRingProps> = ({ progress, size = 80, label }) => {
+  const strokeWidth = size * 0.1;
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const offset = circumference - (progress / 100) * circumference;
 
   return (
-    <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="transform -rotate-90">
-        {/* Background Circle */}
+    <div className="flex flex-col items-center justify-center relative" style={{ width: size, height: size }}>
+      <svg className="transform -rotate-90 w-full h-full">
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
+          fill="transparent"
           stroke="currentColor"
           strokeWidth={strokeWidth}
-          fill="transparent"
           className="text-slate-100"
         />
-        {/* Progress Circle */}
-        <motion.circle
+        <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
+          fill="transparent"
           stroke="currentColor"
           strokeWidth={strokeWidth}
           strokeDasharray={circumference}
-          initial={{ strokeDashoffset: circumference }}
-          animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 1, ease: "easeOut" }}
+          strokeDashoffset={offset}
           strokeLinecap="round"
-          fill="transparent"
-          className="text-blue-600"
+          className="text-blue-600 transition-all duration-1000 ease-out"
         />
       </svg>
-      
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-        <span className="text-xl font-black text-[#091426] tracking-tighter">
-          {Math.round(progress)}%
-        </span>
-        {label && (
-          <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">
-            {label}
-          </span>
-        )}
+      <div className="absolute flex flex-col items-center justify-center inset-0">
+        <span className="text-sm font-black text-[#091426]">{Math.round(progress)}%</span>
       </div>
+      {label && <div className="absolute -bottom-6 text-center w-full min-w-max"><span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">{label}</span></div>}
     </div>
   );
 };

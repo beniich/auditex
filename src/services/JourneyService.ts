@@ -1,40 +1,26 @@
 import { AuditService } from './AuditService';
-import { JourneyState, RubricStatus } from '../types';
+import { JourneyState } from '../types';
 
-/**
- * Service to manage Journey-specific persistence within the immutable audit ledger.
- */
-export const JourneyService = {
-  /**
-   * Persists a journey state change as a ledger event.
-   */
-  async trackStepCompletion(auditId: string, stepIndex: number, insight?: string) {
-    return AuditService.appendEvent(auditId, 'JOURNEY_STEP_COMPLETED', {
-      stepIndex,
-      insight,
-      timestamp: new Date().toISOString()
-    });
-  },
+export class JourneyService {
+  static async saveState(auditId: string, state: JourneyState) {
+    try {
+      // Serialize Sets into Arrays for JSON storage in the ledger
+      const serializedState = {
+        ...state,
+        lockedResponses: Array.from(state.lockedResponses)
+      };
 
-  /**
-   * Records the transition to a locked state for a rubric.
-   */
-  async lockRubric(auditId: string, rubricId: string, validationType: 'MANUAL' | 'AI') {
-    return AuditService.appendEvent(auditId, 'RUBRIC_LOCKED', {
-      rubricId,
-      validationType,
-      timestamp: new Date().toISOString()
-    });
-  },
-
-  /**
-   * AI Analysis of a step completion to prepare prefills for the next step.
-   */
-  async saveAiTransitionInsight(auditId: string, stepIndex: number, insight: any) {
-    return AuditService.appendEvent(auditId, 'AI_TRANSITION_INSIGHT', {
-      stepIndex,
-      insight,
-      timestamp: new Date().toISOString()
-    });
+      await AuditService.appendEvent(auditId, 'JOURNEY_STATE_UPDATE', serializedState);
+    } catch (e) {
+      console.error('Failed to sync Journey State to ledger:', e);
+    }
   }
-};
+
+  static async logMilestone(auditId: string, stepIdx: number) {
+    try {
+      await AuditService.appendEvent(auditId, 'JOURNEY_STEP_COMPLETED', { step: stepIdx });
+    } catch (e) {
+      console.error('Failed to sync Milestone to ledger:', e);
+    }
+  }
+}

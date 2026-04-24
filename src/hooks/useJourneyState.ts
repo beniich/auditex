@@ -1,204 +1,111 @@
-import { useState, useEffect, useMemo } from 'react';
-import { Audit, AuditTemplate, JourneyState, RubricStatus } from '../types';
-import { buildJourneyFromTemplate } from '../config/auditJourney';
+import { useState, useCallback } from 'react';
+import { AuditTemplate, JourneyState, RubricStatus } from '../types';
 import { JourneyService } from '../services/JourneyService';
-import { AiApiService } from '../services/AiApiService';
+import { buildJourneyFromTemplate } from '../config/auditJourney';
 import { toast } from './useToast';
-import { AuditService } from '../services/AuditService';
 
-interface ExtendedJourneyState extends JourneyState {
-  isTransitioning: boolean;
-  currentInsight: any | null;
-  prefillsApplied: number;
-}
-
-/**
- * Central hook for managing the Guided Compliance Journey state.
- * Handles locking, progression, and state persistence.
- */
-export const useJourneyState = (audit: Audit | null, template: AuditTemplate, onRefreshAudit: () => Promise<void>) => {
-  const journeys = useMemo(() => buildJourneyFromTemplate(template), [template]);
+export const useJourneyState = (auditId: string, template: AuditTemplate) => {
+  const journeySteps = buildJourneyFromTemplate(template);
   
-  const [state, setState] = useState<ExtendedJourneyState>({
-    currentStep: 0,
+  const [journeyState, setJourneyState] = useState<JourneyState>({
+    currentStep: 1,
     rubricStatuses: {},
     stepValidations: {},
     aiTransitionInsights: {},
-    lockedResponses: new Set(),
-    isTransitioning: false,
-    currentInsight: null,
-    prefillsApplied: 0
+    lockedResponses: new Set<string>()
   });
 
-  // Initialize status from audit data if available
-  useEffect(() => {
-    if (!audit || journeys.length === 0) return;
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [transitionInsight, setTransitionInsight] = useState<any>(null);
 
-    const initialStatuses: Record<string, RubricStatus> = {};
-    const initialLocked = new Set<string>();
-
-    journeys.forEach((step, sIdx) => {
-      step.rubrics.forEach(rubric => {
-        // Simple logic: if all questions in rubric have responses, mark as potentially completed
-        const isCompleted = rubric.questionIds.every(qId => audit.responses[qId] !== undefined);
-        
-        // In a real scenario, we'd fetch the LOCKED status from the ledger (events)
-        // For now, we derive it or set to ACTIVE for the first one
-        if (sIdx === 0 && !isCompleted && !initialStatuses[rubric.id]) {
-           initialStatuses[rubric.id] = 'ACTIVE';
-        } else if (isCompleted) {
-           initialStatuses[rubric.id] = 'COMPLETED';
-           rubric.questionIds.forEach(id => initialLocked.add(id));
-        } else if (!initialStatuses[rubric.id]) {
-           initialStatuses[rubric.id] = 'LOCKED';
-        }
-      });
-    });
-
-    setState(prev => ({
-      ...prev,
-      rubricStatuses: initialStatuses,
-      lockedResponses: initialLocked
-    }));
-  }, [audit, journeys]);
-
-  const currentStepData = journeys[state.currentStep];
-
-  /**
-   * Locks a rubric and potentially unlocks the next one.
-   */
-  const completeRubric = async (rubricId: string) => {
-    if (!audit) return;
-
-    try {
-      await JourneyService.lockRubric(audit.id, rubricId, 'MANUAL');
+  const completeRubric = useCallback((rubricId: string, questionIds: string[]) => {
+    setJourneyState(prev => {
+      const newLocked = new Set(prev.lockedResponses);
+      questionIds.forEach(id => newLocked.add(id));
       
-      setState(prev => {
-        const nextStatuses = { ...prev.rubricStatuses, [rubricId]: 'COMPLETED' as RubricStatus };
-        const nextLocked = new Set(prev.lockedResponses);
-        
-        // Lock all questions in this rubric
-        const rubric = journeys.flatMap(s => s.rubrics).find(r => r.id === rubricId);
-        rubric?.questionIds.forEach(id => nextLocked.add(id));
-
-        // Unlock next rubric in the same step
-        const stepRubrics = journeys[prev.currentStep].rubrics;
-        const currentIdx = stepRubrics.findIndex(r => r.id === rubricId);
-        if (currentIdx < stepRubrics.length - 1) {
-          const nextRubric = stepRubrics[currentIdx + 1];
-          nextStatuses[nextRubric.id] = 'ACTIVE';
-        }
-
-        return {
-          ...prev,
-          rubricStatuses: nextStatuses,
-          lockedResponses: nextLocked
-        };
-      });
-
-      toast.success('Rubrique validée et verrouillée au ledger.', 'Compliance Engine');
-    } catch (err) {
-      toast.error('Erreur lors du verrouillage de la rubrique.');
-    }
-  };
-
-  /**
-   * Advances to the next jalon (step) in the timeline.
-   */
-  const advanceStep = async () => {
-    if (!audit || state.currentStep >= journeys.length - 1) return;
-
-    setState(prev => ({ ...prev, isTransitioning: true, currentInsight: null }));
-
-    try {
-      // 1. Analyze transition with AI
-      const insight = await AiApiService.analyzeStepTransition(audit.id, state.currentStep);
-      
-      // 2. Persist insight to ledger
-      await JourneyService.saveAiTransitionInsight(audit.id, state.currentStep, insight);
-      
-      setState(prev => ({ 
-        ...prev, 
-        currentInsight: insight,
-        prefillsApplied: insight.prefills?.length || 0
-      }));
-
-      // Note: We don't increment currentStep yet, the overlay does it onContinue
-    } catch (err) {
-      console.error(err);
-      toast.error('Échec de l\'analyse de transition. Passage manuel.');
-      completeTransition();
-    }
-  };
-
-  const completeTransition = () => {
-    if (state.currentStep >= journeys.length - 1) return;
-
-    const nextStepIdx = state.currentStep + 1;
-    
-    setState(prev => {
-      const nextStatuses = { ...prev.rubricStatuses };
-      const firstRubricOfNextStep = journeys[nextStepIdx].rubrics[0];
-      if (firstRubricOfNextStep) {
-        nextStatuses[firstRubricOfNextStep.id] = 'ACTIVE';
-      }
-
-      return {
+      const newState = {
         ...prev,
-        currentStep: nextStepIdx,
-        rubricStatuses: nextStatuses,
-        isTransitioning: false
+        rubricStatuses: {
+          ...prev.rubricStatuses,
+          [rubricId]: 'COMPLETED' as RubricStatus
+        },
+        lockedResponses: newLocked
       };
+
+      JourneyService.saveState(auditId, newState);
+      return newState;
     });
+    toast.success('Rubrique verrouillée dans le ledger', 'Gouvernance Active');
+  }, [auditId]);
 
-    // Handle AI Prefills if any
-    if (state.currentInsight?.prefills?.length > 0) {
-      applyPrefills(state.currentInsight.prefills);
-    }
-  };
+  const unlockRubric = useCallback((rubricId: string, questionIds: string[]) => {
+    setJourneyState(prev => {
+      const newLocked = new Set(prev.lockedResponses);
+      questionIds.forEach(id => newLocked.delete(id));
+      
+      const newState = {
+        ...prev,
+        rubricStatuses: {
+          ...prev.rubricStatuses,
+          [rubricId]: 'ACTIVE' as RubricStatus
+        },
+        lockedResponses: newLocked
+      };
+      
+      JourneyService.saveState(auditId, newState);
+      return newState;
+    });
+    toast.info('Verrou levé sur la rubrique. Changements audités.', 'Override Administrateur');
+  }, [auditId]);
 
-  const applyPrefills = async (prefills: any[]) => {
-    if (!audit) return;
-    
-    try {
-      for (const prefill of prefills) {
-        // Only prefill if no value exists
-        if (!audit.responses[prefill.questionId]) {
-          await AuditService.appendEvent(audit.id, 'RESPONSE_UPDATED', {
-            questionId: prefill.questionId,
-            value: prefill.suggestedValue,
-            isAiPrefill: true,
-            confidence: prefill.confidence,
-            timestamp: new Date().toISOString()
-          });
-        }
-      }
-      await onRefreshAudit();
-      toast.success(`Succès : ${prefills.length} suggestions IA appliquées.`);
-    } catch (err) {
-      console.error('Prefill failed', err);
-    }
-  };
+  const triggerTransition = useCallback(async (currentStepIdx: number, insightData: any) => {
+    setIsTransitioning(true);
+    setTransitionInsight(insightData);
+  }, []);
 
-  const isStepComplete = (stepIdx: number) => {
-    const step = journeys[stepIdx];
-    if (!step) return false;
-    return step.rubrics.every(r => state.rubricStatuses[r.id] === 'COMPLETED');
-  };
+  const advanceStepAfterTransition = useCallback(() => {
+    setJourneyState(prev => {
+      const nextStep = prev.currentStep + 1;
+      const newState = {
+        ...prev,
+        stepValidations: {
+          ...prev.stepValidations,
+          [prev.currentStep]: true
+        },
+        currentStep: nextStep <= journeySteps.length ? nextStep : prev.currentStep
+      };
+      
+      JourneyService.saveState(auditId, newState);
+      JourneyService.logMilestone(auditId, prev.currentStep);
+      return newState;
+    });
+    setIsTransitioning(false);
+    // Insight cleanup happens explicitly if needed, but we keep it for now so the next step can use it
+  }, [auditId, journeySteps.length]);
 
-  return {
-    journeys,
-    currentStep: state.currentStep,
-    currentStepData,
-    rubricStatuses: state.rubricStatuses,
-    lockedResponses: state.lockedResponses,
-    isTransitioning: state.isTransitioning,
-    currentInsight: state.currentInsight,
-    prefillsApplied: state.prefillsApplied,
-    resetPrefillCount: () => setState(prev => ({ ...prev, prefillsApplied: 0 })),
-    completeRubric,
-    advanceStep,
-    completeTransition,
-    isStepComplete
+  const dismissInsight = useCallback(() => {
+    setTransitionInsight(null);
+  }, []);
+
+  const isStepComplete = useCallback((stepIdx: number) => {
+    return !!journeyState.stepValidations[stepIdx];
+  }, [journeyState.stepValidations]);
+
+  const isRubricLocked = useCallback((rubricId: string) => {
+    return journeyState.rubricStatuses[rubricId] === 'COMPLETED' || journeyState.rubricStatuses[rubricId] === 'AI_VALIDATED';
+  }, [journeyState.rubricStatuses]);
+
+  return { 
+    journeySteps,
+    journeyState, 
+    completeRubric, 
+    unlockRubric, 
+    triggerTransition,
+    advanceStepAfterTransition,
+    isTransitioning,
+    transitionInsight,
+    dismissInsight,
+    isStepComplete, 
+    isRubricLocked 
   };
 };
