@@ -1,0 +1,42 @@
+{
+  "topology": "Topologie de la Mission",
+  "progress": "Progression Globale",
+  "status": {
+    "verified": "VÉRIFIÉ",
+    "active": "ACTIF",
+    "locked": "VERROUILLÉ"
+  },
+  "execution": {
+    "title": "Suite d'Exécution Guidée",
+    "syncing": "Synchronisation au Ledger",
+    "export": "Exporter le Rapport",
+    "requirement_node": "Nœud d'Exigence",
+    "upload_proof": "Téléverser Preuve",
+    "supported_files": "Images / PDFs Supportés",
+    "finalize": "Finaliser le Protocole",
+    "continue": "Continuer",
+    "previous": "Zone Précédente",
+    "respond_text": "Décrivez votre évaluation technique...",
+    "conformant": "CONFORME",
+    "deviation": "DÉVIATION"
+  },
+  "ai_hub": {
+    "title": "Centre de Décision IA",
+    "precision_mode": "Mode de Précision",
+    "budget": "Budget IA",
+    "auto_registry": "Auto-Registre",
+    "anchored": "Ancré au Ledger",
+    "accept": "Accepter",
+    "reject": "Rejeter",
+    "analyzing": "ANALYSE EN COURS",
+    "processing": "Le moteur IA traite l'alignement de conformité..."
+  },
+  "modes": {
+    "simple": "Simple",
+    "logic": "Logique",
+    "agentic": "Agentic",
+    "simple_desc": "Validation probabiliste rapide",
+    "logic_desc": "Moteur de règles déterministe",
+    "agentic_desc": "Boucle IA auto-correctrice"
+  }
+}

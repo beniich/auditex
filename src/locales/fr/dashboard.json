@@ -1,0 +1,81 @@
+{
+  "sidebar": {
+    "engine": "Moteur d'Audit Global",
+    "dashboard": "Tableau de Bord",
+    "audits": "Audits Actifs",
+    "trail": "Piste d'Audit",
+    "settings": "Configuration",
+    "iam_valid": "IAM: AUTH_VALIDE",
+    "collapse": "Réduire la Vue",
+    "sections": {
+      "system": "Guide Système",
+      "command": "Centre de Commande",
+      "forensics": "Forensics & Ops",
+      "governance": "Gouvernance",
+      "infra": "Réseau & Infra",
+      "analytics": "Analytique",
+      "red_team": "Red Team"
+    },
+    "links": {
+      "capability": "Centre de Capacité",
+      "global_board": "Board Global",
+      "war_room": "War Room Live",
+      "audit_runner": "Audit Runner",
+      "compliance_hub": "Hub Conformité",
+      "remediation": "Remédiation",
+      "integrity_diag": "Diag Intégrité",
+      "forensics": "Vue Forensic",
+      "governance_portal": "Portail Gouvernance",
+      "policy_vault": "Coffre de Politiques",
+      "certifications": "Certifications",
+      "topology": "Topologie",
+      "system_vault": "Coffre Système",
+      "asset_mapper": "Asset Mapper",
+      "regional_risk": "Risque Régional",
+      "risk_prediction": "Prédiction de Risque",
+      "cfo_dashboard": "Dashboard CFO",
+      "bi_reporting": "Reporting BI",
+      "chaos_lab": "Labo de Chaos"
+    }
+  },
+  "header": {
+    "service_connected": "Service Connecté",
+    "default_user": "Inspecteur"
+  },
+  "stats": {
+    "title": "Aperçu de la Performance",
+    "compliance_index": "Index de Conformité",
+    "institutional_alignment": "Alignement Institutionnel",
+    "critical_risk": "Risque Critique",
+    "unresolved_deviations": "Déviations Non Résolues",
+    "operational_roi": "ROI Opérationnel",
+    "projected_savings": "Économies Projetées",
+    "ai_efficiency": "Efficacité IA",
+    "model_consistency": "Cohérence du Modèle",
+    "velocity": "VÉLOCITÉ"
+  },
+  "missions": {
+    "title": "Missions de Certification",
+    "new_mission": "Démarrer une Mission",
+    "empty": "Aucune mission en cours."
+  },
+  "command_center": {
+    "title": "Commandement Global des Risques",
+    "subtitle": "Supervision autonome des schémas d'intégrité juridictionnelle et des registres de conformité décentralisés.",
+    "export": "Exporter l'Intelligence",
+    "generating": "Génération...",
+    "deploy": "Déployer Pipeline",
+    "status_crypto": "CRYPTO_PRET",
+    "status_biometric": "BIOMETRIE_VERROUILLEE"
+  },
+  "nodes": {
+    "title": "Nœuds Actifs Critiques",
+    "view_all": "Voir tous les nœuds",
+    "online": "En ligne"
+  },
+  "stream": {
+    "title": "Flux Opérationnel",
+    "audit_logs": "Auditer les Logs Globaux",
+    "event_logged": "Événement enregistré dans la séquence immuable du ledger."
+  }
+}

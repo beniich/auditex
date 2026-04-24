@@ -1,0 +1,56 @@
+{
+  "header": {
+    "module": "Vault_Protocol v7.0",
+    "fips": "FIPS 140-2 LEVEL 3 COMPLIANT",
+    "title": "System Vault",
+    "subtitle": "Structural hardware-backed key management system (HSM). Secure anchoring of cryptographic material, automated rotation policies, and biometric access logging.",
+    "deploy": "Deploy New Key",
+    "deploying": "Deploying..."
+  },
+  "registry": {
+    "title": "Active Hardware Keys",
+    "authority": "Controlled by Decentralized Root Authority",
+    "filter": "Filter keys...",
+    "id": "ID",
+    "status": {
+      "active": "ACTIVE",
+      "rotating": "ROTATING",
+      "revoked": "REVOKED"
+    },
+    "never_used": "Never used",
+    "used": "Used {{time}}"
+  },
+  "metrics": {
+    "health_index": "Hardware Health Index",
+    "entropy": "Average Entropy",
+    "latency": "HSM Latency",
+    "sessions": "Active Sessions"
+  },
+  "stream": {
+    "title": "Live Access Stream",
+    "review": "Review Forensic Trail",
+    "just_now": "Just now",
+    "ago": "{{time}} ago"
+  },
+  "compliance": {
+    "zero_trust": "Zero-Trust Validated",
+    "structural": "Structural Cryptography Active"
+  },
+  "footer": {
+    "state": "HSM_STATE: AIR_GAPPED // COLD_STORAGE: 90%",
+    "protocol": "Protocol: ECC_BRAINPOOL_P512 // ROTATION: {{days}}d REMAINING"
+  },
+  "modal": {
+    "title": "Cryptographic Material Access",
+    "id_prefix": "Cryptographic_Material_Access",
+    "ciphertext": "Master_Key_Ciphertext",
+    "copy": "Copy Secret Material",
+    "warning": "⚠️ Access recorded in immutable forensic ledger.",
+    "terminate": "Terminate Session"
+  },
+  "toast": {
+    "rotation_success": "Key rotation sequence completed successfully.",
+    "access_info": "Secret material accessed. Logging focal point.",
+    "deploy_success": "New cryptographic material deployed to HSM."
+  }
+}

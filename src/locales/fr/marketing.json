@@ -1,0 +1,83 @@
+{
+  "navbar": {
+    "solutions": "Solutions",
+    "platform": "Plateforme",
+    "personas": "Personas",
+    "resources": "Ressources",
+    "about": "À Propos",
+    "login": "Connexion",
+    "demo": "Accéder au Dashboard",
+    "audit_automated": "Audit Automatisé",
+    "audit_desc": "Certifications ISO & SOC2 en un clic.",
+    "risk_mgmt": "Gestion des Risques",
+    "risk_desc": "Analyse prédictive de l'exposition.",
+    "continuous_compliance": "Conformité Continue",
+    "compliance_desc": "Monitoring 24/7 du ledger immuable.",
+    "infra_ra6": "Infrastructure RA6",
+    "infra_desc": "Intelligence agentique de niveau militaire.",
+    "global_coverage": "Global Coverage",
+    "global_desc": "Conformité multi-juridictionnelle."
+  },
+  "hero": {
+    "badge": "IA Agentique Certifiée RA6",
+    "title_part1": "L'Intelligence",
+    "title_agentic": "Agentique",
+    "title_part2": "pour la",
+    "title_compliance": "Conformité",
+    "title_absolute": "Absolue",
+    "subtitle": "Pilotez votre entreprise avec un OS de conformité immuable. Sécurité de niveau militaire via ledger cryptographique SHA-256.",
+    "cta_demo": "Demander une Démo Privée",
+    "cta_video": "Regarder la vidéo"
+  },
+  "pillars": {
+    "title": "Proposition de Valeur",
+    "main_title": "Les 5 Piliers de la Valeur AuditAX",
+    "immutability": "Immutabilité",
+    "immutability_desc": "Cryptographic Ledger immuable. Chaque transaction est scellée et vérifiable pour toujours.",
+    "intelligence": "Intelligence",
+    "intelligence_desc": "IA RAG avancée. Analyse contextuelle et prédictive des risques en temps réel.",
+    "visibility": "Visibilité",
+    "visibility_desc": "Tableau de bord CFO unifié. Vue globale et granulaire sur tous les actifs et flux financiers.",
+    "finance": "Finance",
+    "finance_desc": "Optimisation des coûts et conformité fiscale. Automatisation des processus financiers complexes.",
+    "guidance": "Guidance",
+    "guidance_desc": "Conseil proactif et alertes réglementaires. Restez en avance sur les changements normatifs."
+  },
+  "personas": {
+    "title": "Elite d'Entreprise",
+    "main_title": "Conçu pour l'Élite de l'Entreprise",
+    "learn_more": "En savoir plus",
+    "security": "Sécurité et Réséilience",
+    "performance": "Performance et Conformité",
+    "governance": "Gouvernance et Juridique"
+  },
+  "footer_cta": {
+    "title_part1": "Prêt pour la Conformité",
+    "title_part2": "Industrielle ?",
+    "subtitle": "Rejoignez les leaders qui font confiance à AuditAX pour sécuriser leur avenir réglementaire.",
+    "start_now": "Démarrer maintenant"
+  },
+  "about": {
+    "title": "Notre Héritage",
+    "main_title": "L'Évolution de la Souveraineté Réglementaire",
+    "subtitle": "Né en 2024 pour résoudre la complexité de la conformité mondiale via des agents autonomes.",
+    "timeline": {
+      "2024": "Genèse de RA6 - Recherche sur les nœuds de défense agentiques.",
+      "2025": "AuditAX v1.0 - Premier ledger de conformité immuable pour les CFO.",
+      "2026": "Expansion Mondiale - Support de plus de 50 juridictions en autonomie."
+    }
+  },
+  "features": {
+    "title": "Excellence Technique",
+    "main_title": "Stack Architecture RA6",
+    "subtitle": "Composants de niveau militaire conçus pour la résilience d'entreprise.",
+    "cards": {
+      "ledger": "Ledger SHA-256",
+      "ledger_desc": "Chaque étape de l'audit est hashée cryptographiquement et sauvegardée sur une chaîne immuable.",
+      "rag": "RAG Contextuel",
+      "rag_desc": "Récupération en temps réel des réglementations mondiales appliquées à votre infrastructure spécifique.",
+      "nodes": "Nœuds Agentiques",
+      "nodes_desc": "Agents autonomes qui surveillent, détectent et remédient aux dérives de conformité 24h/24."
+    }
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "sidebar": {
+    "engine": "Global Audit Engine",
+    "dashboard": "Dashboard",
+    "audits": "Active Audits",
+    "trail": "Audit Trail",
+    "settings": "Configuration",
+    "iam_valid": "IAM: AUTH_VALID",
+    "collapse": "Collapse View",
+    "sections": {
+      "system": "System Guide",
+      "command": "Command Center",
+      "forensics": "Forensics & Ops",
+      "governance": "Governance",
+      "infra": "Network & Infra",
+      "analytics": "Analytics",
+      "red_team": "Red Team"
+    },
+    "links": {
+      "capability": "Capability Center",
+      "global_board": "Global Board",
+      "war_room": "Live War Room",
+      "audit_runner": "Audit Runner",
+      "compliance_hub": "Compliance Hub",
+      "remediation": "Remediation",
+      "integrity_diag": "Integrity Diag",
+      "forensics": "Forensic View",
+      "governance_portal": "Governance Portal",
+      "policy_vault": "Policy Vault",
+      "certifications": "Certifications",
+      "topology": "Topology",
+      "system_vault": "System Vault",
+      "asset_mapper": "Asset Mapper",
+      "regional_risk": "Regional Risk",
+      "risk_prediction": "Risk Prediction",
+      "cfo_dashboard": "CFO Dashboard",
+      "bi_reporting": "BI Reporting",
+      "chaos_lab": "Chaos Lab"
+    }
+  },
+  "header": {
+    "service_connected": "Service Connected",
+    "default_user": "Inspector"
+  },
+  "stats": {
+    "title": "Performance Overview",
+    "compliance_index": "Compliance Index",
+    "institutional_alignment": "Institutional Alignment",
+    "critical_risk": "Critical Risk",
+    "unresolved_deviations": "Unresolved Deviations",
+    "operational_roi": "Operational ROI",
+    "projected_savings": "Projected Savings",
+    "ai_efficiency": "AI Efficiency",
+    "model_consistency": "Model Consistency",
+    "velocity": "VELOCITY"
+  },
+  "missions": {
+    "title": "Certification Missions",
+    "new_mission": "Start Mission",
+    "empty": "No active missions."
+  },
+  "command_center": {
+    "title": "Global Risk Command",
+    "subtitle": "Autonomous oversight of jurisdictional integrity patterns and decentralized compliance ledgers.",
+    "export": "Export Intelligence",
+    "generating": "Generating...",
+    "deploy": "Deploy New Pipeline",
+    "status_crypto": "CRYPTO_READY",
+    "status_biometric": "BIOMETRIC_LOCKED"
+  },
+  "nodes": {
+    "title": "Critical Active Nodes",
+    "view_all": "View All Nodes",
+    "online": "Online"
+  },
+  "stream": {
+    "title": "Operational Stream",
+    "audit_logs": "Audit Global Logs",
+    "event_logged": "Event logged in immutable ledger sequence."
+  }
+}

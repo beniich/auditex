@@ -1,0 +1,64 @@
+{
+  "header": {
+    "module": "MODULE RED_TEAM v1.0 — LABO DE CHAOS",
+    "sprint": "Sprint 38 // Tests de Sécurité Adversariaux",
+    "title": "Crash_Test du Ledger",
+    "subtitle": "Simulation adversariale contrôlée pour l'intégrité de la blockchain SHA-256. Injecte une corruption de hash réelle, puis vérifie la détection autonome et la conformité à la doctrine du Bloc de Correction."
+  },
+  "status": {
+    "healthy": "Chaines Intactes",
+    "compromised": "Chaines Compromises",
+    "correction_blocks": "Blocs de Correction",
+    "total_audits": "Audits Totaux",
+    "standby": "EN ATTENTE",
+    "attacking": "ATTAQUE EN COURS",
+    "scanning": "SCAN EN COURS...",
+    "corrected": "CORRIGE"
+  },
+  "phases": {
+    "idle": "ATTENTE",
+    "attacking": "ATTAQUE",
+    "scanning": "SCAN",
+    "corrected": "CORRIGE",
+    "indicator_label": "Phase d'Attaque"
+  },
+  "actions": {
+    "inject": "① Injecter Corruption Hash",
+    "injecting": "Injection de l'Attaque...",
+    "scan": "② Lancer Scan Watchdog",
+    "scanning": "Scan Watchdog en cours...",
+    "reset": "Réinitialiser le Labo"
+  },
+  "doctrine": {
+    "title": "Doctrine du Bloc de Correction",
+    "rule1": "Règle 1: Les blocs passés sont immuables. Aucun hash n'est modifié.",
+    "rule2": "Règle 2: En cas de rupture, un bloc SYSTEM_INTEGRITY_CORRECTION est ajouté.",
+    "rule3": "Règle 3: Le bloc corrompu reste comme preuve forensic.",
+    "rule4": "Règle 4: Une nouvelle ancre est établie à partir du bloc de correction."
+  },
+  "xss": {
+    "title": "Test de Pression XSS (Sandbox)",
+    "basic": "Injection Basique",
+    "markdown": "Bypass Markdown",
+    "script": "Balise Script",
+    "svg": "Handler SVG",
+    "input": "Payload d'Entrée",
+    "output": "Sortie Désinfectée (Saine)"
+  },
+  "logs": {
+    "awaiting": "$ En attente d'opération Red Team... Utilisez le panneau de contrôle.",
+    "initiated": "Opération Red Team initiée...",
+    "simulating": "Simulation d'injection SQL — corruption du sha256Hash...",
+    "target_locked": "Cible verrouillée : Audit {{audit}} // Événement {{event}}",
+    "hash_overwritten": "Hash écrasé : {{hash}}",
+    "watchdog_trigger": "Attaque injectée. Le Watchdog détectera sous 60s. Scan immédiat...",
+    "watchdog_run": "Watchdog Intégrité — vérification complète de la chaîne...",
+    "scan_complete": "Scan terminé — {{count}} chaînes d'audit vérifiées.",
+    "chain_valid": "Chaine {{id}} — VALIDE ({{count}} blocs)",
+    "chain_rupture": "RUPTURE DE CHAINE à l'audit {{id}} (bloc {{block}})",
+    "correction_injected": "Bloc de Correction injecté. Blocs passés immuables.",
+    "re_sealed": "Nouvelle ancre cryptographique établie. Chaîne scellée.",
+    "reset_done": "Réinitialisation terminée — {{count}} blocs de correction effacés.",
+    "sanitization_applied": "Logique de désinfection XSS appliquée. Vérifiez la sortie ci-dessous."
+  }
+}

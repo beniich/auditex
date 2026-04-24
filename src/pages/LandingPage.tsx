@@ -2,73 +2,76 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { Shield, Brain, Eye, DollarSign, Compass, ArrowRight, Sparkles, Play, Lock, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
-const pillars = [
-  {
-    icon: Lock,
-    title: 'Immutabilité',
-    description: 'Cryptographic Ledger immuable. Chaque transaction est scellée et vérifiable pour toujours.',
-    color: 'text-blue-500',
-    bg: 'bg-blue-500/10'
-  },
-  {
-    icon: Brain,
-    title: 'Intelligence',
-    description: 'IA RAG avancée. Analyse contextuelle et prédictive des risques en temps réel.',
-    color: 'text-emerald-500',
-    bg: 'bg-emerald-500/10'
-  },
-  {
-    icon: Eye,
-    title: 'Visibilité',
-    description: 'Tableau de bord CFO unifié. Vue globale et granulaire sur tous les actifs et flux financiers.',
-    color: 'text-indigo-500',
-    bg: 'bg-indigo-500/10'
-  },
-  {
-    icon: DollarSign,
-    title: 'Finance',
-    description: 'Optimisation des coûts et conformité fiscale. Automatisation des processus financiers complexes.',
-    color: 'text-amber-500',
-    bg: 'bg-amber-500/10'
-  },
-  {
-    icon: Compass,
-    title: 'Guidance',
-    description: 'Conseil proactif et alertes réglementaires. Restez en avance sur les changements normatifs.',
-    color: 'text-rose-500',
-    bg: 'bg-rose-500/10'
-  }
-];
-
-const personas = [
-  {
-    title: 'CISO',
-    subtitle: 'Chief Information Security Officer',
-    focus: 'Sécurité et Réséilience',
-    description: 'Protection des données critiques et réponse aux incidents.',
-    image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=400',
-    link: '/ciso'
-  },
-  {
-    title: 'CFO',
-    subtitle: 'Chief Financial Officer',
-    focus: 'Performance et Conformité',
-    description: 'Maîtrise des risques financiers et reporting auditable.',
-    image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400',
-    link: '/cfo'
-  },
-  {
-    title: 'CLO',
-    subtitle: 'Chief Legal Officer',
-    focus: 'Gouvernance et Juridique',
-    description: 'Assurance de la conformité réglementaire mondiale.',
-    image: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=400',
-    link: '/clo'
-  }
-];
+import { useTranslation } from 'react-i18next';
 
 export const LandingPage = () => {
+  const { t } = useTranslation('marketing');
+
+  const pillars = [
+    {
+      icon: Lock,
+      title: t('pillars.immutability'),
+      description: t('pillars.immutability_desc'),
+      color: 'text-blue-500',
+      bg: 'bg-blue-500/10'
+    },
+    {
+      icon: Brain,
+      title: t('pillars.intelligence'),
+      description: t('pillars.intelligence_desc'),
+      color: 'text-emerald-500',
+      bg: 'bg-emerald-500/10'
+    },
+    {
+      icon: Eye,
+      title: t('pillars.visibility'),
+      description: t('pillars.visibility_desc'),
+      color: 'text-indigo-500',
+      bg: 'bg-indigo-500/10'
+    },
+    {
+      icon: DollarSign,
+      title: t('pillars.finance'),
+      description: t('pillars.finance_desc'),
+      color: 'text-amber-500',
+      bg: 'bg-amber-500/10'
+    },
+    {
+      icon: Compass,
+      title: t('pillars.guidance'),
+      description: t('pillars.guidance_desc'),
+      color: 'text-rose-500',
+      bg: 'bg-rose-500/10'
+    }
+  ];
+
+  const personas = [
+    {
+      title: 'CISO',
+      subtitle: 'Chief Information Security Officer',
+      focus: t('personas.security'),
+      description: t('personas.security_desc', 'Protection of critical data and incident response.'), // Added default just in case
+      image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=400',
+      link: '/ciso'
+    },
+    {
+      title: 'CFO',
+      subtitle: 'Chief Financial Officer',
+      focus: t('personas.performance'),
+      description: t('personas.performance_desc', 'Control of financial risks and auditable reporting.'),
+      image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400',
+      link: '/cfo'
+    },
+    {
+      title: 'CLO',
+      subtitle: 'Chief Legal Officer',
+      focus: t('personas.governance'),
+      description: t('personas.governance_desc', 'Assurance of global regulatory compliance.'),
+      image: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=400',
+      link: '/clo'
+    }
+  ];
+
   return (
     <div className="bg-[#091426] text-white">
       {/* --- HERO SECTION --- */}
@@ -83,7 +86,6 @@ export const LandingPage = () => {
                    </radialGradient>
                 </defs>
                 <circle cx="400" cy="400" r="300" fill="url(#hero-grad)" />
-                {/* Random nodes/lines */}
                 {[...Array(30)].map((_, i) => (
                     <g key={i}>
                         <circle cx={150 + Math.random() * 500} cy={150 + Math.random() * 500} r="2" fill="#60a5fa" />
@@ -101,7 +103,7 @@ export const LandingPage = () => {
               className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-blue-600/10 border border-blue-600/20 text-blue-400"
             >
               <Sparkles size={18} />
-              <span className="text-[11px] font-black uppercase tracking-[0.3em]">IA Agentique Certifiée RA6</span>
+              <span className="text-[11px] font-black uppercase tracking-[0.3em]">{t('hero.badge')}</span>
             </motion.div>
 
             <motion.h1 
@@ -109,11 +111,11 @@ export const LandingPage = () => {
               animate={{ opacity: 1, y: 0 }}
               className="text-7xl md:text-9xl font-black tracking-tighter leading-[0.85] uppercase"
             >
-              L'Intelligence <br />
-              <span className="text-blue-600 italic">Agentique</span> <br />
-              pour la <br />
-              <span className="text-emerald-500">Conformité</span> <br />
-              <span className="text-white">Absolue</span>
+              {t('hero.title_part1')} <br />
+              <span className="text-blue-600 italic">{t('hero.title_agentic')}</span> <br />
+              {t('hero.title_part2')} <br />
+              <span className="text-emerald-500">{t('hero.title_compliance')}</span> <br />
+              <span className="text-white">{t('hero.title_absolute')}</span>
             </motion.h1>
 
             <motion.p 
@@ -122,8 +124,7 @@ export const LandingPage = () => {
               transition={{ delay: 0.1 }}
               className="text-xl md:text-2xl text-slate-400 font-medium leading-relaxed max-w-2xl"
             >
-              Pilotez votre entreprise avec un OS de conformité immuable. 
-              Sécurité de niveau militaire via ledger cryptographique SHA-256.
+              {t('hero.subtitle')}
             </motion.p>
 
             <motion.div 
@@ -133,12 +134,12 @@ export const LandingPage = () => {
               className="flex flex-wrap gap-6 pt-6"
             >
               <button className="px-10 py-6 bg-blue-600 text-white font-black uppercase tracking-widest rounded-full hover:bg-blue-700 hover:shadow-[0_0_40px_rgba(37,99,235,0.4)] transition-all flex items-center gap-4 group">
-                Demander une Démo Privée
+                {t('hero.cta_demo')}
                 <ArrowRight size={20} className="group-hover:translate-x-2 transition-transform" />
               </button>
               <button className="px-10 py-6 bg-white/5 text-white font-black uppercase tracking-widest rounded-full border border-white/10 hover:bg-white/10 transition-all flex items-center gap-4 group">
                 <Play size={18} fill="currentColor" />
-                Regarder la vidéo
+                {t('hero.cta_video')}
               </button>
             </motion.div>
           </div>
@@ -149,8 +150,8 @@ export const LandingPage = () => {
       <section className="py-32 bg-[#0d1629]">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center space-y-4 mb-20">
-            <h2 className="text-sm font-black uppercase tracking-[0.4em] text-blue-500">Value Proposition</h2>
-            <h3 className="text-4xl md:text-6xl font-black tracking-tight uppercase">Les 5 Piliers de la Valeur AuditAX</h3>
+            <h2 className="text-sm font-black uppercase tracking-[0.4em] text-blue-500">{t('pillars.title')}</h2>
+            <h3 className="text-4xl md:text-6xl font-black tracking-tight uppercase">{t('pillars.main_title')}</h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
@@ -180,8 +181,8 @@ export const LandingPage = () => {
       <section className="py-32 bg-[#091426]">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center space-y-4 mb-20">
-            <h2 className="text-sm font-black uppercase tracking-[0.4em] text-emerald-500">Enterprise Elite</h2>
-            <h3 className="text-4xl md:text-6xl font-black tracking-tight uppercase">Conçu pour l'Élite de l'Entreprise</h3>
+            <h2 className="text-sm font-black uppercase tracking-[0.4em] text-emerald-500">{t('personas.title')}</h2>
+            <h3 className="text-4xl md:text-6xl font-black tracking-tight uppercase">{t('personas.main_title')}</h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
@@ -214,7 +215,7 @@ export const LandingPage = () => {
                         {p.description}
                       </p>
                       <Link to={p.link} className="inline-flex items-center gap-2 text-white font-black uppercase tracking-widest text-[10px] hover:text-blue-500 transition-colors">
-                        En savoir plus <ArrowRight size={14} />
+                        {t('personas.learn_more')} <ArrowRight size={14} />
                       </Link>
                    </div>
                 </div>
@@ -229,12 +230,12 @@ export const LandingPage = () => {
         <div className="absolute inset-0 bg-blue-600/5 backdrop-blur-3xl" />
         <div className="max-w-4xl mx-auto px-6 text-center relative z-10 space-y-10">
            <h2 className="text-5xl md:text-7xl font-black tracking-tighter uppercase leading-none">
-             Prêt pour la Conformité <br />
-             <span className="text-blue-600">Industrielle ?</span>
+             {t('footer_cta.title_part1')} <br />
+             <span className="text-blue-600">{t('footer_cta.title_part2')}</span>
            </h2>
-           <p className="text-xl text-slate-400 font-medium">Rejoignez les leaders qui font confiance à AuditAX pour sécuriser leur avenir réglementaire.</p>
+           <p className="text-xl text-slate-400 font-medium">{t('footer_cta.subtitle')}</p>
            <button className="px-12 py-6 bg-white text-[#091426] font-black uppercase tracking-widest rounded-full hover:scale-105 transition-all shadow-2xl">
-             Démarrer maintenant
+             {t('footer_cta.start_now')}
            </button>
         </div>
       </section>

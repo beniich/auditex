@@ -1,0 +1,42 @@
+{
+  "topology": "Mission Topology",
+  "progress": "Overall Progress",
+  "status": {
+    "verified": "VERIFIED",
+    "active": "ACTIVE",
+    "locked": "LOCKED"
+  },
+  "execution": {
+    "title": "Guided Execution Suite",
+    "syncing": "Syncing to Ledger",
+    "export": "Export Report",
+    "requirement_node": "Requirement Node",
+    "upload_proof": "Upload Proof",
+    "supported_files": "Images / PDFs Supported",
+    "finalize": "Finalize Protocol",
+    "continue": "Continue",
+    "previous": "Previous Area",
+    "respond_text": "Describe your technical assessment...",
+    "conformant": "CONFORMANT",
+    "deviation": "DEVIATION"
+  },
+  "ai_hub": {
+    "title": "AI Decision Hub",
+    "precision_mode": "Precision Mode",
+    "budget": "AI Budget",
+    "auto_registry": "Auto-Registry",
+    "anchored": "Anchored to Ledger",
+    "accept": "Accept",
+    "reject": "Reject",
+    "analyzing": "ANALYZING",
+    "processing": "AI engine processing compliance alignment..."
+  },
+  "modes": {
+    "simple": "Simple",
+    "logic": "Logic",
+    "agentic": "Agentic",
+    "simple_desc": "Fast probabilistic validation",
+    "logic_desc": "Deterministic rule engine",
+    "agentic_desc": "Self-correcting AI loop"
+  }
+}

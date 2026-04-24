@@ -1,0 +1,56 @@
+{
+  "header": {
+    "module": "Protocole Coffre v7.0",
+    "fips": "CONFORME FIPS 140-2 NIVEAU 3",
+    "title": "Coffre Système",
+    "subtitle": "Système de gestion de clés (HSM) structurel soutenu par matériel. Ancrage sécurisé du matériel cryptographique, politiques de rotation automatisées et journalisation des accès biométriques.",
+    "deploy": "Déployer Nouvelle Clé",
+    "deploying": "Déploiement..."
+  },
+  "registry": {
+    "title": "Clés Matérielles Actives",
+    "authority": "Contrôlé par l'Autorité Racine Décentralisée",
+    "filter": "Filtrer les clés...",
+    "id": "ID",
+    "status": {
+      "active": "ACTIF",
+      "rotating": "ROTATION",
+      "revoked": "RÉVOQUÉ"
+    },
+    "never_used": "Jamais utilisée",
+    "used": "Utilisée à {{time}}"
+  },
+  "metrics": {
+    "health_index": "Index de Santé Matériel",
+    "entropy": "Entropie Moyenne",
+    "latency": "Latence HSM",
+    "sessions": "Sessions Actives"
+  },
+  "stream": {
+    "title": "Flux d'Accès en Direct",
+    "review": "Réviser la Piste Forensic",
+    "just_now": "À l'instant",
+    "ago": "Il y a {{time}}"
+  },
+  "compliance": {
+    "zero_trust": "Validé Zero-Trust",
+    "structural": "Cryptographie Structurelle Active"
+  },
+  "footer": {
+    "state": "ÉTAT_HSM : ISOLÉ // STOCKAGE_FROID : 90%",
+    "protocol": "Protocole : ECC_BRAINPOOL_P512 // ROTATION : {{days}}j RESTANTS"
+  },
+  "modal": {
+    "title": "Accès Matériel Cryptographique",
+    "id_prefix": "Matériel_Accès_Cryptographique",
+    "ciphertext": "Texte Chiffré de la Clé Maître",
+    "copy": "Copier le Matériel Secret",
+    "warning": "⚠️ Accès enregistré dans le registre forensic immuable.",
+    "terminate": "Terminer la Session"
+  },
+  "toast": {
+    "rotation_success": "Séquence de rotation de clé terminée avec succès.",
+    "access_info": "Matériel secret accédé. Journalisation du point focal.",
+    "deploy_success": "Nouveau matériel cryptographique déployé sur le HSM."
+  }
+}

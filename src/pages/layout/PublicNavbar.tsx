@@ -1,30 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronDown, Menu, X, Shield, Globe, Cpu, BarChart3, Users, FileCheck } from 'lucide-react';
+import { ChevronDown, Menu, X, Shield, Globe, Cpu, BarChart3, FileCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
-const navItems = [
-  { 
-    label: 'Solutions', 
-    items: [
-      { label: 'Audit Automatisé', icon: FileCheck, description: 'Certifications ISO & SOC2 en un clic.' },
-      { label: 'Gestion des Risques', icon: BarChart3, description: 'Analyse prédictive de l\'exposition.' },
-      { label: 'Conformité Continue', icon: Shield, description: 'Monitoring 24/7 du ledger immuable.' }
-    ] 
-  },
-  { 
-    label: 'Plateforme', 
-    items: [
-      { label: 'Infrastructure RA6', icon: Cpu, description: 'Intelligence agentique de niveau militaire.' },
-      { label: 'Global Coverage', icon: Globe, description: 'Conformité multi-juridictionnelle.' }
-    ] 
-  },
-  { label: 'Personas', href: '/personas' },
-  { label: 'Ressources', href: '/resources' },
-  { label: 'À Propos', href: '/about' }
-];
+import { useTranslation } from 'react-i18next';
 
 export const PublicNavbar = () => {
+  const { t, i18n } = useTranslation('marketing');
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -34,6 +15,31 @@ export const PublicNavbar = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const changeLanguage = (lng: string) => {
+    i18n.changeLanguage(lng);
+  };
+
+  const navItems = [
+    { 
+      label: t('navbar.solutions'), 
+      items: [
+        { label: t('navbar.audit_automated'), icon: FileCheck, description: t('navbar.audit_desc') },
+        { label: t('navbar.risk_mgmt'), icon: BarChart3, description: t('navbar.risk_desc') },
+        { label: t('navbar.continuous_compliance'), icon: Shield, description: t('navbar.compliance_desc') }
+      ] 
+    },
+    { 
+      label: t('navbar.platform'), 
+      items: [
+        { label: t('navbar.infra_ra6'), icon: Cpu, description: t('navbar.infra_desc') },
+        { label: t('navbar.global_coverage'), icon: Globe, description: t('navbar.global_desc') }
+      ] 
+    },
+    { label: t('navbar.personas'), href: '/personas' },
+    { label: t('navbar.resources'), href: '/resources' },
+    { label: t('navbar.about'), href: '/about' }
+  ];
 
   return (
     <nav 
@@ -102,13 +108,27 @@ export const PublicNavbar = () => {
           ))}
         </div>
 
-        {/* CTAs */}
+        {/* CTAs & Lang Switcher */}
         <div className="hidden lg:flex items-center gap-4">
+          <div className="flex bg-slate-100 dark:bg-white/5 p-1 rounded-full border border-slate-200 dark:border-white/10 mr-2">
+            <button 
+              onClick={() => changeLanguage('fr')}
+              className={`px-3 py-1 text-[10px] font-black rounded-full transition-all ${i18n.language === 'fr' ? 'bg-white dark:bg-blue-600 shadow-sm text-blue-600 dark:text-white' : 'text-slate-400'}`}
+            >
+              FR
+            </button>
+            <button 
+              onClick={() => changeLanguage('en')}
+              className={`px-3 py-1 text-[10px] font-black rounded-full transition-all ${i18n.language === 'en' ? 'bg-white dark:bg-blue-600 shadow-sm text-blue-600 dark:text-white' : 'text-slate-400'}`}
+            >
+              EN
+            </button>
+          </div>
           <Link to="/app" className="text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-blue-600 transition-colors">
-            Connexion
+            {t('navbar.login')}
           </Link>
           <Link to="/app" className="px-6 py-3 bg-blue-600 text-white text-sm font-black uppercase tracking-widest rounded-full hover:bg-blue-700 hover:shadow-xl hover:shadow-blue-600/20 transition-all active:scale-95">
-            Accéder au Dashboard
+            {t('navbar.demo')}
           </Link>
         </div>
 
@@ -151,8 +171,12 @@ export const PublicNavbar = () => {
                 </div>
               ))}
               <div className="pt-6 grid gap-4">
-                <Link to="/app" className="w-full py-4 text-center rounded-2xl border border-slate-200 dark:border-slate-800 text-sm font-black uppercase tracking-widest">Connexion</Link>
-                <Link to="/app" className="w-full py-4 text-center rounded-2xl bg-blue-600 text-white text-sm font-black uppercase tracking-widest shadow-xl shadow-blue-600/20">Accéder au Dashboard</Link>
+                <div className="flex justify-center bg-slate-100 dark:bg-white/5 p-1 rounded-xl mb-2">
+                   <button onClick={() => changeLanguage('fr')} className={`flex-1 py-3 text-xs font-black rounded-lg ${i18n.language === 'fr' ? 'bg-white dark:bg-blue-600' : ''}`}>FRANÇAIS</button>
+                   <button onClick={() => changeLanguage('en')} className={`flex-1 py-3 text-xs font-black rounded-lg ${i18n.language === 'en' ? 'bg-white dark:bg-blue-600' : ''}`}>ENGLISH</button>
+                </div>
+                <Link to="/app" className="w-full py-4 text-center rounded-2xl border border-slate-200 dark:border-slate-800 text-sm font-black uppercase tracking-widest">{t('navbar.login')}</Link>
+                <Link to="/app" className="w-full py-4 text-center rounded-2xl bg-blue-600 text-white text-sm font-black uppercase tracking-widest shadow-xl shadow-blue-600/20">{t('navbar.demo')}</Link>
               </div>
             </div>
           </motion.div>

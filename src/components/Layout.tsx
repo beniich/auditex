@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { LucideIcon, LayoutDashboard, ClipboardList, History, Settings, Bell } from 'lucide-react';
 import { UserButton, useUser } from '@clerk/clerk-react';
+import { useTranslation } from 'react-i18next';
 
 interface SidebarItemProps {
   icon: LucideIcon;
@@ -26,6 +27,7 @@ const SidebarItem = ({ icon: Icon, label, active, onClick }: SidebarItemProps) =
 
 export const Layout = ({ children, activeTab, onTabChange }: { children: React.ReactNode, activeTab: string, onTabChange: (tab: string) => void }) => {
   const { user } = useUser();
+  const { t } = useTranslation('dashboard');
 
   return (
     <div className="flex min-h-screen bg-brand-bg font-sans">
@@ -33,40 +35,40 @@ export const Layout = ({ children, activeTab, onTabChange }: { children: React.R
       <aside className="w-64 bg-brand-sidebar flex flex-col py-8 hidden lg:flex">
         <div className="px-6 mb-12">
           <h1 className="text-lg font-extrabold tracking-tighter text-brand-accent uppercase">
-            Global Audit Engine
+            {t('sidebar.engine')}
           </h1>
         </div>
 
         <nav className="flex flex-col">
           <SidebarItem 
             icon={LayoutDashboard} 
-            label="Tableau de bord" 
+            label={t('sidebar.dashboard')} 
             active={activeTab === 'dashboard'} 
             onClick={() => onTabChange('dashboard')} 
           />
           <SidebarItem 
             icon={ClipboardList} 
-            label="Audits en cours" 
+            label={t('sidebar.audits')} 
             active={activeTab === 'audits'} 
             onClick={() => onTabChange('audits')} 
           />
           <SidebarItem 
             icon={History} 
-            label="Piste d'audit" 
+            label={t('sidebar.trail')} 
             active={activeTab === 'trail'} 
             onClick={() => onTabChange('trail')} 
           />
           <div className="h-px bg-white/10 my-4 mx-6" />
           <SidebarItem 
             icon={Settings} 
-            label="Configuration" 
+            label={t('sidebar.settings')} 
             active={activeTab === 'settings'} 
             onClick={() => onTabChange('settings')} 
           />
         </nav>
 
         <div className="mt-auto mx-6 p-4 bg-white/5 rounded-xl border border-white/10 text-white/50">
-          <p className="text-[10px] mb-2 font-mono uppercase tracking-widest">IAM: AUTH_VALID</p>
+          <p className="text-[10px] mb-2 font-mono uppercase tracking-widest">{t('sidebar.iam_valid')}</p>
           <div className="w-full bg-white/10 h-1 rounded-full overflow-hidden">
             <motion.div 
               initial={{ width: 0 }}
@@ -84,13 +86,13 @@ export const Layout = ({ children, activeTab, onTabChange }: { children: React.R
           <div className="flex items-center gap-4 text-brand-text-muted">
             <span className="text-[10px] uppercase tracking-[0.2em] font-bold flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-brand-success" />
-              Service Connected
+              {t('header.service_connected')}
             </span>
           </div>
 
           <div className="flex items-center gap-4">
             <div className="mr-2 text-right hidden md:block">
-              <p className="text-xs font-bold text-brand-text-main leading-tight">{user?.fullName || 'Inspecteur'}</p>
+              <p className="text-xs font-bold text-brand-text-main leading-tight">{user?.fullName || t('header.default_user')}</p>
               <p className="text-[10px] text-brand-text-muted">{user?.primaryEmailAddress?.emailAddress}</p>
             </div>
             <button className="p-2 text-slate-400 hover:text-slate-600 transition-colors">
@@ -109,19 +111,19 @@ export const Layout = ({ children, activeTab, onTabChange }: { children: React.R
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-brand-border h-16 flex items-center justify-around z-50 px-4 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
         <button onClick={() => onTabChange('dashboard')} className={`flex flex-col items-center gap-1 ${activeTab === 'dashboard' ? 'text-brand-accent' : 'text-slate-400'}`}>
           <LayoutDashboard size={20} />
-          <span className="text-[9px] font-bold uppercase tracking-widest">Dashboard</span>
+          <span className="text-[9px] font-bold uppercase tracking-widest">{t('sidebar.dashboard')}</span>
         </button>
         <button onClick={() => onTabChange('audits')} className={`flex flex-col items-center gap-1 ${activeTab === 'audits' ? 'text-brand-accent' : 'text-slate-400'}`}>
           <ClipboardList size={20} />
-          <span className="text-[9px] font-bold uppercase tracking-widest">Missions</span>
+          <span className="text-[9px] font-bold uppercase tracking-widest">{t('sidebar.audits')}</span>
         </button>
         <button onClick={() => onTabChange('trail')} className={`flex flex-col items-center gap-1 ${activeTab === 'trail' ? 'text-brand-accent' : 'text-slate-400'}`}>
           <History size={20} />
-          <span className="text-[9px] font-bold uppercase tracking-widest">Piste</span>
+          <span className="text-[9px] font-bold uppercase tracking-widest">{t('sidebar.trail')}</span>
         </button>
         <button onClick={() => onTabChange('settings')} className={`flex flex-col items-center gap-1 ${activeTab === 'settings' ? 'text-brand-accent' : 'text-slate-400'}`}>
           <Settings size={20} />
-          <span className="text-[9px] font-bold uppercase tracking-widest">Config</span>
+          <span className="text-[9px] font-bold uppercase tracking-widest">{t('sidebar.settings')}</span>
         </button>
       </nav>
     </div>

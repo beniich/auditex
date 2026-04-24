@@ -1,0 +1,64 @@
+{
+  "header": {
+    "module": "RED_TEAM MODULE v1.0 — CHAOS LAB",
+    "sprint": "Sprint 38 // Adversarial Security Testing",
+    "title": "Ledger Crash_Test",
+    "subtitle": "Controlled adversarial simulation for SHA-256 blockchain integrity. Injects real hash corruption into the database, then verifies autonomous detection and Correction Block doctrine compliance."
+  },
+  "status": {
+    "healthy": "Healthy Chains",
+    "compromised": "Compromised",
+    "correction_blocks": "Correction Blocks",
+    "total_audits": "Total Audits",
+    "standby": "STANDBY",
+    "attacking": "ATTACK IN PROGRESS",
+    "scanning": "SCANNING...",
+    "corrected": "CORRECTED"
+  },
+  "phases": {
+    "idle": "IDLE",
+    "attacking": "ATTACK",
+    "scanning": "SCAN",
+    "corrected": "CORRECTED",
+    "indicator_label": "Attack Phase"
+  },
+  "actions": {
+    "inject": "① Inject Hash Corruption",
+    "injecting": "Injecting Attack...",
+    "scan": "② Trigger Watchdog Scan",
+    "scanning": "Running Watchdog Scan...",
+    "reset": "Reset Lab State"
+  },
+  "doctrine": {
+    "title": "Correction Block Doctrine",
+    "rule1": "Rule 1: Past blocks are immutable. No hash is ever modified.",
+    "rule2": "Rule 2: On rupture, a SYSTEM_INTEGRITY_CORRECTION block is appended.",
+    "rule3": "Rule 3: Corrupted block remains as forensic evidence.",
+    "rule4": "Rule 4: New chain anchor is established from the correction block forward."
+  },
+  "xss": {
+    "title": "XSS Pressure Test (Sandbox)",
+    "basic": "Basic Injection",
+    "markdown": "Markdown Bypass",
+    "script": "Script Tag",
+    "svg": "SVG Handler",
+    "input": "Input Payload",
+    "output": "Sanitized Output (Safe)"
+  },
+  "logs": {
+    "awaiting": "$ Awaiting Red Team operation... Use the control panel to inject an attack.",
+    "initiated": "Red Team operation initiated...",
+    "simulating": "Simulating SQL injection — corrupting sha256Hash...",
+    "target_locked": "Target locked: Audit {{audit}} // Event {{event}}",
+    "hash_overwritten": "Hash overwritten: {{hash}}",
+    "watchdog_trigger": "Attack injected. Watchdog will detect within 60s. Triggering immediate scan...",
+    "watchdog_run": "Integrity Watchdog — running full chain verification...",
+    "scan_complete": "Scan complete — {{count}} audit chains verified.",
+    "chain_valid": "Audit {{id}} — chain VALID ({{count}} blocks)",
+    "chain_rupture": "Audit {{id}} — CHAIN RUPTURE at block {{block}}",
+    "correction_injected": "Correction Block injected. Past blocks immutable.",
+    "re_sealed": "New cryptographic anchor established. Chain re-sealed.",
+    "reset_done": "Lab reset — {{count}} correction blocks cleared.",
+    "sanitization_applied": "XSS sanitization logic applied. Verify the output below."
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "navbar": {
+    "solutions": "Solutions",
+    "platform": "Platform",
+    "personas": "Personas",
+    "resources": "Resources",
+    "about": "About",
+    "login": "Login",
+    "demo": "Access Dashboard",
+    "audit_automated": "Automated Audit",
+    "audit_desc": "ISO & SOC2 Certifications in one click.",
+    "risk_mgmt": "Risk Management",
+    "risk_desc": "Predictive exposure analysis.",
+    "continuous_compliance": "Continuous Compliance",
+    "compliance_desc": "24/7 Monitoring of the immutable ledger.",
+    "infra_ra6": "RA6 Infrastructure",
+    "infra_desc": "Military-grade agentic intelligence.",
+    "global_coverage": "Global Coverage",
+    "global_desc": "Multi-jurisdictional compliance."
+  },
+  "hero": {
+    "badge": "RA6 Certified Agentic AI",
+    "title_part1": "Agentic",
+    "title_agentic": "Intelligence",
+    "title_part2": "for Absolute",
+    "title_compliance": "Compliance",
+    "title_absolute": "Excellence",
+    "subtitle": "Direct your enterprise with an immutable compliance OS. Military-grade security via SHA-256 cryptographic ledger.",
+    "cta_demo": "Request Private Demo",
+    "cta_video": "Watch Video"
+  },
+  "pillars": {
+    "title": "Value Proposition",
+    "main_title": "The 5 Pillars of AuditAX Value",
+    "immutability": "Immutability",
+    "immutability_desc": "Immutable Cryptographic Ledger. Every transaction is sealed and verifiable forever.",
+    "intelligence": "Intelligence",
+    "intelligence_desc": "Advanced RAG AI. Contextual and predictive risk analysis in real-time.",
+    "visibility": "Visibility",
+    "visibility_desc": "Unified CFO Dashboard. Global and granular view of all assets and financial flows.",
+    "finance": "Finance",
+    "finance_desc": "Cost optimization and tax compliance. Automation of complex financial processes.",
+    "guidance": "Guidance",
+    "guidance_desc": "Proactive advice and regulatory alerts. Stay ahead of normative changes."
+  },
+  "personas": {
+    "title": "Enterprise Elite",
+    "main_title": "Designed for the Enterprise Elite",
+    "learn_more": "Learn more",
+    "security": "Security & Resilience",
+    "performance": "Performance & Compliance",
+    "governance": "Governance & Legal"
+  },
+  "footer_cta": {
+    "title_part1": "Ready for",
+    "title_part2": "Industrial Compliance?",
+    "subtitle": "Join the leaders who trust AuditAX to secure their regulatory future.",
+    "start_now": "Start now"
+  },
+  "about": {
+    "title": "Our Legacy",
+    "main_title": "The Evolution of Regulatory Sovereignty",
+    "subtitle": "Born in 2024 to solve the complexity of global compliance through autonomous agents.",
+    "timeline": {
+      "2024": "Genesis of RA6 - Research on agentic defense nodes.",
+      "2025": "AuditAX v1.0 - First immutable compliance ledger for CFOs.",
+      "2026": "Global Expansion - Supporting 50+ jurisdictions autonomously."
+    }
+  },
+  "features": {
+    "title": "Technical Excellence",
+    "main_title": "RA6 Architecture Stack",
+    "subtitle": "Military-grade components built for enterprise resilience.",
+    "cards": {
+      "ledger": "SHA-256 Ledger",
+      "ledger_desc": "Every audit step scryptographically hashed and saved to an immutable chain.",
+      "rag": "Contextual RAG",
+      "rag_desc": "Real-time retrieval of global regulations applied to your specific infrastructure.",
+      "nodes": "Agentic Nodes",
+      "nodes_desc": "Autonomous agents that monitor, detect, and remediate compliance drifts 24/7."
+    }
+  }
+}
