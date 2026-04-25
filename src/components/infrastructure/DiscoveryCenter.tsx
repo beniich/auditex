@@ -150,5 +150,3 @@ export const DiscoveryCenter = () => {
   );
 };
 export default DiscoveryCenter;
-
-export default DiscoveryCenter;
