@@ -9,17 +9,28 @@
   --color-brand-bg: #f6fafe;
   --color-brand-sidebar: #091426;
   --color-brand-accent: #0058be;
+  --color-brand-accent-light: #eef5ff;
   --color-brand-success: #00a472;
+  --color-brand-success-light: #ecfdf5;
   --color-brand-warning: #f59e0b;
+  --color-brand-warning-light: #fffbeb;
   --color-brand-danger: #ba1a1a;
+  --color-brand-danger-light: #fef2f2;
   --color-brand-border: #dfe3e7;
   --color-brand-text-main: #171c1f;
   --color-brand-text-muted: #45474c;
+
+  /* Sizing & Spacing Patterns */
+  --radius-page: 2.5rem;
+  --radius-card: 2rem;
+  --radius-button: 0.75rem;
+  --radius-badge: 0.5rem;
 
   /* Glassmorphism Tokens */
   --glass-bg: rgba(255, 255, 255, 0.4);
   --glass-bg-dark: rgba(9, 20, 38, 0.4);
   --glass-border: rgba(255, 255, 255, 0.3);
+  --glass-border-dark: rgba(255, 255, 255, 0.1);
 }
 
 @utility glass-card {
@@ -39,6 +50,28 @@
   background-color: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+@utility section-card {
+  background-color: white;
+  border: 1px solid var(--color-brand-border);
+  border-radius: var(--radius-card);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+}
+
+@utility dark-card {
+  background-color: var(--color-brand-sidebar);
+  color: white;
+  border-radius: var(--radius-card);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.3);
+}
+
+@utility page-header-card {
+  background-color: white;
+  border: 1px solid var(--color-brand-border);
+  border-radius: var(--radius-page);
+  box-shadow: 0 4px 15px -1px rgba(0, 0, 0, 0.03);
 }
 
 @layer base {
@@ -62,6 +95,34 @@
   &::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
   }
+}
+
+@utility btn-primary {
+  @apply bg-brand-accent text-white font-black uppercase tracking-widest text-[10px];
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-button);
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 15px -2px rgba(0, 88, 190, 0.2);
+  &:hover {
+    @apply bg-blue-700 -translate-y-0.5;
+    box-shadow: 0 8px 20px -2px rgba(0, 88, 190, 0.3);
+  }
+  &:active {
+    @apply translate-y-0 opacity-90;
+  }
+}
+
+@utility badge-premium {
+  @apply font-black uppercase tracking-widest text-[8px] px-2.5 py-1 rounded-md border;
+}
+
+@utility animate-page-in {
+  animation: pageSlideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes pageSlideIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .audit-grid {

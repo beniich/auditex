@@ -1,0 +1,31 @@
+﻿src/components/audit/AuditRunner.tsx(115,52): error TS2339: Property 'selfCorrected' does not exist on type 'unknown'.
+src/components/audit/AuditRunner.tsx(116,29): error TS2339: Property 'result' does not exist on type 'unknown'.
+src/components/audit/AuditRunner.tsx(116,46): error TS2339: Property 'reasoning' does not exist on type 'unknown'.
+src/components/audit/AuditRunner.tsx(116,81): error TS2339: Property 'rule' does not exist on type 'unknown'.
+src/components/audit/AuditRunner.tsx(117,35): error TS2339: Property 'selfCorrected' does not exist on type 'unknown'.
+src/components/audit/AuditRunner.tsx(147,27): error TS2339: Property 'analysis' does not exist on type 'unknown'.
+src/components/forensics/ForensicView.tsx(65,25): error TS2339: Property 'analysis' does not exist on type 'unknown'.
+src/components/infrastructure/EntityMapper.tsx(238,59): error TS2367: This comparison appears to be unintentional because the types '"ACTIVE" | "NON_COMPLIANT" | "AUDIT_PENDING"' and '"VERIFIED"' have no overlap.
+src/components/infrastructure/EntityMapper.tsx(243,47): error TS2367: This comparison appears to be unintentional because the types '"ACTIVE" | "NON_COMPLIANT" | "AUDIT_PENDING"' and '"VERIFIED"' have no overlap.
+src/pages/DashboardContainer.tsx(36,104): error TS2339: Property 'ForensicView' does not exist on type 'typeof import("C:/Users/pc gold/projet dash/auditax-main/src/components/forensics/ForensicView")'.
+src/pages/DashboardContainer.tsx(37,107): error TS2339: Property 'PolicyLibrary' does not exist on type 'typeof import("C:/Users/pc gold/projet dash/auditax-main/src/components/governance/PolicyLibrary")'.
+src/pages/DashboardContainer.tsx(39,123): error TS2339: Property 'NetworkNodeTopology' does not exist on type 'typeof import("C:/Users/pc gold/projet dash/auditax-main/src/components/infrastructure/NetworkNodeTopology")'.
+src/pages/DashboardContainer.tsx(40,121): error TS2339: Property 'StakeholderReporting' does not exist on type 'typeof import("C:/Users/pc gold/projet dash/auditax-main/src/components/governance/StakeholderReporting")'.
+src/pages/DashboardContainer.tsx(62,95): error TS2339: Property 'WarRoom' does not exist on type 'typeof import("C:/Users/pc gold/projet dash/auditax-main/src/components/operations/WarRoom")'.
+src/pages/DashboardContainer.tsx(68,98): error TS2339: Property 'APISecurity' does not exist on type 'typeof import("C:/Users/pc gold/projet dash/auditax-main/src/components/admin/APISecurity")'.
+src/pages/DashboardContainer.tsx(69,98): error TS2339: Property 'BatchCenter' does not exist on type 'typeof import("C:/Users/pc gold/projet dash/auditax-main/src/components/audit/BatchCenter")'.
+src/pages/DashboardContainer.tsx(70,118): error TS2339: Property 'IdentityProviderSetup' does not exist on type 'typeof import("C:/Users/pc gold/projet dash/auditax-main/src/components/admin/IdentityProviderSetup")'.
+src/pages/DashboardContainer.tsx(71,99): error TS2339: Property 'InnovationLab' does not exist on type 'typeof import("C:/Users/pc gold/projet dash/auditax-main/src/components/ai/InnovationLab")'.
+src/pages/DashboardContainer.tsx(72,115): error TS2339: Property 'IncidentWorkspace' does not exist on type 'typeof import("C:/Users/pc gold/projet dash/auditax-main/src/components/operations/IncidentWorkspace")'.
+src/pages/DashboardContainer.tsx(73,111): error TS2339: Property 'RegulatorPortal' does not exist on type 'typeof import("C:/Users/pc gold/projet dash/auditax-main/src/components/governance/RegulatorPortal")'.
+src/pages/DashboardContainer.tsx(74,112): error TS2339: Property 'SecurityAuditLog' does not exist on type 'typeof import("C:/Users/pc gold/projet dash/auditax-main/src/components/forensics/SecurityAuditLog")'.
+src/pages/DashboardContainer.tsx(75,116): error TS2339: Property 'SovereigntyMonitor' does not exist on type 'typeof import("C:/Users/pc gold/projet dash/auditax-main/src/components/forensics/SovereigntyMonitor")'.
+src/pages/DashboardContainer.tsx(76,114): error TS2339: Property 'MaintenanceUpgrades' does not exist on type 'typeof import("C:/Users/pc gold/projet dash/auditax-main/src/components/admin/MaintenanceUpgrades")'.
+src/pages/DashboardContainer.tsx(77,96): error TS2339: Property 'SystemHelp' does not exist on type 'typeof import("C:/Users/pc gold/projet dash/auditax-main/src/components/admin/SystemHelp")'.
+src/pages/DashboardContainer.tsx(103,27): error TS2339: Property 'setToken' does not exist on type '{ getPolicies: () => Promise<Policy[]>; createPolicy: (data: Partial<Policy>) => Promise<Policy>; addControl: (policyId: string, data: Partial<...>) => Promise<...>; updateControlStatus: (controlId: string, status: string) => Promise<...>; }'.
+src/pages/DashboardContainer.tsx(104,22): error TS2339: Property 'setToken' does not exist on type '{ getStatus: () => Promise<any>; injectCorruption: (auditId?: string) => Promise<any>; triggerScan: () => Promise<any>; resetCorrectionBlocks: () => Promise<any>; }'.
+src/pages/DashboardContainer.tsx(105,25): error TS2339: Property 'setToken' does not exist on type '{ getIncidents: () => Promise<Incident[]>; createIncident: (data: Partial<Incident>) => Promise<Incident>; addTask: (incidentId: string, data: Partial<...>) => Promise<...>; updateTask: (taskId: string, status: string) => Promise<...>; resolveIncident: (incidentId: string) => Promise<...>; }'.
+src/pages/DashboardContainer.tsx(106,28): error TS2339: Property 'setToken' does not exist on type '{ getEntities(): Promise<LegalEntity[]>; getEntityById(id: string): Promise<LegalEntity>; updateEntity(id: string, data: Partial<LegalEntity>): Promise<...>; }'.
+src/pages/DashboardContainer.tsx(108,26): error TS2339: Property 'setToken' does not exist on type '{ getSummary: () => Promise<FinancialSummary>; getHeatmap: () => Promise<any[]>; updateImpact: (controlId: string, data: any) => Promise<any>; }'.
+src/pages/DashboardContainer.tsx(109,22): error TS2339: Property 'setToken' does not exist on type 'typeof AiApiService'.
+src/pages/DashboardContainer.tsx(110,30): error TS2339: Property 'setToken' does not exist on type '{ getStatus(): Promise<any[]>; getRisks(): Promise<any[]>; getAuditors(): Promise<any[]>; getCOIs(): Promise<any[]>; }'.

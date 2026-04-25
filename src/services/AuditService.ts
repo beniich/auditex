@@ -1,57 +1,26 @@
+import { api } from '../lib/api';
 import { Audit, AuditEvent, AuditTemplate } from '../types';
 
-const API_BASE = '/api';
-
-let currentToken: string | null = null;
-
-export function setGlobalAuthToken(token: string | null) {
-  currentToken = token;
-}
-
-async function safeFetch<T>(url: string, options: RequestInit = {}): Promise<T> {
-  try {
-    const headers: any = {
-      ...options.headers,
-    };
-    if (currentToken) {
-      headers['Authorization'] = `Bearer ${currentToken}`;
-    }
-
-    const res = await fetch(url, { ...options, headers });
-    if (!res.ok) {
-      throw new Error(`API Error ${res.status}: ${res.statusText}`);
-    }
-    return res.json();
-  } catch (error) {
-    console.error(`[AuditService] Fetch failed for ${url}:`, error);
-    throw error;
-  }
-}
-
 export const AuditService = {
-  setToken: setGlobalAuthToken,
+  setToken: api.setToken,
   async getTemplates(): Promise<AuditTemplate[]> {
-    return safeFetch<AuditTemplate[]>(`${API_BASE}/templates`);
+    return api.get<AuditTemplate[]>('/templates');
   },
 
   async getAudits(): Promise<Audit[]> {
-    return safeFetch<Audit[]>(`${API_BASE}/audits`);
+    return api.get<Audit[]>('/audits');
   },
 
   async getAudit(id: string): Promise<Audit> {
-    return safeFetch<Audit>(`${API_BASE}/audit/${id}`);
+    return api.get<Audit>(`/audit/${id}`);
   },
 
   async getEvents(id: string): Promise<AuditEvent[]> {
-    return safeFetch<AuditEvent[]>(`${API_BASE}/audit/${id}/events`);
+    return api.get<AuditEvent[]>(`/audit/${id}/events`);
   },
 
   async appendEvent(auditId: string, type: string, payload: any, userId: string = 'current-user') {
-    return safeFetch<any>(`${API_BASE}/audit/${auditId}/events`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type, payload, userId })
-    });
+    return api.post<any>(`/audit/${auditId}/events`, { type, payload, userId });
   },
 
   async startAudit(templateId: string, entityId: string): Promise<string> {
@@ -61,11 +30,11 @@ export const AuditService = {
   },
   
   async getLogs(): Promise<any[]> {
-    return safeFetch<any[]>(`${API_BASE}/audit/logs`);
+    return api.get<any[]>('/audit/logs');
   },
 
   async verifyAudit(auditId: string): Promise<any> {
-    return safeFetch<any>(`${API_BASE}/audit/${auditId}/verify`);
+    return api.get<any>(`/audit/${auditId}/verify`);
   }
 };
 

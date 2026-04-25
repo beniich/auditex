@@ -153,6 +153,7 @@ export const AuditMasterLayout = ({ children, activeTab, onTabChange }: any) => 
         <nav className="flex-1 overflow-y-auto px-2 custom-scrollbar py-4 overflow-x-hidden">
           <NavSection title="COMMAND" collapsed={isCollapsed}>
             <NavItem icon={LayoutDashboard} label="Main Dashboard" active={activeTab === 'dashboard'} onClick={() => onTabChange('dashboard')} collapsed={isCollapsed}/>
+            <NavItem icon={Brain} label={t('sidebar.links.smart_form')} active={activeTab === 'smart_form'} onClick={() => onTabChange('smart_form')} collapsed={isCollapsed}/>
             <NavItem icon={Radio} label="War Room" active={activeTab === 'war_room'} onClick={() => onTabChange('war_room')} collapsed={isCollapsed}/>
             <NavItem icon={Zap} label="Chaos Lab" active={activeTab === 'chaos_lab'} onClick={() => onTabChange('chaos_lab')} collapsed={isCollapsed}/>
             <NavItem icon={BellDot} label="Action Center" active={activeTab === 'action_center'} onClick={() => onTabChange('action_center')} collapsed={isCollapsed}/>
@@ -193,7 +194,6 @@ export const AuditMasterLayout = ({ children, activeTab, onTabChange }: any) => 
             <NavItem icon={UserPlus} label="IDP Setup" active={activeTab === 'identity_setup'} onClick={() => onTabChange('identity_setup')} collapsed={isCollapsed}/>
             <NavItem icon={Key} label="API Security" active={activeTab === 'api_security'} onClick={() => onTabChange('api_security')} collapsed={isCollapsed}/>
             <NavItem icon={Lightbulb} label={t('sidebar.links.innovation_lab')} active={activeTab === 'innovation_lab'} onClick={() => onTabChange('innovation_lab')} collapsed={isCollapsed}/>
-            <NavItem icon={AppWindow} label={t('sidebar.links.smart_form')} active={activeTab === 'smart_form'} onClick={() => onTabChange('smart_form')} collapsed={isCollapsed}/>
             <NavItem icon={Wrench} label="Maintenance" active={activeTab === 'maintenance'} onClick={() => onTabChange('maintenance')} collapsed={isCollapsed}/>
             <NavItem icon={CreditCard} label="Billing & Usage" active={activeTab === 'billing'} onClick={() => onTabChange('billing')} collapsed={isCollapsed}/>
             <NavItem icon={Wallet} label="Budget & Quota" active={activeTab === 'quota'} onClick={() => onTabChange('quota')} collapsed={isCollapsed}/>

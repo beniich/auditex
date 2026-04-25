@@ -33,11 +33,11 @@ const SystemVault = lazy(() => import('../components/admin/SystemVault').then(m 
 const PredictiveAnalytics = lazy(() => import('../components/ai/PredictiveAnalytics').then(m => ({ default: m.PredictiveAnalytics })));
 const GovernancePortal = lazy(() => import('../components/governance/GovernancePortal').then(m => ({ default: m.GovernancePortal })));
 const CertificationsHub = lazy(() => import('../components/governance/CertificationsHub').then(m => ({ default: m.CertificationsHub })));
-const ForensicView = lazy(() => import('../components/forensics/ForensicView').then(m => ({ default: m.ForensicView })));
-const PolicyLibrary = lazy(() => import('../components/governance/PolicyLibrary').then(m => ({ default: m.PolicyLibrary })));
-const IntegrityDiagnostics = lazy(() => import('../components/forensics/IntegrityDiagnostics').then(m => ({ default: m.IntegrityDiagnostics })));
-const NetworkNodeTopology = lazy(() => import('../components/infrastructure/NetworkNodeTopology').then(m => ({ default: m.NetworkNodeTopology })));
-const StakeholderReporting = lazy(() => import('../components/governance/StakeholderReporting').then(m => ({ default: m.StakeholderReporting })));
+const ForensicView = lazy(() => import('../components/forensics/ForensicView'));
+const PolicyLibrary = lazy(() => import('../components/governance/PolicyLibrary'));
+const IntegrityDiagnostics = lazy(() => import('../components/forensics/IntegrityDiagnostics'));
+const NetworkNodeTopology = lazy(() => import('../components/infrastructure/NetworkNodeTopology'));
+const StakeholderReporting = lazy(() => import('../components/governance/StakeholderReporting'));
 const OrganizationHierarchy = lazy(() => import('../components/infrastructure/OrganizationHierarchy').then(m => ({ default: m.OrganizationHierarchy })));
 const DiscoveryCenter = lazy(() => import('../components/infrastructure/DiscoveryCenter').then(m => ({ default: m.DiscoveryCenter })));
 const RiskRegisterDashboard = lazy(() => import('../components/risk/RiskRegisterDashboard').then(m => ({ default: m.RiskRegisterDashboard })));
@@ -59,24 +59,24 @@ const ReportBuilder = lazy(() => import('../components/governance/ReportBuilder'
 const DataMappingExplorer = lazy(() => import('../components/infrastructure/DataMappingExplorer').then(m => ({ default: m.DataMappingExplorer })));
 const SubsidiaryDetail = lazy(() => import('../components/infrastructure/SubsidiaryDetail').then(m => ({ default: m.SubsidiaryDetail })));
 const NewAuditModal = lazy(() => import('../components/audit/NewAuditModal').then(m => ({ default: m.NewAuditModal })));
-const WarRoom = lazy(() => import('../components/operations/WarRoom').then(m => ({ default: m.WarRoom })));
+const WarRoom = lazy(() => import('../components/operations/WarRoom'));
 const ChaosLab = lazy(() => import('../components/operations/ChaosLab').then(m => ({ default: m.ChaosLab })));
 const FinancialDashboard = lazy(() => import('../components/admin/FinancialDashboard').then(m => ({ default: m.FinancialDashboard })));
 const CapabilityCenter = lazy(() => import('../components/operations/CapabilityCenter').then(m => ({ default: m.CapabilityCenter })));
 const GuidedAuditRunner = lazy(() => import('../components/audit/GuidedAuditRunner').then(m => ({ default: m.GuidedAuditRunner })));
 const AIAnalyticsHub = lazy(() => import('../components/ai/AIAnalyticsHub').then(m => ({ default: m.AiAnalyticsHub })));
-const APISecurity = lazy(() => import('../components/admin/APISecurity').then(m => ({ default: m.APISecurity })));
-const BatchCenter = lazy(() => import('../components/audit/BatchCenter').then(m => ({ default: m.BatchCenter })));
-const IdentityProviderSetup = lazy(() => import('../components/admin/IdentityProviderSetup').then(m => ({ default: m.IdentityProviderSetup })));
-const InnovationLab = lazy(() => import('../components/ai/InnovationLab').then(m => ({ default: m.InnovationLab })));
-const IncidentWorkspace = lazy(() => import('../components/operations/IncidentWorkspace').then(m => ({ default: m.IncidentWorkspace })));
-const RegulatorPortal = lazy(() => import('../components/governance/RegulatorPortal').then(m => ({ default: m.RegulatorPortal })));
-const SecurityAuditLog = lazy(() => import('../components/forensics/SecurityAuditLog').then(m => ({ default: m.SecurityAuditLog })));
-const SovereigntyMonitor = lazy(() => import('../components/forensics/SovereigntyMonitor').then(m => ({ default: m.SovereigntyMonitor })));
-const MaintenanceUpgrades = lazy(() => import('../components/admin/MaintenanceUpgrades').then(m => ({ default: m.MaintenanceUpgrades })));
-const SystemHelp = lazy(() => import('../components/admin/SystemHelp').then(m => ({ default: m.SystemHelp })));
+const APISecurity = lazy(() => import('../components/admin/APISecurity'));
+const BatchCenter = lazy(() => import('../components/audit/BatchCenter'));
+const IdentityProviderSetup = lazy(() => import('../components/admin/IdentityProviderSetup'));
+const InnovationLab = lazy(() => import('../components/ai/InnovationLab'));
+const IncidentWorkspace = lazy(() => import('../components/operations/IncidentWorkspace'));
+const RegulatorPortal = lazy(() => import('../components/governance/RegulatorPortal'));
+const SecurityAuditLog = lazy(() => import('../components/forensics/SecurityAuditLog'));
+const SovereigntyMonitor = lazy(() => import('../components/forensics/SovereigntyMonitor'));
+const MaintenanceUpgrades = lazy(() => import('../components/admin/MaintenanceUpgrades'));
+const SystemHelp = lazy(() => import('../components/admin/SystemHelp'));
 const QuotaDashboard = lazy(() => import('../components/admin/QuotaDashboard').then(m => ({ default: m.QuotaDashboard })));
-const SmartFormLab = lazy(() => import('../components/ai/SmartFormLab').then(m => ({ default: m.SmartFormLab })));
+const NexusAIHub = lazy(() => import('../components/ai/SmartFormLab').then(m => ({ default: m.NexusAIHub })));
 
 
 
@@ -94,7 +94,9 @@ export const DashboardContainer = () => {
     getToken().then(t => {
       if (t) {
         api.setToken(t);
-        // Also sync individuals that have internal state
+        
+        // Only call setToken on services that don't share the global 'api' instance
+        // or have independent internal state if any (most now use global api)
         AuditService.setToken(t);
         OrganizationService.setToken(t);
         RiskService.setToken(t);
@@ -103,11 +105,8 @@ export const DashboardContainer = () => {
         ComplianceService.setToken(t);
         ChaosService.setToken(t);
         IncidentService.setToken(t);
-        LegalEntityService.setToken(t);
         VaultService.setToken(t);
         FinancialService.setToken(t);
-        AiApiService.setToken(t);
-        CertificationService.setToken?.(t);
 
         refreshAudits();
         loadTemplates();
@@ -149,7 +148,7 @@ export const DashboardContainer = () => {
     >
       <Suspense fallback={<Skeleton className="h-full w-full" />}>
         {activeTab === 'dashboard' && (
-          <Dashboard audits={audits} templates={templates} />
+          <Dashboard audits={audits} templates={templates} onNavigate={setActiveTab} />
         )}
 
         {activeTab === 'war_room' && (
@@ -295,7 +294,7 @@ export const DashboardContainer = () => {
         {activeTab === 'capability_center' && <CapabilityCenter onNavigate={setActiveTab} />}
         {activeTab === 'billing' && <UsageBillingDashboard />}
         {activeTab === 'quota' && <QuotaDashboard />}
-        {activeTab === 'smart_form' && <SmartFormLab />}
+        {activeTab === 'smart_form' && <NexusAIHub />}
         {activeTab === 'policy_center' && <PolicyManagementCenter />}
         {activeTab === 'asset_tagging' && <AssetClassification />}
         {activeTab === 'collaboration' && <TeamCollaboration />}

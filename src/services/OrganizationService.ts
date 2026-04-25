@@ -1,28 +1,15 @@
-const API_BASE = '/api';
-
-let currentToken: string | null = null;
-export function setOrganizationToken(token: string | null) {
-  currentToken = token;
-}
-
-async function safeFetch<T>(url: string, options: RequestInit = {}): Promise<T> {
-  const headers: any = { ...options.headers };
-  if (currentToken) headers['Authorization'] = `Bearer ${currentToken}`;
-  const res = await fetch(url, { ...options, headers });
-  if (!res.ok) throw new Error(`API Error ${res.status}`);
-  return res.json();
-}
+import { api } from '../lib/api';
 
 export const OrganizationService = {
-  setToken: setOrganizationToken,
+  setToken: api.setToken,
   async list(): Promise<any[]> {
-    return safeFetch<any[]>(`${API_BASE}/organizations`);
+    return api.get<any[]>('/organizations');
   },
   async getById(id: string): Promise<any> {
-    return safeFetch<any>(`${API_BASE}/organizations/${id}`);
+    return api.get<any>(`/organizations/${id}`);
   },
   async getSubsidiaries(orgId: string): Promise<any[]> {
-    return safeFetch<any[]>(`${API_BASE}/organizations/${orgId}/subsidiaries`);
+    return api.get<any[]>(`/organizations/${orgId}/subsidiaries`);
   }
 };
 

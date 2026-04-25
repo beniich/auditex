@@ -1,15 +1,4 @@
-const API_BASE = '/api/financial';
-
-let currentToken: string | null = null;
-export function setFinancialToken(token: string | null) { currentToken = token; }
-
-async function safeFetch<T>(url: string, options: RequestInit = {}): Promise<T> {
-  const headers: any = { ...options.headers };
-  if (currentToken) headers['Authorization'] = `Bearer ${currentToken}`;
-  const res = await fetch(url, { ...options, headers });
-  if (!res.ok) throw new Error(`FinancialAPI ${res.status}: ${res.statusText}`);
-  return res.json();
-}
+import { api } from '../lib/api';
 
 export interface FinancialSummary {
   totalPotentialFine: number;
@@ -24,12 +13,9 @@ export interface FinancialSummary {
 }
 
 export const FinancialService = {
-  getSummary: () => safeFetch<FinancialSummary>(`${API_BASE}/summary`),
-  getHeatmap: () => safeFetch<any[]>(`${API_BASE}/heatmap`),
+  setToken: api.setToken,
+  getSummary: () => api.get<FinancialSummary>('/financial/summary'),
+  getHeatmap: () => api.get<any[]>('/financial/heatmap'),
   updateImpact: (controlId: string, data: any) =>
-    safeFetch<any>(`${API_BASE}/controls/${controlId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    })
+    api.post<any>(`/financial/controls/${controlId}`, data)
 };

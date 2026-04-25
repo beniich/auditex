@@ -1,6 +1,7 @@
 import { api } from '../lib/api';
 
 export const ChaosService = {
+  setToken: api.setToken,
   getStatus: () => api.get<any>('/chaos/status'),
   injectCorruption: (auditId?: string) =>
     api.post<any>('/chaos/corrupt', { auditId }),

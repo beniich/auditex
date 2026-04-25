@@ -26,6 +26,7 @@ export interface Incident {
 }
 
 export const IncidentService = {
+  setToken: api.setToken,
   getIncidents: () => api.get<Incident[]>('/incidents'),
   createIncident: (data: Partial<Incident>) => api.post<Incident>('/incidents', data),
   addTask: (incidentId: string, data: Partial<CAPATask>) => api.post<CAPATask>(`/incidents/${incidentId}/tasks`, data),

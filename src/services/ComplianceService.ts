@@ -18,6 +18,7 @@ export interface Policy {
 }
 
 export const ComplianceService = {
+  setToken: api.setToken,
   getPolicies: () => api.get<Policy[]>('/compliance/policies'),
   createPolicy: (data: Partial<Policy>) => api.post<Policy>('/compliance/policies', data),
   addControl: (policyId: string, data: Partial<Control>) => api.post<Control>(`/compliance/policies/${policyId}/controls`, data),
