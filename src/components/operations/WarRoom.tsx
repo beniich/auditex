@@ -15,8 +15,15 @@ import {
   Unlock
 } from 'lucide-react';
 import { GlassCard } from '../common/GlassCard';
+import { IncidentService } from '../../services/IncidentService';
+import { useApiQuery } from '../../hooks/useApiQuery';
 
 const WarRoom = () => {
+  const { data: incidents = [], isLoading } = useApiQuery(
+    ['incidents'],
+    () => IncidentService.getIncidents()
+  );
+
   return (
     <div className="flex flex-col gap-10 max-w-[1700px] mx-auto animate-in fade-in slide-in-from-bottom-10 duration-1000">
       
@@ -32,7 +39,7 @@ const WarRoom = () => {
                     <Radio size={14} className="animate-pulse" /> LIVE_WAR_ROOM
                  </span>
                  <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border border-white/10 px-4 py-1.5 rounded-xl backdrop-blur-md">
-                    <Users size={12} /> 4 Active Operators
+                    <Users size={12} /> {isLoading ? '...' : '4 Active Operators'}
                  </span>
               </div>
               <h2 className="text-6xl font-black text-white tracking-tighter uppercase leading-none italic mb-4">Command Triage</h2>
@@ -92,11 +99,15 @@ const WarRoom = () => {
                </div>
 
                <div className="flex-1 space-y-6">
-                  {[
-                    { id: 'INC-702', title: 'Unauthorized Biometric Bypass Attempt', loc: 'Frankfurt DE-7', impact: 'CRITICAL', time: '2m ago' },
-                    { id: 'INC-698', title: 'SHA-256 Chain Divergence Detected', loc: 'Global Ledger', impact: 'HIGH', time: '14m ago' },
-                    { id: 'INC-695', title: 'RAG Context Invalidation - ISO 27001', loc: 'Gov-Engine', impact: 'MEDIUM', time: '38m ago' },
-                  ].map((inc, i) => (
+                  {isLoading ? (
+                    <div className="flex-1 flex items-center justify-center text-slate-400 font-black uppercase text-[10px] tracking-widest">
+                       Synchronizing Stream...
+                    </div>
+                  ) : incidents.length === 0 ? (
+                    <div className="flex-1 flex items-center justify-center text-slate-400 font-black uppercase text-[10px] tracking-widest">
+                       No Critical Alerts Detected
+                    </div>
+                  ) : incidents.map((inc: any, i: number) => (
                     <motion.div 
                       key={inc.id}
                       initial={{ opacity: 0, x: -20 }}
@@ -105,11 +116,15 @@ const WarRoom = () => {
                     >
                        <div className="flex justify-between items-start mb-4">
                           <div className="flex flex-col">
-                             <span className="text-[10px] font-black text-red-600 uppercase tracking-widest">{inc.id} // {inc.loc}</span>
+                             <span className="text-[10px] font-black text-red-600 uppercase tracking-widest">{inc.id} // {inc.node?.name || 'GLOBAL'}</span>
                              <h4 className="text-lg font-black text-[#091426] dark:text-white mt-1 uppercase tracking-tighter leading-none">{inc.title}</h4>
                           </div>
-                          <span className={`px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest ${inc.impact === 'CRITICAL' ? 'bg-red-600 text-white shadow-xl shadow-red-500/20' : 'bg-amber-100 text-amber-600'}`}>
-                             {inc.impact}
+                          <span className={`px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest ${
+                            inc.severity === 'CRITICAL' ? 'bg-red-600 text-white shadow-xl shadow-red-500/20' : 
+                            inc.severity === 'HIGH' ? 'bg-amber-600 text-white shadow-xl shadow-amber-500/20' : 
+                            'bg-blue-100 text-blue-600'
+                          }`}>
+                             {inc.severity}
                           </span>
                        </div>
                        <div className="flex gap-3 justify-end">

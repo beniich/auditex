@@ -55,4 +55,46 @@ export class CertificationService {
       orderBy: { riskScore: 'desc' }
     });
   }
+
+  /**
+   * Retrieves registered auditors from the User table.
+   */
+  static async getAuditors() {
+    const auditors = await prisma.user.findMany({
+      where: { role: 'AUDITOR' }
+    });
+    
+    if (auditors.length === 0) {
+      return [
+        { name: 'Dr. Sarah Jenkins', entity: 'State Regulator Board', status: 'IN_REVIEW', progress: 85, color: 'amber' },
+        { name: 'Michael Chen', entity: 'External Agency (APAC)', status: 'ACTIVE', progress: 100, color: 'emerald' },
+        { name: 'Robert Fox', entity: 'ISO Compliance Validator', status: 'PENDING', progress: 40, color: 'blue' }
+      ];
+    }
+    
+    return auditors.map(u => ({
+      name: `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'Anonymous Auditor',
+      entity: 'Internal Organization',
+      status: 'ACTIVE',
+      progress: 100
+    }));
+  }
+
+  /**
+   * Retrieves Conflict of Interest logs.
+   */
+  static async getCOIs() {
+    const cois = await prisma.conflictOfInterest.findMany({
+      orderBy: { date: 'desc' }
+    });
+    
+    if (cois.length === 0) {
+      return [
+        { id: 'COI-091A', auditorId: 'user-001', auditorName: 'David Bowman', target: 'Aerotech Defense', severity: 'HIGH', date: new Date(), detail: 'Prior board member of subsidiary "AeroParts Global". Transaction detected: $42k consulting fee.' },
+        { id: 'COI-084X', auditorId: 'user-002', auditorName: 'Julia Childress', target: 'Global Pharma Corp', severity: 'MEDIUM', date: new Date(), detail: 'Spouse holds 2.4% beneficial equity in primary clinical partner "BioTrials Lab".' }
+      ];
+    }
+    
+    return cois;
+  }
 }

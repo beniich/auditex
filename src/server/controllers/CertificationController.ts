@@ -40,4 +40,24 @@ export class CertificationController {
       res.status(500).json({ error: 'Internal Server Error' });
     }
   }
+
+  static async getAuditors(req: Request, res: Response) {
+    try {
+      const auditors = await CertificationService.getAuditors();
+      res.json(auditors);
+    } catch (error) {
+      console.error('getAuditors error:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  }
+
+  static async getCOIs(req: Request, res: Response) {
+    try {
+      const cois = await CertificationService.getCOIs();
+      res.json(cois);
+    } catch (error) {
+      console.error('getCOIs error:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  }
 }

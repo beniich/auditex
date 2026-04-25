@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NEXUS AI — SmartForm Intelligence Platform</title>
+  <meta name="description" content="Plateforme SaaS Low-Code de Business Intelligence boostée à l'IA. Créez, analysez et visualisez vos données en temps réel." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- SPLASH SCREEN -->
+  <div id="splash" class="splash">
+    <div class="splash-inner">
+      <div class="splash-logo">
+        <div class="splash-icon">
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+            <rect width="48" height="48" rx="14" fill="url(#splashGrad)"/>
+            <path d="M12 24L20 16L28 24L36 16" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M12 32L20 24L28 32L36 24" stroke="rgba(255,255,255,0.4)" stroke-width="2.5" stroke-linecap="round"/>
+            <defs>
+              <linearGradient id="splashGrad" x1="0" y1="0" x2="48" y2="48">
+                <stop offset="0%" stop-color="#6366f1"/>
+                <stop offset="100%" stop-color="#8b5cf6"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <span class="splash-name">NEXUS AI</span>
+      </div>
+      <div class="splash-bar"><div class="splash-fill" id="splashFill"></div></div>
+      <p class="splash-sub">Initialisation de la plateforme...</p>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="app" class="app hidden">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon">
+          <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
+            <rect width="48" height="48" rx="12" fill="url(#brandGrad)"/>
+            <path d="M12 24L20 16L28 24L36 16" stroke="white" stroke-width="3" stroke-linecap="round"/>
+            <path d="M12 32L20 24L28 32L36 24" stroke="rgba(255,255,255,0.4)" stroke-width="3" stroke-linecap="round"/>
+            <defs>
+              <linearGradient id="brandGrad" x1="0" y1="0" x2="48" y2="48">
+                <stop offset="0%" stop-color="#6366f1"/>
+                <stop offset="100%" stop-color="#8b5cf6"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-name">NEXUS AI</div>
+          <div class="brand-sub">SmartForm Intelligence</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-tab="builder" onclick="switchTab('builder')">
+          <span class="nav-icon">⚡</span>
+          <span>Form Builder</span>
+          <span class="nav-badge new">LIVE</span>
+        </button>
+        <button class="nav-item" data-tab="pipeline" onclick="switchTab('pipeline')">
+          <span class="nav-icon">🔄</span>
+          <span>Pipeline IA</span>
+        </button>
+        <button class="nav-item" data-tab="analytics" onclick="switchTab('analytics')">
+          <span class="nav-icon">🧠</span>
+          <span>Analyse Cognitive</span>
+          <span class="nav-badge warn">3</span>
+        </button>
+        <button class="nav-item" data-tab="dashboard" onclick="switchTab('dashboard')">
+          <span class="nav-icon">📊</span>
+          <span>Dashboard Visuel</span>
+        </button>
+        <button class="nav-item" data-tab="reports" onclick="switchTab('reports')">
+          <span class="nav-icon">📄</span>
+          <span>Rapports Auto</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-status">
+        <div class="status-dot pulse"></div>
+        <span>Système opérationnel</span>
+      </div>
+
+      <div class="sidebar-stats">
+        <div class="mini-stat">
+          <span class="mini-val" id="totalSubmissions">0</span>
+          <span class="mini-lbl">Soumissions</span>
+        </div>
+        <div class="mini-stat">
+          <span class="mini-val">94%</span>
+          <span class="mini-lbl">Précision IA</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main-area">
+
+      <!-- ===== TAB: BUILDER ===== -->
+      <section id="tab-builder" class="tab active">
+        <div class="page-header">
+          <div>
+            <div class="page-tag">Étape A — Interface Low-Code</div>
+            <h1 class="page-title">Dynamic Form Builder</h1>
+            <p class="page-desc">Glissez-déposez vos rubriques pour créer votre formulaire intelligent en quelques secondes.</p>
+          </div>
+          <div class="header-actions">
+            <button class="btn-outline" onclick="clearCanvas()">Réinitialiser</button>
+            <button class="btn-primary" onclick="publishForm()">
+              <span>🚀</span> Publier le Formulaire
+            </button>
+          </div>
+        </div>
+
+        <div class="builder-layout">
+          <!-- Block Library -->
+          <div class="block-library">
+            <div class="library-header">
+              <span>📦</span> Bibliothèque de Rubriques
+            </div>
+            <div class="library-search">
+              <input type="text" placeholder="Rechercher..." oninput="filterBlocks(this.value)" />
+            </div>
+            <div class="block-groups" id="blockLibrary">
+              <div class="block-group">
+                <div class="group-label">COLLECTE</div>
+                <div class="library-block" draggable="true" data-type="text" data-icon="📝" data-label="Texte Libre" ondragstart="dragStart(event)">
+                  <span class="block-icon">📝</span>
+                  <div class="block-info"><strong>Texte Libre</strong><small>Saisie ouverte</small></div>
+                </div>
+                <div class="library-block" draggable="true" data-type="number" data-icon="🔢" data-label="Numérique" ondragstart="dragStart(event)">
+                  <span class="block-icon">🔢</span>
+                  <div class="block-info"><strong>Numérique</strong><small>Chiffres & KPIs</small></div>
+                </div>
+                <div class="library-block" draggable="true" data-type="photo" data-icon="📷" data-label="Photo / Média" ondragstart="dragStart(event)">
+                  <span class="block-icon">📷</span>
+                  <div class="block-info"><strong>Photo / Média</strong><small>Preuve visuelle</small></div>
+                </div>
+                <div class="library-block" draggable="true" data-type="location" data-icon="📍" data-label="Localisation" ondragstart="dragStart(event)">
+                  <span class="block-icon">📍</span>
+                  <div class="block-info"><strong>Localisation</strong><small>GPS & Secteur</small></div>
+                </div>
+              </div>
+              <div class="block-group">
+                <div class="group-label">ÉVALUATION</div>
+                <div class="library-block" draggable="true" data-type="scale" data-icon="⚡" data-label="Échelle de Risque" ondragstart="dragStart(event)">
+                  <span class="block-icon">⚡</span>
+                  <div class="block-info"><strong>Échelle de Risque</strong><small>1 → Critique</small></div>
+                </div>
+                <div class="library-block" draggable="true" data-type="checkbox" data-icon="✅" data-label="Cases à Cocher" ondragstart="dragStart(event)">
+                  <span class="block-icon">✅</span>
+                  <div class="block-info"><strong>Cases à cocher</strong><small>Options multiples</small></div>
+                </div>
+                <div class="library-block" draggable="true" data-type="select" data-icon="🔽" data-label="Sélecteur" ondragstart="dragStart(event)">
+                  <span class="block-icon">🔽</span>
+                  <div class="block-info"><strong>Sélecteur</strong><small>Liste déroulante</small></div>
+                </div>
+              </div>
+              <div class="block-group">
+                <div class="group-label">INTELLIGENCE</div>
+                <div class="library-block" draggable="true" data-type="ai-tag" data-icon="🤖" data-label="Tag IA Auto" ondragstart="dragStart(event)">
+                  <span class="block-icon">🤖</span>
+                  <div class="block-info"><strong>Tag IA Auto</strong><small>Classification auto</small></div>
+                </div>
+                <div class="library-block" draggable="true" data-type="signature" data-icon="✍️" data-label="Signature" ondragstart="dragStart(event)">
+                  <span class="block-icon">✍️</span>
+                  <div class="block-info"><strong>Signature</strong><small>Validation agent</small></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Canvas -->
+          <div class="canvas-area"
+               ondragover="event.preventDefault()"
+               ondrop="dropBlock(event)">
+            <div class="canvas-header">
+              <input type="text" id="formTitle" class="form-title-input" value="Alerte Sécurité — Terrain" />
+              <div class="canvas-meta">
+                <span class="meta-chip">🏭 Maintenance</span>
+                <span class="meta-chip active">⚡ IA Active</span>
+              </div>
+            </div>
+            <div id="formCanvas" class="form-canvas">
+              <div class="canvas-empty" id="canvasEmpty">
+                <div class="empty-icon">⬇️</div>
+                <p>Glissez vos rubriques ici</p>
+                <button class="btn-outline-sm" onclick="loadTemplate()">Charger un modèle exemple</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Preview -->
+          <div class="preview-panel">
+            <div class="preview-header">
+              <span>📱</span> Aperçu Terrain
+            </div>
+            <div class="phone-frame">
+              <div class="phone-screen" id="phonePreview">
+                <div class="phone-app-header">
+                  <div class="phone-app-title" id="previewTitle">Alerte Sécurité</div>
+                  <div class="phone-app-sub">Agent terrain</div>
+                </div>
+                <div id="phoneFields" class="phone-fields"></div>
+                <div class="phone-submit">
+                  <button class="phone-btn" onclick="simulateSubmit()">📤 Soumettre & Analyser</button>
+                </div>
+              </div>
+            </div>
+            <div class="preview-stats">
+              <div class="preview-stat">
+                <span id="fieldCount">0</span> champs
+              </div>
+              <div class="preview-stat">
+                ~<span id="fillTime">0</span>s remplissage
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== TAB: PIPELINE ===== -->
+      <section id="tab-pipeline" class="tab">
+        <div class="page-header">
+          <div>
+            <div class="page-tag">Étape B — Moteur de Traitement</div>
+            <h1 class="page-title">Pipeline d'Harmonisation</h1>
+            <p class="page-desc">Le moteur qui transforme les données brutes du terrain en données structurées et intelligentes.</p>
+          </div>
+          <button class="btn-primary" onclick="runPipeline()">
+            <span>▶</span> Simuler le Pipeline
+          </button>
+        </div>
+
+        <div class="pipeline-layout">
+          <div class="pipeline-flow">
+            <div class="pipeline-stage" id="stage-ingest">
+              <div class="stage-icon">📥</div>
+              <div class="stage-body">
+                <div class="stage-label">INGESTION</div>
+                <div class="stage-title">Données Brutes</div>
+                <div class="raw-entries" id="rawEntries">
+                  <div class="raw-entry"><span class="entry-badge warn">RAW</span> "Échelle cassée au secteur nord"</div>
+                  <div class="raw-entry"><span class="entry-badge warn">RAW</span> "Matériel dégradé - urgent"</div>
+                  <div class="raw-entry"><span class="entry-badge warn">RAW</span> "problème echelle - pôle A"</div>
+                  <div class="raw-entry"><span class="entry-badge ok">STRUCT</span> Risque: 4/5 | Secteur: Nord</div>
+                </div>
+              </div>
+              <div class="stage-status" id="stage-ingest-status">⏳ En attente</div>
+            </div>
+
+            <div class="pipeline-arrow" id="arrow1">→</div>
+
+            <div class="pipeline-stage" id="stage-clean">
+              <div class="stage-icon">🧹</div>
+              <div class="stage-body">
+                <div class="stage-label">NETTOYAGE & NLP</div>
+                <div class="stage-title">Harmonisation</div>
+                <div class="clean-rules" id="cleanRules">
+                  <div class="rule-item">Synonymes — "cassée" ≡ "dégradé"</div>
+                  <div class="rule-item">Entités — Secteur Nord → GPS [48.8N, 2.3E]</div>
+                  <div class="rule-item">Urgence — Détection sémantique</div>
+                  <div class="rule-item">Doublons — Fusion intelligente</div>
+                </div>
+              </div>
+              <div class="stage-status" id="stage-clean-status">⏳ En attente</div>
+            </div>
+
+            <div class="pipeline-arrow" id="arrow2">→</div>
+
+            <div class="pipeline-stage" id="stage-classify">
+              <div class="stage-icon">🏷️</div>
+              <div class="stage-body">
+                <div class="stage-label">CLASSIFICATION</div>
+                <div class="stage-title">Taxonomie IA</div>
+                <div class="taxonomy-tree" id="taxonomyTree">
+                  <div class="tax-node root">SÉCURITÉ</div>
+                  <div class="tax-node child">↳ MATÉRIEL</div>
+                  <div class="tax-node leaf critical">↳↳ ÉCHELLE → <span class="tax-badge critical">CRITIQUE</span></div>
+                  <div class="tax-node child">↳ LOCALISATION</div>
+                  <div class="tax-node leaf">↳↳ SECTEUR_NORD</div>
+                </div>
+              </div>
+              <div class="stage-status" id="stage-classify-status">⏳ En attente</div>
+            </div>
+
+            <div class="pipeline-arrow" id="arrow3">→</div>
+
+            <div class="pipeline-stage highlight" id="stage-output">
+              <div class="stage-icon">✅</div>
+              <div class="stage-body">
+                <div class="stage-label">SORTIE STRUCTURÉE</div>
+                <div class="stage-title">Donnée Intelligence</div>
+                <div class="output-record" id="outputRecord">
+                  <div class="record-field"><span class="field-key">category</span><span class="field-val">"SECURITE.MATERIEL"</span></div>
+                  <div class="record-field"><span class="field-key">subtype</span><span class="field-val">"ECHELLE_CRITIQUE"</span></div>
+                  <div class="record-field"><span class="field-key">severity</span><span class="field-val sev-critical">5 / CRITIQUE</span></div>
+                  <div class="record-field"><span class="field-key">zone</span><span class="field-val">"SECTEUR_NORD"</span></div>
+                  <div class="record-field"><span class="field-key">occurrences</span><span class="field-val">3 ce mois</span></div>
+                  <div class="record-field"><span class="field-key">ai_confidence</span><span class="field-val ai-val">94.2%</span></div>
+                </div>
+              </div>
+              <div class="stage-status" id="stage-output-status">⏳ En attente</div>
+            </div>
+          </div>
+
+          <!-- Pipeline Log -->
+          <div class="pipeline-log" id="pipelineLog">
+            <div class="log-header">
+              <span class="log-dot"></span> Journal Pipeline
+            </div>
+            <div class="log-entries" id="logEntries">
+              <div class="log-entry info">Pipeline prêt. Cliquez sur "Simuler" pour lancer.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== TAB: ANALYTICS ===== -->
+      <section id="tab-analytics" class="tab">
+        <div class="page-header">
+          <div>
+            <div class="page-tag">Étape C — Cerveau IA</div>
+            <h1 class="page-title">Analyse Cognitive IA</h1>
+            <p class="page-desc">L'IA interprète, prédit et suggère. Pas seulement des chiffres — des décisions.</p>
+          </div>
+          <div class="ai-status-badge">
+            <div class="ai-pulse"></div>
+            <span>GPT-4 Connecté</span>
+          </div>
+        </div>
+
+        <div class="analytics-grid">
+          <!-- Anomaly Detection -->
+          <div class="analytics-card anomaly-card">
+            <div class="card-header">
+              <div class="card-icon red">⚠️</div>
+              <div>
+                <div class="card-label">DÉTECTION D'ANOMALIES</div>
+                <div class="card-title">Alertes en Temps Réel</div>
+              </div>
+              <div class="alert-count">3</div>
+            </div>
+            <div class="anomaly-list">
+              <div class="anomaly-item critical" onclick="showAnomalyDetail(this, 'echelle')">
+                <div class="anom-severity critical-dot"></div>
+                <div class="anom-content">
+                  <div class="anom-title">Récurrence critique — Échelles</div>
+                  <div class="anom-desc">5 signalements / 30 jours sur Secteur Nord. Risque d'accident imminent.</div>
+                  <div class="anom-meta">Confiance IA : 94% • Détecté il y a 2h</div>
+                </div>
+                <div class="anom-trend">↑ +127%</div>
+              </div>
+              <div class="anomaly-item warning" onclick="showAnomalyDetail(this, 'fatigue')">
+                <div class="anom-severity warning-dot"></div>
+                <div class="anom-content">
+                  <div class="anom-title">Indicateur Fatigue — Pôle Dépannage</div>
+                  <div class="anom-desc">Temps de réponse moyen +34% sur les dernières 2 semaines.</div>
+                  <div class="anom-meta">Confiance IA : 81% • Détecté hier</div>
+                </div>
+                <div class="anom-trend">↑ +34%</div>
+              </div>
+              <div class="anomaly-item info" onclick="showAnomalyDetail(this, 'vehicule')">
+                <div class="anom-severity info-dot"></div>
+                <div class="anom-content">
+                  <div class="anom-title">Corrélation Pannes — Véhicule #042</div>
+                  <div class="anom-desc">80% des pannes Secteur X impliquent ce véhicule.</div>
+                  <div class="anom-meta">Confiance IA : 76% • Détecté ce matin</div>
+                </div>
+                <div class="anom-trend">→ 80%</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- AI Synthesis -->
+          <div class="analytics-card synthesis-card">
+            <div class="card-header">
+              <div class="card-icon purple">🧠</div>
+              <div>
+                <div class="card-label">SYNTHÈSE COGNITIVE</div>
+                <div class="card-title">Résumé Exécutif IA</div>
+              </div>
+              <button class="btn-sm" onclick="generateSynthesis()">Régénérer</button>
+            </div>
+            <div class="synthesis-output" id="synthesisOutput">
+              <div class="synthesis-streaming" id="synthesisText">
+                <p>🔴 <strong>Situation Critique Identifiée :</strong> Le service Dépannage (Secteur Nord) présente une accumulation de risques de sécurité. 5 signalements d'échelles défectueuses en 30 jours suggèrent un défaut structurel systémique, non un incident isolé.</p>
+                <p>⚠️ <strong>Tendance Fatigue :</strong> Les temps de réponse ont augmenté de 34% en 14 jours, indiquant une surcharge des équipes. La corrélation avec l'augmentation des incidents (+22%) est statistiquement significative (p &lt; 0.05).</p>
+                <p>🚗 <strong>Actif à Risque :</strong> Le véhicule #042 est impliqué dans 80% des pannes du Secteur X. Une révision technique immédiate est préconisée avant la prochaine rotation.</p>
+                <p>✅ <strong>Recommandation Prioritaire :</strong> Acquisition immédiate de 4 nouvelles échelles certifiées (budget estimé : 2,400€). Rotation du véhicule #042 pour maintenance préventive. Révision des plannings pour réduire la charge sur le Pôle Dépannage de 15%.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Trend Analysis -->
+          <div class="analytics-card trends-card">
+            <div class="card-header">
+              <div class="card-icon blue">📈</div>
+              <div>
+                <div class="card-label">ANALYSE DE TENDANCES</div>
+                <div class="card-title">Prédictions 30j</div>
+              </div>
+            </div>
+            <canvas id="trendChart" height="180"></canvas>
+          </div>
+
+          <!-- Risk Matrix -->
+          <div class="analytics-card risk-card">
+            <div class="card-header">
+              <div class="card-icon orange">🎯</div>
+              <div>
+                <div class="card-label">MATRICE DE RISQUES</div>
+                <div class="card-title">Impact vs Probabilité</div>
+              </div>
+            </div>
+            <div class="risk-matrix" id="riskMatrix">
+              <div class="risk-axis-y">Impact ↑</div>
+              <div class="risk-grid">
+                <div class="risk-zone low">FAIBLE</div>
+                <div class="risk-zone medium">MODÉRÉ</div>
+                <div class="risk-zone high">ÉLEVÉ</div>
+                <div class="risk-zone critical">CRITIQUE</div>
+                <div class="risk-point" style="left:72%;bottom:78%" title="Échelles">
+                  <div class="rp-dot critical"></div>
+                  <div class="rp-label">Échelles</div>
+                </div>
+                <div class="risk-point" style="left:55%;bottom:52%" title="Fatigue">
+                  <div class="rp-dot warning"></div>
+                  <div class="rp-label">Fatigue</div>
+                </div>
+                <div class="risk-point" style="left:35%;bottom:30%" title="Véhicule">
+                  <div class="rp-dot info"></div>
+                  <div class="rp-label">Veh.#042</div>
+                </div>
+              </div>
+              <div class="risk-axis-x">Probabilité →</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== TAB: DASHBOARD ===== -->
+      <section id="tab-dashboard" class="tab">
+        <div class="page-header">
+          <div>
+            <div class="page-tag">Étape D — Visual Report</div>
+            <h1 class="page-title">Dashboard Dynamique</h1>
+            <p class="page-desc">Visualisation temps réel. Données vivantes. Décisions instantanées.</p>
+          </div>
+          <div class="header-actions">
+            <select class="select-period">
+              <option>Ce mois</option>
+              <option>Trimestre</option>
+              <option>Année</option>
+            </select>
+            <button class="btn-primary" onclick="exportDashboard()">📥 Exporter PDF</button>
+          </div>
+        </div>
+
+        <div class="kpi-strip">
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background:rgba(99,102,241,0.1);color:#6366f1">📊</div>
+            <div class="kpi-value" data-count="1247">0</div>
+            <div class="kpi-label">Formulaires soumis</div>
+            <div class="kpi-trend up">↑ +18% vs mois dernier</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background:rgba(239,68,68,0.1);color:#ef4444">🚨</div>
+            <div class="kpi-value" data-count="23">0</div>
+            <div class="kpi-label">Alertes critiques</div>
+            <div class="kpi-trend down">↑ +3 nouvelles</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background:rgba(34,197,94,0.1);color:#22c55e">⚡</div>
+            <div class="kpi-value">94%</div>
+            <div class="kpi-label">Précision IA</div>
+            <div class="kpi-trend up">↑ +2% ce mois</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background:rgba(234,179,8,0.1);color:#eab308">⏱️</div>
+            <div class="kpi-value">2.4s</div>
+            <div class="kpi-label">Temps d'analyse</div>
+            <div class="kpi-trend up">↓ -40% plus rapide</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background:rgba(168,85,247,0.1);color:#a855f7">💰</div>
+            <div class="kpi-value">38k€</div>
+            <div class="kpi-label">Coûts évités</div>
+            <div class="kpi-trend up">↑ ROI : 8.2x</div>
+          </div>
+        </div>
+
+        <div class="charts-grid">
+          <div class="chart-card main-chart">
+            <div class="chart-header">
+              <div>
+                <div class="chart-title">Volume de Signalements par Catégorie</div>
+                <div class="chart-sub">30 derniers jours — Mis à jour il y a 2min</div>
+              </div>
+              <div class="chart-legend">
+                <span class="leg-dot" style="background:#6366f1"></span>Sécurité
+                <span class="leg-dot" style="background:#22c55e"></span>Maintenance
+                <span class="leg-dot" style="background:#f59e0b"></span>RH
+              </div>
+            </div>
+            <canvas id="mainChart" height="200"></canvas>
+          </div>
+
+          <div class="chart-card donut-chart">
+            <div class="chart-header">
+              <div class="chart-title">Distribution par Sévérité</div>
+            </div>
+            <canvas id="donutChart" height="200"></canvas>
+            <div class="donut-legend">
+              <div class="donut-leg-item"><div class="dorp" style="background:#ef4444"></div>Critique 23%</div>
+              <div class="donut-leg-item"><div class="dorp" style="background:#f59e0b"></div>Élevé 31%</div>
+              <div class="donut-leg-item"><div class="dorp" style="background:#6366f1"></div>Moyen 28%</div>
+              <div class="donut-leg-item"><div class="dorp" style="background:#22c55e"></div>Faible 18%</div>
+            </div>
+          </div>
+
+          <div class="chart-card heatmap-card">
+            <div class="chart-header">
+              <div class="chart-title">Heatmap — Incidents par Secteur</div>
+            </div>
+            <div class="heatmap-grid" id="heatmapGrid"></div>
+            <div class="heatmap-legend">
+              <span>Faible</span>
+              <div class="hm-scale"></div>
+              <span>Critique</span>
+            </div>
+          </div>
+
+          <div class="chart-card gantt-card">
+            <div class="chart-header">
+              <div class="chart-title">Plan de Remédiation — Gantt</div>
+            </div>
+            <div class="gantt-chart" id="ganttChart"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== TAB: REPORTS ===== -->
+      <section id="tab-reports" class="tab">
+        <div class="page-header">
+          <div>
+            <div class="page-tag">Rapports Automatiques</div>
+            <h1 class="page-title">Génération de Rapports IA</h1>
+            <p class="page-desc">Des milliers de formulaires transformés en un rapport décisionnel en quelques secondes.</p>
+          </div>
+          <button class="btn-primary" onclick="generateReport()">
+            <span>🤖</span> Générer Rapport IA
+          </button>
+        </div>
+
+        <div class="reports-layout">
+          <div class="report-config">
+            <div class="config-section">
+              <div class="config-title">Configuration du Rapport</div>
+              <div class="config-field">
+                <label>Période d'analyse</label>
+                <select>
+                  <option>Dernier mois (Avril 2026)</option>
+                  <option>Dernier trimestre</option>
+                  <option>Personnalisé</option>
+                </select>
+              </div>
+              <div class="config-field">
+                <label>Secteur cible</label>
+                <select>
+                  <option>Tous les secteurs</option>
+                  <option>Secteur Nord</option>
+                  <option>Secteur Sud</option>
+                </select>
+              </div>
+              <div class="config-field">
+                <label>Format de sortie</label>
+                <div class="format-options">
+                  <label class="format-opt active"><input type="radio" name="fmt" checked /> PDF Exécutif</label>
+                  <label class="format-opt"><input type="radio" name="fmt" /> Dashboard Web</label>
+                  <label class="format-opt"><input type="radio" name="fmt" /> PowerPoint</label>
+                </div>
+              </div>
+              <div class="config-field">
+                <label>Sections à inclure</label>
+                <div class="checkbox-group">
+                  <label><input type="checkbox" checked /> Résumé Exécutif IA</label>
+                  <label><input type="checkbox" checked /> Analyse des Anomalies</label>
+                  <label><input type="checkbox" checked /> Matrice de Risques</label>
+                  <label><input type="checkbox" checked /> Plan de Remédiation</label>
+                  <label><input type="checkbox" /> Données Brutes</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="config-section">
+              <div class="config-title">Rapports Précédents</div>
+              <div class="report-history">
+                <div class="history-item">
+                  <span class="hist-icon">📄</span>
+                  <div class="hist-info">
+                    <div class="hist-name">Rapport Mars 2026</div>
+                    <div class="hist-meta">Généré le 01/04 • 24 pages</div>
+                  </div>
+                  <button class="btn-sm">↓</button>
+                </div>
+                <div class="history-item">
+                  <span class="hist-icon">📄</span>
+                  <div class="hist-info">
+                    <div class="hist-name">Rapport Fév 2026</div>
+                    <div class="hist-meta">Généré le 01/03 • 18 pages</div>
+                  </div>
+                  <button class="btn-sm">↓</button>
+                </div>
+                <div class="history-item">
+                  <span class="hist-icon">📊</span>
+                  <div class="hist-info">
+                    <div class="hist-name">Bilan Q4 2025</div>
+                    <div class="hist-meta">Généré le 15/01 • 42 pages</div>
+                  </div>
+                  <button class="btn-sm">↓</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="report-preview" id="reportPreview">
+            <div class="report-doc" id="reportDoc">
+              <div class="report-cover">
+                <div class="cover-badge">CONFIDENTIEL — USAGE INTERNE</div>
+                <div class="cover-logo">⚡ NEXUS AI</div>
+                <h1 class="cover-title">Rapport Analytique<br/>Sécurité & Performance</h1>
+                <div class="cover-meta">
+                  <div>Période : Avril 2026</div>
+                  <div>Secteur : Tous</div>
+                  <div>Généré par : NEXUS AI v2.4</div>
+                  <div>Date : 25 Avril 2026</div>
+                </div>
+              </div>
+              <div class="report-section">
+                <div class="rsec-title">01 — Résumé Exécutif</div>
+                <div class="rsec-content">
+                  <p>Ce mois d'Avril 2026 enregistre une <strong>hausse significative des alertes sécurité (+18%)</strong> concentrée principalement sur le Secteur Nord. L'analyse cognitive a identifié 3 patterns critiques nécessitant une intervention immédiate.</p>
+                  <div class="exec-kpis">
+                    <div class="exec-kpi"><div class="ek-val">1,247</div><div class="ek-lbl">Signalements traités</div></div>
+                    <div class="exec-kpi"><div class="ek-val critical-txt">23</div><div class="ek-lbl">Alertes critiques</div></div>
+                    <div class="exec-kpi"><div class="ek-val ok-txt">94%</div><div class="ek-lbl">Précision analyse</div></div>
+                  </div>
+                </div>
+              </div>
+              <div class="report-section">
+                <div class="rsec-title">02 — Analyse des Anomalies Détectées</div>
+                <div class="rsec-content">
+                  <div class="report-anomaly">
+                    <div class="ra-severity c">CRITIQUE</div>
+                    <div class="ra-content">
+                      <div class="ra-title">Récurrence Échelles — Secteur Nord</div>
+                      <div class="ra-desc">5 occurrences sur 30 jours. Probabilité d'accident calculée à 73% sans intervention. Action recommandée : remplacement immédiat de 4 unités (budget : 2,400€). Économie de coût d'accident potentiel évité : 38,000€.</div>
+                    </div>
+                  </div>
+                  <div class="report-anomaly">
+                    <div class="ra-severity w">ÉLEVÉ</div>
+                    <div class="ra-content">
+                      <div class="ra-title">Indicateur Fatigue — Pôle Dépannage</div>
+                      <div class="ra-desc">Temps de réponse moyen : +34% sur 14 jours. Corrélation avec le volume de missions (+22%) confirme une surcharge structurelle. Recommandation : révision du planning avec réduction de 15% de la charge hebdomadaire.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="report-section">
+                <div class="rsec-title">03 — Plan de Remédiation Suggéré</div>
+                <div class="rsec-content">
+                  <div class="action-plan">
+                    <div class="action-item">
+                      <div class="action-num">1</div>
+                      <div class="action-text">
+                        <strong>Immédiat (J+0)</strong> : Commander 4 nouvelles échelles certifiées. Coût : 2,400€.
+                      </div>
+                      <div class="action-status done">EN COURS</div>
+                    </div>
+                    <div class="action-item">
+                      <div class="action-num">2</div>
+                      <div class="action-text">
+                        <strong>Court terme (J+3)</strong> : Révision technique du véhicule #042. Durée estimée : 2 jours.
+                      </div>
+                      <div class="action-status pending">À FAIRE</div>
+                    </div>
+                    <div class="action-item">
+                      <div class="action-num">3</div>
+                      <div class="action-text">
+                        <strong>Moyen terme (J+7)</strong> : Réorganisation des plannings Pôle Dépannage. Réduction charge : -15%.
+                      </div>
+                      <div class="action-status pending">PLANIFIÉ</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- ANOMALY DETAIL MODAL -->
+  <div id="modal" class="modal-overlay hidden" onclick="closeModal()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

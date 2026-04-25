@@ -5,11 +5,10 @@ import { GlassCard } from '../common/GlassCard';
 import { useQuota } from '../../hooks/useQuota';
 
 export const QuotaDashboard = () => {
-  const { balance, logs, isLow } = useQuota();
+  const { balance, limit, logs, isLow } = useQuota();
 
-  const maxBudget = 50.00; // Hardcoded max budget for now
-  const spent = maxBudget - balance;
-  const progressPercent = Math.min(100, Math.max(0, (spent / maxBudget) * 100));
+  const spent = Math.max(0, limit - balance);
+  const progressPercent = Math.min(100, Math.max(0, (spent / limit) * 100));
 
   return (
     <div className="flex flex-col gap-6 w-full h-full">
@@ -38,7 +37,7 @@ export const QuotaDashboard = () => {
          </div>
          <div className="flex justify-between text-[8px] font-black uppercase tracking-widest text-slate-500 relative z-10">
            <span>${spent.toFixed(2)} Used</span>
-           <span>${maxBudget.toFixed(2)} Total</span>
+           <span>${limit.toFixed(2)} Total</span>
          </div>
       </GlassCard>
 

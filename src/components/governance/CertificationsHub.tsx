@@ -35,6 +35,16 @@ export const CertificationsHub: React.FC = () => {
     { refetchInterval: 15000 }
   );
 
+  const { data: auditors = [], isLoading: isLoadingAuditors } = useApiQuery(
+    ['certifications-auditors'],
+    () => CertificationService.getAuditors()
+  );
+
+  const { data: cois = [], isLoading: isLoadingCOIs } = useApiQuery(
+    ['certifications-cois'],
+    () => CertificationService.getCOIs()
+  );
+
   return (
     <div className="min-h-screen bg-[#f8fafc] p-6 lg:p-10 font-sans cursor-default">
       <div className="max-w-[1600px] mx-auto space-y-10">
@@ -50,7 +60,7 @@ export const CertificationsHub: React.FC = () => {
                  <Gavel size={12} className="text-blue-400" /> Auditor_Control v4.2
               </span>
               <span className="text-blue-600 text-[10px] font-mono font-black tracking-widest uppercase flex items-center gap-1.5 pl-2 border-l border-slate-200">
-                 {428} ACTIVE REGISTRANTS
+                 {auditors?.length || 428} ACTIVE REGISTRANTS
               </span>
             </div>
             <h1 className="text-4xl font-black text-[#091426] tracking-tighter uppercase leading-none">Governance Registry</h1>
@@ -192,12 +202,14 @@ export const CertificationsHub: React.FC = () => {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
-                          {[
+                          {isLoadingAuditors ? (
+                            <tr><td colSpan={4} className="px-10 py-8 text-center text-slate-400">Loading auditors...</td></tr>
+                          ) : (auditors.length > 0 ? auditors : [
                             { name: 'Dr. Sarah Jenkins', entity: 'State Regulator Board', status: 'IN_REVIEW', progress: 85, color: 'amber' },
                             { name: 'Michael Chen', entity: 'External Agency (APAC)', status: 'ACTIVE', progress: 100, color: 'emerald' },
                             { name: 'Robert Fox', entity: 'ISO Compliance Validator', status: 'PENDING', progress: 40, color: 'blue' },
                             { name: 'Alisa Volkov', entity: 'Brussels Integrity Group', status: 'ACTIVE', progress: 100, color: 'emerald' },
-                          ].map(auditor => (
+                          ]).map((auditor: any) => (
                             <tr key={auditor.name} className="hover:bg-slate-50/50 group transition-colors">
                               <td className="px-10 py-8">
                                  <div className="flex items-center gap-4">
@@ -248,7 +260,7 @@ export const CertificationsHub: React.FC = () => {
                    <div className="relative z-10">
                       <h3 className="text-xl font-black text-red-900 tracking-tight uppercase">Critical COI Intersections Identified</h3>
                       <p className="text-sm text-red-700 mt-2 max-w-3xl font-medium leading-relaxed">
-                         Our integrity engine identified {2} high-severity conflicts where an assigned principal auditor has significant historical financial linkages with the target organization. 
+                         Our integrity engine identified {cois.length > 0 ? cois.filter((c: any) => c.severity === 'HIGH').length : 2} high-severity conflicts where an assigned principal auditor has significant historical financial linkages with the target organization. 
                          Immediate recusal or institutional oversight elevation required.
                       </p>
                       <button className="mt-6 px-6 py-3 bg-red-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-all flex items-center gap-2">Execute Recusal Protocol <Zap size={14} /></button>
@@ -265,10 +277,12 @@ export const CertificationsHub: React.FC = () => {
                   </div>
                   <div className="p-10">
                     <div className="space-y-6">
-                      {[
+                      {isLoadingCOIs ? (
+                        <div className="text-white text-center py-10">Loading forensic logs...</div>
+                      ) : (cois.length > 0 ? cois : [
                         { id: 'COI-091A', auditor: 'David Bowman', target: 'Aerotech Defense', severity: 'HIGH', date: '2023-11-20', detail: 'Prior board member of subsidiary "AeroParts Global". Transaction detected: $42k consulting fee.' },
                         { id: 'COI-084X', auditor: 'Julia Childress', target: 'Global Pharma Corp', severity: 'MEDIUM', date: '2023-10-15', detail: 'Spouse holds 2.4% beneficial equity in primary clinical partner "BioTrials Lab".' }
-                      ].map(coi => (
+                      ]).map((coi: any) => (
                         <div key={coi.id} className="flex gap-10 items-center p-8 border border-slate-100 rounded-[2.5rem] bg-slate-50/30 hover:bg-white hover:shadow-xl transition-all cursor-default group">
                            <div className="flex-1 space-y-4">
                               <div className="flex items-center gap-4">

@@ -192,9 +192,11 @@ export const AuditMasterLayout = ({ children, activeTab, onTabChange }: any) => 
             <NavItem icon={Users} label="Access Control" active={activeTab === 'access_control'} onClick={() => onTabChange('access_control')} collapsed={isCollapsed}/>
             <NavItem icon={UserPlus} label="IDP Setup" active={activeTab === 'identity_setup'} onClick={() => onTabChange('identity_setup')} collapsed={isCollapsed}/>
             <NavItem icon={Key} label="API Security" active={activeTab === 'api_security'} onClick={() => onTabChange('api_security')} collapsed={isCollapsed}/>
-            <NavItem icon={Lightbulb} label="Innovation Lab" active={activeTab === 'innovation_lab'} onClick={() => onTabChange('innovation_lab')} collapsed={isCollapsed}/>
+            <NavItem icon={Lightbulb} label={t('sidebar.links.innovation_lab')} active={activeTab === 'innovation_lab'} onClick={() => onTabChange('innovation_lab')} collapsed={isCollapsed}/>
+            <NavItem icon={AppWindow} label={t('sidebar.links.smart_form')} active={activeTab === 'smart_form'} onClick={() => onTabChange('smart_form')} collapsed={isCollapsed}/>
             <NavItem icon={Wrench} label="Maintenance" active={activeTab === 'maintenance'} onClick={() => onTabChange('maintenance')} collapsed={isCollapsed}/>
             <NavItem icon={CreditCard} label="Billing & Usage" active={activeTab === 'billing'} onClick={() => onTabChange('billing')} collapsed={isCollapsed}/>
+            <NavItem icon={Wallet} label="Budget & Quota" active={activeTab === 'quota'} onClick={() => onTabChange('quota')} collapsed={isCollapsed}/>
             <NavItem icon={Settings} label="System Config" active={activeTab === 'profile'} onClick={() => onTabChange('profile')} collapsed={isCollapsed}/>
             <NavItem icon={HelpCircle} label="Help & Support" active={activeTab === 'help'} onClick={() => onTabChange('help')} collapsed={isCollapsed}/>
           </NavSection>
@@ -224,10 +226,13 @@ export const AuditMasterLayout = ({ children, activeTab, onTabChange }: any) => 
           </div>
 
           <div className="flex items-center gap-8">
-            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border ${isLow ? 'bg-red-500/10 border-red-500/30 text-red-500' : 'bg-slate-100 text-slate-500'}`}>
+            <button 
+              onClick={() => onTabChange('quota')}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all hover:scale-105 ${isLow ? 'bg-red-500/10 border-red-500/30 text-red-500' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+            >
               <Wallet size={14} />
               <span className="text-[10px] font-black">${balance.toFixed(2)}</span>
-            </div>
+            </button>
             
             <div className="relative">
               <button onClick={() => setNotificationsOpen(!notificationsOpen)} className="text-slate-400 hover:text-blue-600 transition-all">

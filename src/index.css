@@ -47,6 +47,23 @@
   }
 }
 
+@utility custom-scrollbar {
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+}
+
 .audit-grid {
   background-size: 20px 20px;
   background-image: radial-gradient(circle, #e2e8f0 1px, transparent 1px);

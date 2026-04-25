@@ -3,7 +3,30 @@ import { InfrastructureService } from '../services/InfrastructureService';
 import { WSManager } from '../lib/ws';
 
 export class InfrastructureController {
+  static async discover(req: Request, res: Response) {
+    try {
+      const orgId = (req as any).user?.organizationId || 'global-org-placeholder';
+      // Simulate discovery scan
+      await new Promise(r => setTimeout(r, 2000));
+      
+      const discoveredNodes = [
+        { name: 'Discovered-VM-' + Math.floor(Math.random() * 1000), type: 'VIRTUAL_MACHINE', region: 'EU-West' },
+        { name: 'New-DB-' + Math.floor(Math.random() * 1000), type: 'DATABASE', region: 'US-East' }
+      ];
+
+      for (const node of discoveredNodes) {
+        await InfrastructureService.registerNode({ ...node, organizationId: orgId });
+      }
+
+      res.json({ message: 'Discovery complete', count: discoveredNodes.length });
+    } catch (error) {
+      console.error('discovery error:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  }
+
   static async list(req: Request, res: Response) {
+
     try {
       const orgId = (req as any).user?.organizationId || 'global-org-placeholder';
       const nodes = await InfrastructureService.getNodes(orgId);

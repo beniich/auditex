@@ -1,28 +1,49 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { 
-  Shield, 
-  Key, 
-  Terminal, 
-  Eye, 
-  EyeOff, 
-  Trash2, 
-  RotateCw, 
-  Activity, 
-  CheckCircle2, 
-  ShieldAlert, 
-  Lock, 
-  Plus, 
-  History, 
-  Network, 
-  Zap, 
-  MoreVertical,
-  Globe,
-  Fingerprint,
-  Cpu
+  Shield, Key, Terminal, Eye, EyeOff, Trash2, RotateCw, Activity, 
+  CheckCircle2, ShieldAlert, Lock, Plus, History, Network, Zap, 
+  MoreVertical, Globe, Fingerprint, Cpu 
 } from 'lucide-react';
+import { ApiService, ApiKey } from '../../services/ApiService';
+import { useApiQuery } from '../../hooks/useApiQuery';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 const APISecurity: React.FC = () => {
+  const queryClient = useQueryClient();
+  const [visibleKeys, setVisibleKeys] = useState<Record<string, boolean>>({});
+
+  const { data: keys = [], isLoading } = useApiQuery(
+    ['api-keys'],
+    () => ApiService.getKeys()
+  );
+
+  const createMutation = useMutation({
+    mutationFn: ({ name, scope }: { name: string; scope: string }) => ApiService.createKey(name, scope),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['api-keys'] })
+  });
+
+  const revokeMutation = useMutation({
+    mutationFn: (id: string) => ApiService.revokeKey(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['api-keys'] })
+  });
+
+  const rotateMutation = useMutation({
+    mutationFn: (id: string) => ApiService.rotateKey(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['api-keys'] })
+  });
+
+  const toggleVisibility = (id: string) => {
+    setVisibleKeys(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const handleGenerateKey = () => {
+    const name = prompt('Enter key name:');
+    if (name) {
+      createMutation.mutate({ name, scope: 'READ_ONLY' });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#f1f5f9] p-10 font-sans cursor-default">
       <div className="max-w-[1440px] mx-auto space-y-8">
@@ -47,7 +68,10 @@ const APISecurity: React.FC = () => {
             <button className="flex items-center gap-2 px-6 py-3 bg-white border-2 border-slate-100 text-[#091426] rounded-xl font-black text-[10px] uppercase tracking-[0.2em] shadow-sm hover:border-blue-600 hover:text-blue-600 transition-all">
               <Terminal size={14} /> Documentation
             </button>
-            <button className="flex items-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all">
+            <button 
+              onClick={handleGenerateKey}
+              className="flex items-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all"
+            >
               <Plus size={14} /> Generate New Key
             </button>
           </div>
@@ -60,12 +84,12 @@ const APISecurity: React.FC = () => {
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Active Integrations</p>
                 <div className="p-2 bg-blue-50 rounded-xl text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all">
                    <Network size={16} />
-                </div>
+                 </div>
              </div>
              <div className="mt-8">
-                <h3 className="text-5xl font-black text-[#091426] tracking-tighter">12</h3>
+                <h3 className="text-5xl font-black text-[#091426] tracking-tighter">{keys.length}</h3>
                 <div className="flex items-center text-[10px] font-black text-emerald-600 uppercase tracking-widest gap-2 mt-4">
-                   <Zap size={14} className="animate-pulse" /> +3 from last month
+                   <Zap size={14} className="animate-pulse" /> Keys deployed
                 </div>
              </div>
           </div>
@@ -78,7 +102,7 @@ const APISecurity: React.FC = () => {
                 </div>
              </div>
              <div className="mt-8">
-                <h3 className="text-5xl font-black text-[#091426] tracking-tighter">842,109</h3>
+                <h3 className="text-5xl font-black text-[#091426] tracking-tighter">Live</h3>
                 <div className="flex items-center text-[10px] font-black text-blue-600 uppercase tracking-widest gap-2 mt-4 font-mono">
                    <CheckCircle2 size={14} /> 99.9% SUCCESS RATE
                 </div>
@@ -121,22 +145,25 @@ const APISecurity: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50 font-mono text-xs font-bold uppercase tracking-tight">
-                   {[
-                     { name: 'SIEM Integration (Prod)', id: 'key_01H2X...92K', secret: 'am_••••••••••••••••', scope: 'READ_ONLY', status: 'ACTIVE', color: 'emerald' },
-                     { name: 'Automation Script v2', id: 'key_01J9W...33L', secret: 'am_9j2k...m4n1', scope: 'WRITE_LOGS', status: 'ACTIVE', color: 'emerald', visible: true },
-                     { name: 'External Auditor Access', id: 'key_01G3B...11P', secret: 'am_••••••••••••••••', scope: 'READ_ONLY', status: 'REVOKED', color: 'slate', disabled: true },
-                   ].map((key, i) => (
-                     <tr key={i} className={`group hover:bg-slate-50 transition-colors ${key.disabled ? 'opacity-40 grayscale pointer-events-none' : ''}`}>
+                   {isLoading ? (
+                     <tr><td colSpan={5} className="px-10 py-10 text-center text-slate-400">Loading Access Tokens...</td></tr>
+                   ) : keys.map((key: any, i: number) => (
+                     <tr key={key.id} className={`group hover:bg-slate-50 transition-colors ${key.status === 'REVOKED' ? 'opacity-40 grayscale' : ''}`}>
                        <td className="px-10 py-6">
                           <p className="text-sm font-black text-[#091426] mb-1">{key.name}</p>
                           <p className="text-[10px] font-mono text-slate-300">ID: {key.id}</p>
                        </td>
                        <td className="px-10 py-6">
                           <div className="flex items-center gap-3">
-                             <code className="bg-slate-100 px-3 py-1.5 rounded-lg text-slate-600">{key.secret}</code>
-                             {!key.disabled && (
-                               <button className="text-blue-600 hover:text-blue-800 transition-colors">
-                                 {key.visible ? <EyeOff size={16} /> : <Eye size={16} />}
+                             <code className="bg-slate-100 px-3 py-1.5 rounded-lg text-slate-600">
+                               {visibleKeys[key.id] ? key.secret : 'am_' + '•'.repeat(16)}
+                             </code>
+                             {key.status !== 'REVOKED' && (
+                               <button 
+                                 onClick={() => toggleVisibility(key.id)}
+                                 className="text-blue-600 hover:text-blue-800 transition-colors"
+                               >
+                                 {visibleKeys[key.id] ? <EyeOff size={16} /> : <Eye size={16} />}
                                </button>
                              )}
                           </div>
@@ -150,19 +177,30 @@ const APISecurity: React.FC = () => {
                        </td>
                        <td className="px-10 py-6">
                           <div className="flex items-center gap-2">
-                             <div className={`w-2 h-2 rounded-full ${key.color === 'emerald' ? 'bg-emerald-500 shadow-lg shadow-emerald-100 animate-pulse' : 'bg-slate-300'}`} />
-                             <span className={`text-[10px] font-black ${key.color === 'emerald' ? 'text-emerald-700' : 'text-slate-400'}`}>{key.status}</span>
+                             <div className={`w-2 h-2 rounded-full ${key.status === 'ACTIVE' ? 'bg-emerald-500 shadow-lg shadow-emerald-100 animate-pulse' : 'bg-slate-300'}`} />
+                             <span className={`text-[10px] font-black ${key.status === 'ACTIVE' ? 'text-emerald-700' : 'text-slate-400'}`}>{key.status}</span>
                           </div>
                        </td>
                        <td className="px-10 py-6 text-right">
                           <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
-                             <button className="p-2 border border-slate-100 text-slate-400 rounded-xl hover:text-blue-600 hover:bg-white transition-all"><RotateCw size={14} /></button>
-                             <button className="p-2 border border-slate-100 text-slate-400 rounded-xl hover:text-red-600 hover:bg-white transition-all"><Trash2 size={14} /></button>
+                             <button 
+                               onClick={() => rotateMutation.mutate(key.id)}
+                               className="p-2 border border-slate-100 text-slate-400 rounded-xl hover:text-blue-600 hover:bg-white transition-all"
+                             >
+                                <RotateCw size={14} className={rotateMutation.isPending ? 'animate-spin' : ''} />
+                             </button>
+                             <button 
+                               onClick={() => confirm('Revoke this key?') && revokeMutation.mutate(key.id)}
+                               className="p-2 border border-slate-100 text-slate-400 rounded-xl hover:text-red-600 hover:bg-white transition-all"
+                             >
+                                <Trash2 size={14} />
+                             </button>
                           </div>
                        </td>
                      </tr>
                    ))}
                 </tbody>
+
              </table>
            </div>
         </div>

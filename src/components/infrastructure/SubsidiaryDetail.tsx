@@ -1,8 +1,39 @@
 import React from 'react';
-import { ShieldCheck, AlertCircle, Building2, MapPin, Globe, CreditCard, ChevronRight, Activity, Cpu } from 'lucide-react';
+import { ShieldCheck, AlertCircle, Building2, MapPin, Globe, CreditCard, ChevronRight, Activity, Cpu, Loader2 } from 'lucide-react';
 import { JurisdictionalHeatmap } from '../risk/JurisdictionalHeatmap';
+import { useApiQuery } from '../../hooks/useApiQuery';
+import { OrganizationService } from '../../services/OrganizationService';
 
-export const SubsidiaryDetail = () => {
+interface SubsidiaryDetailProps {
+  id?: string;
+}
+
+export const SubsidiaryDetail = ({ id }: SubsidiaryDetailProps) => {
+  const { data: orgs } = useApiQuery(['organizations'], () => OrganizationService.list());
+  const targetId = id || orgs?.[0]?.id; // Default to first org if no ID
+  
+  const { data: entity, isLoading } = useApiQuery(
+    ['organization', targetId], 
+    () => OrganizationService.getById(targetId!),
+    { enabled: !!targetId }
+  );
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full min-h-[900px]">
+        <Loader2 className="animate-spin text-blue-600" size={48} />
+      </div>
+    );
+  }
+
+  if (!entity) {
+    return (
+      <div className="flex items-center justify-center h-full min-h-[900px] text-slate-400 font-medium">
+        No entity selected.
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full bg-[#f8fafc] rounded-[3rem] overflow-hidden min-h-[900px] gap-8 p-10">
       {/* Header Card */}
@@ -12,11 +43,11 @@ export const SubsidiaryDetail = () => {
                <Building2 size={40} />
             </div>
             <div>
-               <h1 className="text-4xl font-black text-[#091426] tracking-tight">Berlin Solutions GmbH</h1>
+               <h1 className="text-4xl font-black text-[#091426] tracking-tight">{entity.name}</h1>
                <div className="flex gap-6 mt-2">
-                  <span className="flex items-center gap-2 text-slate-400 text-sm font-bold"><MapPin size={16} /> Jurisdiction: <strong className="text-slate-600 font-black">Germany (EU)</strong></span>
+                  <span className="flex items-center gap-2 text-slate-400 text-sm font-bold"><MapPin size={16} /> Jurisdiction: <strong className="text-slate-600 font-black">{entity.legalJurisdiction || 'EU'}</strong></span>
                   <span className="flex items-center gap-2 text-slate-400 text-sm font-bold"><ShieldCheck size={16} className="text-emerald-500" /> Status: <span className="bg-emerald-50 text-emerald-600 px-3 py-1 rounded-lg text-[10px] font-black uppercase">Active & Compliant</span></span>
-                  <span className="flex items-center gap-2 text-slate-400 text-sm font-bold"><AlertCircle size={16} className="text-rose-500" /> Risk Rating: <span className="bg-rose-50 text-rose-600 px-3 py-1 rounded-lg text-[10px] font-black uppercase">High Exposure</span></span>
+                  <span className="flex items-center gap-2 text-slate-400 text-sm font-bold"><AlertCircle size={16} className="text-rose-500" /> Risk Rating: <span className="bg-rose-50 text-rose-600 px-3 py-1 rounded-lg text-[10px] font-black uppercase">Managed</span></span>
                </div>
             </div>
          </div>
@@ -41,8 +72,8 @@ export const SubsidiaryDetail = () => {
                <div className="flex flex-col gap-2">
                   {[
                      { name: 'GDPR Compliance', status: 'Compliant', color: 'emerald' },
-                     { name: 'German Tax Code', status: 'Review Required', color: 'orange' },
-                     { name: 'Local Labor Law', status: 'Non-Compliant', color: 'rose' }
+                     { name: 'Local Tax Code', status: 'Review Required', color: 'orange' },
+                     { name: 'Labor Law', status: 'Compliant', color: 'emerald' }
                   ].map((req, idx) => (
                      <div key={idx} className="flex items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-2xl">
                         <span className="text-sm font-bold text-slate-600">{req.name}</span>
@@ -61,11 +92,11 @@ export const SubsidiaryDetail = () => {
             <div className="bg-[#091426] p-8 rounded-[2.5rem] text-white flex flex-col gap-8 flex-1 shadow-2xl">
                <div>
                   <h3 className="text-xs font-black uppercase text-slate-400 tracking-widest flex items-center gap-2">
-                     <CreditCard size={16} /> Local Asset Inventory
+                     <CreditCard size={16} /> Asset Inventory Summary
                   </h3>
                   <div className="mt-6 flex justify-between items-center bg-white/5 border border-white/10 p-4 rounded-2xl">
-                     <span className="text-[10px] font-black text-slate-500 uppercase">Exposure Value</span>
-                     <span className="text-2xl font-black text-rose-500">€4.2M</span>
+                     <span className="text-[10px] font-black text-slate-500 uppercase">Annual Turnover</span>
+                     <span className="text-2xl font-black text-emerald-500">€{entity.annualTurnover?.toLocaleString() || '0'}</span>
                   </div>
                </div>
 
@@ -75,17 +106,8 @@ export const SubsidiaryDetail = () => {
                         <Globe size={24} />
                      </div>
                      <div>
-                        <p className="text-sm font-black">Berlin Office HQ</p>
-                        <p className="text-[10px] font-bold text-slate-500 uppercase">Value: €10M | Status: Secure</p>
-                     </div>
-                  </div>
-                  <div className="bg-white/5 border border-white/10 p-5 rounded-3xl flex gap-4 items-center group cursor-pointer hover:bg-white/10 transition-all">
-                     <div className="w-12 h-12 bg-rose-500/10 text-rose-500 rounded-xl flex items-center justify-center">
-                        <Cpu size={24} />
-                     </div>
-                     <div>
-                        <p className="text-sm font-black">Software Patents</p>
-                        <p className="text-[10px] font-bold text-rose-500/50 uppercase">Value: €8M | Under Review</p>
+                        <p className="text-sm font-black">Regional Node Network</p>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase">Nodes: {entity.entities?.length || 0} | Status: Secure</p>
                      </div>
                   </div>
                </div>
@@ -95,4 +117,6 @@ export const SubsidiaryDetail = () => {
     </div>
   );
 };
+export default SubsidiaryDetail;
+
 export default SubsidiaryDetail;

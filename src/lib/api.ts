@@ -1,12 +1,23 @@
 const BASE_URL = '/api';
+let currentToken: string | null = null;
+
+export function setToken(token: string | null) {
+  currentToken = token;
+}
 
 export async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  const headers: any = {
+    'Content-Type': 'application/json',
+    ...options.headers,
+  };
+
+  if (currentToken) {
+    headers['Authorization'] = `Bearer ${currentToken}`;
+  }
+
   const response = await fetch(`${BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`, {
     ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
+    headers,
   });
 
   if (!response.ok) {
@@ -18,8 +29,10 @@ export async function apiRequest<T>(endpoint: string, options: RequestInit = {})
 }
 
 export const api = {
+  setToken,
   get: <T>(url: string) => apiRequest<T>(url, { method: 'GET' }),
   post: <T>(url: string, body: any) => apiRequest<T>(url, { method: 'POST', body: JSON.stringify(body) }),
   patch: <T>(url: string, body: any) => apiRequest<T>(url, { method: 'PATCH', body: JSON.stringify(body) }),
   delete: <T>(url: string) => apiRequest<T>(url, { method: 'DELETE' }),
 };
+

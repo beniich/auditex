@@ -123,7 +123,9 @@ model NetworkNode {
   status         NodeStatus   @default(HEALTHY)
   ipAddress      String?
   lastSync       DateTime?
+  tags           Json?        // Classification tags (e.g., PI, Highly Confidential)
   createdAt      DateTime     @default(now())
+
   
   incidents      Incident[]
 }
@@ -335,4 +337,15 @@ model Notification {
   type           String       // 'INFO', 'WARNING', 'CRITICAL', 'SUCCESS'
   read           Boolean      @default(false)
   createdAt      DateTime     @default(now())
+}
+
+model ConflictOfInterest {
+  id          String   @id @default(uuid())
+  auditorId   String
+  auditorName String
+  target      String
+  severity    String   // 'HIGH' | 'MEDIUM' | 'LOW'
+  detail      String
+  date        DateTime @default(now())
+  status      String   @default("OPEN")
 }

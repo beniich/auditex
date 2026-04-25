@@ -23,4 +23,6 @@ export const InfrastructureService = {
   registerNode: (data: Partial<NetworkNode>) => api.post<NetworkNode>('/infrastructure/nodes', data),
   updateNodeStatus: (nodeId: string, status: string) => api.patch<NetworkNode>(`/infrastructure/nodes/${nodeId}`, { status }),
   getNodeHealth: (nodeId: string) => api.get<{ nodeId: string; status: string; metrics: any }>(`/infrastructure/nodes/${nodeId}/health`),
+  discover: () => api.post<{ message: string, count: number }>('/infrastructure/discover', {}),
 };
+

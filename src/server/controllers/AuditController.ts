@@ -3,6 +3,20 @@ import { AuditService } from '../services/AuditService';
 import { WSManager } from '../lib/ws';
 
 export class AuditController {
+  static async startAudit(req: Request, res: Response) {
+    try {
+      const { templateId, entityId } = req.body;
+      const organizationId = (req as any).user?.organizationId || 'global-org-placeholder';
+      const userId = (req as any).auth?.userId || 'anonymous-auditor';
+      
+      const auditId = await AuditService.startAudit(templateId, organizationId, userId);
+      res.status(201).json({ id: auditId });
+    } catch (error) {
+      console.error('startAudit error:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  }
+
   static async getTemplates(req: Request, res: Response) {
     try {
       const templates = await AuditService.getTemplates();

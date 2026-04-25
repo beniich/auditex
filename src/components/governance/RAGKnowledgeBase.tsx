@@ -2,18 +2,19 @@ import React from 'react';
 import { FileText, Database, Activity, CheckCircle2, Search, Upload, RefreshCw, AlertCircle, TrendingUp, Info } from 'lucide-react';
 import { motion } from 'motion/react';
 
-const DOCUMENTS = [
-  { name: 'Annual_Risk_Report.pdf', status: 'Processed', reliability: 98, color: 'emerald', time: '2h ago' },
-  { name: 'Reg_Guidance_Q4.docx', status: 'Processing', reliability: 45, color: 'blue', time: 'Just now' },
-  { name: 'Policy_Manual_v2.pdf', status: 'Processed', reliability: 94, color: 'emerald', time: '1d ago' }
-];
-
-const SNIPPETS = [
-  { text: "Section 3.1.2 defines material risk thresholds as any exposure exceeding $5M...", doc: "Annual_Risk_Report.pdf" },
-  { text: "Effective Jan 1, 2024, all entities must adopt the revised framework for data sovereignty...", doc: "Reg_Guidance_Q4.docx " }
-];
+import { useApiQuery } from '../../hooks/useApiQuery';
+import { AiApiService } from '../../services/AiApiService';
 
 export const RAGKnowledgeBase = () => {
+  const { data: documents = [], isLoading: isDocsLoading } = useApiQuery(
+    ['rag-sources'],
+    () => AiApiService.getRagSources()
+  );
+
+  const { data: snippets = [], isLoading: isSnippetsLoading } = useApiQuery(
+    ['rag-snippets', 'preview'],
+    () => AiApiService.queryRag('preview')
+  );
   return (
     <div className="flex flex-col gap-8 h-full bg-[#f8fafc] p-10 rounded-[3rem] min-h-[850px]">
       <div className="flex justify-between items-center">
@@ -41,7 +42,7 @@ export const RAGKnowledgeBase = () => {
                   <h3 className="text-xs font-black uppercase text-slate-400 tracking-widest flex items-center gap-2">
                      <Database size={16} /> Data Sources
                   </h3>
-                  <span className="text-[10px] font-black text-blue-600">3 TOTAL</span>
+                  <span className="text-[10px] font-black text-blue-600">{documents.length} TOTAL</span>
                </div>
                
                <div className="relative">
@@ -50,14 +51,20 @@ export const RAGKnowledgeBase = () => {
                </div>
 
                <div className="flex flex-col gap-4 overflow-y-auto">
-                  {DOCUMENTS.map((doc, idx) => (
+                  {isDocsLoading ? (
+                    <div className="text-center text-xs text-slate-400 py-4">Loading sources...</div>
+                  ) : (documents.length > 0 ? documents : [
+                    { name: 'Annual_Risk_Report.pdf', status: 'Processed', reliability: 98, color: 'emerald', time: '2h ago' },
+                    { name: 'Reg_Guidance_Q4.docx', status: 'Processing', reliability: 45, color: 'blue', time: 'Just now' },
+                    { name: 'Policy_Manual_v2.pdf', status: 'Processed', reliability: 94, color: 'emerald', time: '1d ago' }
+                  ]).map((doc: any, idx: number) => (
                      <div key={idx} className="flex items-center gap-4 p-4 bg-slate-50 border border-slate-100 rounded-2xl group cursor-pointer hover:bg-white hover:border-blue-200 hover:shadow-lg transition-all">
-                        <div className={`w-10 h-10 rounded-xl bg-${doc.color}-50 flex items-center justify-center text-${doc.color}-600 border border-${doc.color}-100`}>
+                        <div className={`w-10 h-10 rounded-xl bg-${doc.color || 'blue'}-50 flex items-center justify-center text-${doc.color || 'blue'}-600 border border-${doc.color || 'blue'}-100`}>
                            <FileText size={20} />
                         </div>
                         <div className="flex-1 min-w-0">
                            <p className="text-xs font-black text-[#091426] truncate">{doc.name}</p>
-                           <p className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">{doc.time} • {doc.reliability}% Confidence</p>
+                           <p className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">{doc.time || 'recent'} • {doc.reliability || 100}% Confidence</p>
                         </div>
                      </div>
                   ))}
@@ -107,7 +114,12 @@ export const RAGKnowledgeBase = () => {
                   </div>
                   
                   <div className="flex flex-col gap-4">
-                     {SNIPPETS.map((s, idx) => (
+                     {isSnippetsLoading ? (
+                       <div className="text-center text-xs text-slate-400 py-4">Generating semantic previews...</div>
+                     ) : (snippets.length > 0 ? snippets : [
+                       { text: "Section 3.1.2 defines material risk thresholds as any exposure exceeding $5M...", doc: "Annual_Risk_Report.pdf" },
+                       { text: "Effective Jan 1, 2024, all entities must adopt the revised framework for data sovereignty...", doc: "Reg_Guidance_Q4.docx " }
+                     ]).map((s: any, idx: number) => (
                         <div key={idx} className="p-6 bg-slate-50 border border-slate-100 rounded-3xl relative italic group hover:bg-white hover:border-blue-200 transition-all">
                            <div className="absolute -left-2 top-6 bg-blue-600 w-1 h-8 rounded-full opacity-0 group-hover:opacity-100 transition-all"></div>
                            <p className="text-sm text-slate-600 font-medium leading-relaxed">"{s.text}"</p>

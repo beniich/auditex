@@ -1,27 +1,15 @@
 import { Router } from 'express';
-import { AuditController } from '../controllers/AuditController';
-import { IncidentController } from '../controllers/IncidentController';
-import { InfrastructureController } from '../controllers/InfrastructureController';
-import { ComplianceController } from '../controllers/ComplianceController';
-import { StorageController } from '../controllers/StorageController';
-import { AIController } from '../controllers/AIController';
-import { ReportController } from '../controllers/ReportController';
-import { AIAnalyticsController } from '../controllers/AIAnalyticsController';
-import { CertificationController } from '../controllers/CertificationController';
-import { VaultController } from '../controllers/VaultController';
-import { NotificationController } from '../controllers/NotificationController';
-import { LegalEntityController } from '../controllers/LegalEntityController';
-import { ChaosController } from '../controllers/ChaosController';
-import { FinancialController } from '../controllers/FinancialController';
-import multer from 'multer';
-
-// Configure Multer for local storage (mimicking S3)
-const upload = multer({
-  dest: 'uploads/',
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
-});
 import { ClerkExpressRequireAuth } from '@clerk/clerk-sdk-node';
-import { validate, IncidentSchema, TaskSchema, NodeSchema, NodeStatusSchema, PolicySchema } from '../utils/validation';
+
+// Modular Route Imports
+import auditRoutes from './audit';
+import governanceRoutes from './governance';
+import infrastructureRoutes from './infrastructure';
+import operationsRoutes from './operations';
+import adminRoutes from './admin';
+import aiRoutes from './ai';
+import storageRoutes from './storage';
+import ragRoutes from './rag';
 
 export const apiRouter = Router();
 
@@ -50,76 +38,13 @@ apiRouter.use(requireAuth);
 // Health check
 apiRouter.get('/health', (req, res) => res.json({ status: 'ok', environment: 'production-ready' }));
 
-// Audit Routes
-apiRouter.get('/templates', AuditController.getTemplates);
-apiRouter.get('/audits', AuditController.getAudits);
-apiRouter.post('/audit/:id/events', AuditController.addEvent);
-apiRouter.get('/audit/:id/events', AuditController.getEvents);
-apiRouter.get('/audit/logs', AuditController.getLogs);
-apiRouter.get('/audit/:id/verify', AuditController.verifyAudit);
+// Mount Modular Routes
+apiRouter.use(auditRoutes);
+apiRouter.use(governanceRoutes);
+apiRouter.use(infrastructureRoutes);
+apiRouter.use(operationsRoutes);
+apiRouter.use(adminRoutes);
+apiRouter.use(aiRoutes);
+apiRouter.use(storageRoutes);
+apiRouter.use(ragRoutes);
 
-// Incident & CAPA Routes
-apiRouter.get('/incidents', IncidentController.list);
-apiRouter.post('/incidents', validate(IncidentSchema), IncidentController.create);
-apiRouter.post('/incidents/:id/tasks', validate(TaskSchema), IncidentController.addTask);
-apiRouter.patch('/incidents/tasks/:taskId', IncidentController.updateTask);
-apiRouter.post('/incidents/:id/resolve', IncidentController.resolve);
-
-// Infrastructure & Topology Routes
-apiRouter.get('/infrastructure/nodes', InfrastructureController.list);
-apiRouter.get('/infrastructure/stats', InfrastructureController.getStats);
-apiRouter.post('/infrastructure/nodes', validate(NodeSchema), InfrastructureController.register);
-apiRouter.patch('/infrastructure/nodes/:id', validate(NodeStatusSchema), InfrastructureController.updateStatus);
-
-// Compliance & Policy Routes
-apiRouter.get('/compliance/policies', ComplianceController.listPolicies);
-apiRouter.post('/compliance/policies', validate(PolicySchema), ComplianceController.createPolicy);
-apiRouter.post('/compliance/policies/:id/controls', ComplianceController.addControl);
-apiRouter.patch('/compliance/controls/:controlId', ComplianceController.updateControlStatus);
-
-// Certifications & Risks Routes
-apiRouter.get('/certifications/status', CertificationController.getCertificationsStatus);
-apiRouter.get('/risks', CertificationController.getRisks);
-
-// AI Gateway Routes
-apiRouter.post('/ai/validate', AIController.validate);
-apiRouter.post('/ai/analyze-evidence', AIController.analyzeEvidence);
-apiRouter.get('/ai/forensics/:entityId', AIController.forensic);
-apiRouter.post('/ai/remediate', AIController.remediate);
-apiRouter.get('/ai/analytics', AIAnalyticsController.getDashboardStats);
-apiRouter.post('/ai/track', AIAnalyticsController.trackAction);
-apiRouter.post('/ai/advanced-audit', AIController.advancedAudit);
-apiRouter.get('/ai/quota', AIController.getQuotaBalance);
-
-// Report Routes
-apiRouter.get('/reports/download/:auditId', ReportController.downloadReport);
-
-// Storage Routes
-apiRouter.post('/storage/upload', upload.single('file'), StorageController.upload);
-apiRouter.get('/storage/url/:key', StorageController.getUrl);
-
-// Vault Routes
-apiRouter.get('/vault/keys', VaultController.listKeys);
-apiRouter.post('/vault/keys', VaultController.createKey);
-apiRouter.post('/vault/keys/:id/rotate', VaultController.rotateKey);
-apiRouter.get('/vault/keys/:id/access', VaultController.accessKey);
-
-// Notification Routes
-apiRouter.get('/notifications', NotificationController.list);
-apiRouter.post('/notifications/:id/read', NotificationController.markRead);
-apiRouter.post('/notifications/read-all', NotificationController.markAllRead);
-
-// Entity Routes
-apiRouter.get('/entities', LegalEntityController.list);
-
-// Chaos Engineering / Red Team Routes (guarded by env flag in production)
-apiRouter.get('/chaos/status', ChaosController.getStatus);
-apiRouter.post('/chaos/corrupt', ChaosController.injectCorruption);
-apiRouter.post('/chaos/scan', ChaosController.triggerScan);
-apiRouter.post('/chaos/reset', ChaosController.resetCorrectionBlocks);
-
-// Financial Impact / CFO Routes
-apiRouter.get('/financial/summary', FinancialController.getSummary);
-apiRouter.get('/financial/heatmap', FinancialController.getJurisdictionalHeatmap);
-apiRouter.put('/financial/controls/:controlId', FinancialController.update);
-apiRouter.post('/financial/turnover', FinancialController.updateTurnover);

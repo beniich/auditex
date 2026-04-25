@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
 import { useOrganization, Protect } from '@clerk/clerk-react';
-import { Download, CreditCard, PieChart, Database, Cpu, TrendingUp, History, Info, Zap, Clock, ExternalLink, CheckCircle2, AlertCircle } from 'lucide-react';
-
-const MOCK_INVOICES = [
-  { id: 'in_1Pl3xS2eZvKYlo2C8', date: 'Oct 12, 2026', amount: '$4,999.00', status: 'Paid', plan: 'Enterprise (Annual)', label: 'Enterprise Annual Subscription' },
-  { id: 'in_1Ok8zY2eZvKYlo2D1', date: 'Oct 12, 2025', amount: '$4,999.00', status: 'Paid', plan: 'Enterprise (Annual)', label: 'Enterprise Annual Subscription' }
-];
+import { Download, CreditCard, PieChart, Database, Cpu, TrendingUp, History, Info, Zap, Clock, ExternalLink, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { BillingService } from '../../services/BillingService';
+import { useApiQuery } from '../../hooks/useApiQuery';
 
 const StatCard = ({ title, value, sub, icon: Icon, children }: any) => (
   <div className="bg-white rounded-3xl border border-slate-200 p-6 flex flex-col shadow-sm relative overflow-hidden group">
@@ -27,9 +24,17 @@ const StatCard = ({ title, value, sub, icon: Icon, children }: any) => (
 
 export const UsageBillingDashboard = () => {
   const { organization, isLoaded } = useOrganization();
-  const [loading, setLoading] = useState(false);
-  const [simulatedPlan, setSimulatedPlan] = useState<'Free' | 'Enterprise' | 'Startup'>('Startup');
-  const [showSuccessTest, setShowSuccessTest] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
+  const { data: invoices = [], isLoading: isInvoicesLoading } = useApiQuery(
+    ['billing-invoices'],
+    () => BillingService.getInvoices()
+  );
+
+  const { data: usage = {}, isLoading: isUsageLoading } = useApiQuery(
+    ['billing-usage'],
+    () => BillingService.getUsageStats()
+  );
 
   if (!isLoaded) {
     return (
@@ -43,17 +48,28 @@ export const UsageBillingDashboard = () => {
     );
   }
 
-  const plan = (organization?.publicMetadata?.plan as string) || simulatedPlan;
+  const plan = (organization?.publicMetadata?.plan as string) || 'Startup';
 
-  const simulateStripeSuccess = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setSimulatedPlan('Enterprise');
-      setShowSuccessTest(true);
-      setTimeout(() => setShowSuccessTest(false), 5000);
-    }, 1500);
+  const handleUpgrade = async () => {
+    try {
+      setIsRedirecting(true);
+      const data = await BillingService.createCheckoutSession('enterprise_annual');
+      window.location.href = data.url;
+    } catch (e) {
+      console.error('Failed to start checkout', e);
+      setIsRedirecting(false);
+    }
   };
+
+  const handlePortal = async () => {
+    try {
+      const data = await BillingService.getCustomerPortalUrl();
+      window.location.href = data.url;
+    } catch (e) {
+      console.error('Failed to open portal', e);
+    }
+  };
+
   return (
     <div className="flex flex-col h-full bg-[#f8fafc] rounded-3xl overflow-hidden min-h-[800px] border border-slate-200">
       <div className="bg-white p-8 border-b border-slate-200 relative overflow-hidden">
@@ -65,21 +81,16 @@ export const UsageBillingDashboard = () => {
             <div className="flex gap-3">
                {plan !== 'Enterprise' && (
                   <button 
-                    onClick={simulateStripeSuccess} 
-                    disabled={loading}
+                    onClick={handleUpgrade} 
+                    disabled={isRedirecting}
                     className="px-6 py-3 bg-blue-600 text-white font-black text-[10px] uppercase tracking-widest rounded-2xl shadow-xl shadow-blue-500/20 hover:bg-blue-700 transition-all flex items-center gap-2"
                   >
-                    {loading ? <Clock className="animate-spin" size={14} /> : <Zap size={14} />}
-                    Simulate Stripe Upgrade
+                    {isRedirecting ? <Clock className="animate-spin" size={14} /> : <Zap size={14} />}
+                    Upgrade to Enterprise
                   </button>
                )}
             </div>
          </div>
-         {showSuccessTest && (
-            <div className="absolute inset-0 bg-emerald-600 text-white flex items-center justify-center gap-3 font-black text-xs uppercase tracking-[0.2em] animate-in slide-in-from-top duration-500 z-20">
-               <CheckCircle2 size={18} /> Stripe Webhook Received: Plan Upgraded to Enterprise
-            </div>
-         )}
       </div>
 
       <div className="flex-1 p-8 grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-8 overflow-hidden">
@@ -103,7 +114,7 @@ export const UsageBillingDashboard = () => {
                   </div>
                   <div className="flex justify-between items-center text-xs">
                      <span className="text-slate-500 font-bold">Billing Date</span>
-                     <span className="text-slate-300">Nov 15, 2024</span>
+                     <span className="text-slate-300">Dec 15, 2024</span>
                   </div>
                </div>
 
@@ -133,7 +144,10 @@ export const UsageBillingDashboard = () => {
                     </div>
                   )}
                >
-                  <button className="w-full py-2.5 border border-slate-200 text-slate-500 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#091426] hover:text-white hover:border-[#091426] transition-all flex items-center justify-center gap-2 group">
+                  <button 
+                    onClick={handlePortal}
+                    className="w-full py-2.5 border border-slate-200 text-slate-500 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#091426] hover:text-white hover:border-[#091426] transition-all flex items-center justify-center gap-2 group"
+                  >
                      Stripe Customer Portal <ExternalLink size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
                   </button>
                </Protect>
@@ -143,14 +157,14 @@ export const UsageBillingDashboard = () => {
          {/* Content Area */}
          <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-               <StatCard title="AI Usage (Tokens)" value="15.4M" sub="Tokens utilized this cycle" icon={Cpu}>
+               <StatCard title="AI Usage (Tokens)" value={usage.tokens || '0'} sub="Tokens utilized this cycle" icon={Cpu}>
                   <div className="h-20 bg-slate-50 rounded-2xl border border-slate-100 relative overflow-hidden">
                      <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-blue-100 to-transparent"></div>
                      <div className="absolute bottom-4 left-0 w-full h-1 bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.3)]" style={{ clipPath: 'polygon(0 80%, 20% 40%, 40% 60%, 60% 20%, 80% 50%, 100% 10%)' }}></div>
                   </div>
                </StatCard>
                
-               <StatCard title="Ledger Storage (GB)" value="4.2 TB" sub="Audit data encrypted" icon={Database}>
+               <StatCard title="Ledger Storage (GB)" value={usage.storage || '0 GB'} sub="Audit data encrypted" icon={Database}>
                   <div className="flex items-end gap-1.5 h-20 px-2 pb-2">
                      {[40, 70, 50, 90, 60, 85, 45].map((h, i) => (
                         <div key={i} className="flex-1 bg-blue-100 rounded-sm hover:bg-blue-500 transition-colors" style={{ height: `${h}%` }}></div>
@@ -158,7 +172,7 @@ export const UsageBillingDashboard = () => {
                   </div>
                </StatCard>
 
-               <StatCard title="Active Entities" value="1,240" sub="Licensed subsidiaries" icon={PieChart}>
+               <StatCard title="Active Entities" value={usage.entities || '0'} sub="Licensed subsidiaries" icon={PieChart}>
                   <div className="flex justify-center items-center h-20">
                      <div className="w-16 h-16 rounded-full border-[6px] border-slate-100 relative">
                         <div className="absolute inset-[-6px] rounded-full border-[6px] border-blue-600 border-t-transparent border-l-transparent" style={{ transform: 'rotate(45deg)' }}></div>
@@ -176,7 +190,11 @@ export const UsageBillingDashboard = () => {
                </div>
                
                <div className="space-y-4">
-                  {MOCK_INVOICES.map((tx, i) => (
+                  {isInvoicesLoading ? (
+                    <div className="text-center text-slate-400 py-10 uppercase text-[10px] font-black tracking-widest">Retrieving Invoices...</div>
+                  ) : invoices.length === 0 ? (
+                    <div className="text-center text-slate-400 py-10 uppercase text-[10px] font-black tracking-widest">No Billing History Found</div>
+                  ) : invoices.map((tx: any, i: number) => (
                      <div key={i} className="flex justify-between items-center p-5 rounded-2xl hover:bg-slate-50 transition-all border border-transparent shadow-sm hover:border-slate-100 hover:shadow-md group">
                         <div className="flex items-center gap-4">
                            <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-blue-600 transition-colors">

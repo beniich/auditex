@@ -3,6 +3,7 @@ import { api } from '../lib/api';
 
 export interface QuotaData {
   balance: number;
+  limit: number;
   logs: {
     id: string;
     action: 'SIMPLE' | 'DSL' | 'AGENTIC';
@@ -22,8 +23,9 @@ export function useQuota() {
 
   return {
     balance: quota?.balance ?? 0,
+    limit: quota?.limit ?? 50.00, // Default to 50 if not provided by API
     logs: quota?.logs ?? [],
-    isLow: (quota?.balance ?? 0) < 0.5,
+    isLow: (quota?.balance ?? 0) < 5.0, // Low if less than $5
     isLoading,
     isError,
     refreshQuota: refetch

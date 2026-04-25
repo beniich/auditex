@@ -14,13 +14,12 @@ export class StorageService {
     formData.append('file', file);
     formData.append('auditId', auditId);
 
-    // In a real production app, this would hit /api/storage/upload
-    // which would return a signed URL or process the upload to S3.
-    // For industrial demo, we simulate the latency and validation.
-    
+    // Use apiRequest directly as it handles the BASE_URL and Token
+    // We don't use api.post here because it stringifies the body, but for FormData we need raw body
     return apiRequest<StorageUploadResponse>('/storage/upload', {
       method: 'POST',
       body: formData,
+      // No headers: let fetch set the correct multipart/form-data with boundary
     });
   }
 

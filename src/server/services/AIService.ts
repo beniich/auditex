@@ -103,6 +103,51 @@ export class AIService {
       return tasks.map((t: any) => ({ ...t, _ai_version: promptConfig.version }));
     } catch (error) {
       console.error('AIService.generateRemediationPlan error:', error);
+      return [];
+    }
+  }
+
+  /**
+   * RAG: Knowledge Base - List Sources
+   */
+  static async getRagSources() {
+    // In a real industrial app, this would query a vector store or document index (e.g. Pinecone, Weaviate)
+    // For AuditAX Demo, we return the structural knowledge base metadata
+    return [
+      { id: 'src-001', name: 'Annual_Risk_Report.pdf', status: 'Processed', reliability: 98, color: 'emerald', time: '2h ago' },
+      { id: 'src-002', name: 'Reg_Guidance_Q4.docx', status: 'Processing', reliability: 45, color: 'blue', time: 'Just now' },
+      { id: 'src-003', name: 'Policy_Manual_v2.pdf', status: 'Processed', reliability: 94, color: 'emerald', time: '1d ago' },
+      { id: 'src-004', name: 'Infrastructure_Baseline_v1.pdf', status: 'Processed', reliability: 100, color: 'emerald', time: '3d ago' }
+    ];
+  }
+
+  /**
+   * RAG: Knowledge Base - Semantic Query
+   */
+  static async queryRag(query: string) {
+    if (query === 'preview') {
+      return [
+        { text: "Section 3.1.2 defines material risk thresholds as any exposure exceeding $5M...", doc: "Annual_Risk_Report.pdf" },
+        { text: "Effective Jan 1, 2024, all entities must adopt the revised framework for data sovereignty...", doc: "Reg_Guidance_Q4.docx " },
+        { text: "The cross-border data transfer protocol requires double-blind encryption for all PII data...", doc: "Policy_Manual_v2.pdf" }
+      ];
+    }
+
+    try {
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4o',
+        messages: [
+          { role: 'system', content: 'You are a Knowledge Base Assistant. Extract 3 high-relevance snippets from the structural knowledge base for the user query.' },
+          { role: 'user', content: `Query: ${query}` }
+        ],
+        response_format: { type: 'json_object' }
+      });
+
+      const parsed = JSON.parse(response.choices[0].message.content || '{"snippets": []}');
+      return parsed.snippets || [];
+    } catch (error) {
+      console.error('AIService.queryRag error:', error);
+      return [];
     }
   }
 
@@ -238,6 +283,52 @@ export class AIService {
     } catch (error) {
       console.error('AIService.refineDraft error:', error);
       throw error;
+    }
+  }
+
+  /**
+   * MODEL 7: The Notary (Digital Certificate Generation)
+   */
+  static async generateIntegrityCertificate(reportData: any, organizationId: string) {
+    const crypto = await import('crypto');
+    
+    // 1. Create a data payload for the hash
+    const payload = JSON.stringify({
+      org: organizationId,
+      data: reportData,
+      ts: new Date().toISOString()
+    });
+
+    // 2. Generate SHA-256 Fingerprint
+    const fingerprint = crypto.createHash('sha256').update(payload).digest('hex');
+    
+    // 3. Generate a "Human-readable" certificate summary via IA
+    const prompt = `You are a Digital Notary AI. Create a highly professional, 2-line certificate of integrity for a digital audit report.
+    Include mentions of the fingerprint [${fingerprint.substring(0, 12)}...] and the immuability of the ledger.
+    Keep it extremely formal and institutional.`;
+
+    try {
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4o',
+        messages: [{ role: 'system', content: prompt }],
+      });
+
+      return {
+        fingerprint: fingerprint,
+        certificateText: response.choices[0].message.content || 'Certification d\'intégrité cryptographique vérifiée.',
+        issuer: 'AuditAX Nexus Notary Engine',
+        issuedAt: new Date().toISOString(),
+        validationCode: `CERT-${crypto.randomBytes(4).toString('hex').toUpperCase()}`
+      };
+    } catch (error) {
+      console.error('AIService.generateIntegrityCertificate error:', error);
+      return {
+        fingerprint: fingerprint,
+        certificateText: 'Certification d\'intégrité cryptographique par défaut.',
+        issuer: 'AuditAX Nexus Backup Notary',
+        issuedAt: new Date().toISOString(),
+        validationCode: 'CERT-FAILSAFE'
+      };
     }
   }
 }

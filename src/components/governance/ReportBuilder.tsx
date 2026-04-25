@@ -12,6 +12,9 @@ import {
   Plus, 
   GripVertical 
 } from 'lucide-react';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { ReportService } from '../../services/ReportService';
 import {
   DndContext, 
   closestCenter,
@@ -76,6 +79,20 @@ const SortableItem = ({ id, name, icon: Icon }: { id: string, name: string, icon
 
 export const ReportBuilder = () => {
   const [reportItems, setReportItems] = useState<string[]>(['risk_matrix', 'audit_trail']);
+
+  const saveMutation = useMutation({
+    mutationFn: (items: string[]) => ReportService.saveReport({
+      title: 'Q3 2024 Compliance & Risk Report',
+      status: 'DRAFT',
+      components: items,
+    }),
+    onSuccess: () => {
+      toast.success('Report draft saved successfully');
+    },
+    onError: () => {
+      toast.error('Failed to save report draft');
+    }
+  });
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -142,8 +159,12 @@ export const ReportBuilder = () => {
                <button className="flex items-center gap-2 px-6 py-3 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all">
                   <Eye size={14} /> Preview Mode
                </button>
-               <button className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all">
-                  <Save size={14} /> Save Draft
+               <button 
+                  onClick={() => saveMutation.mutate(reportItems)}
+                  disabled={saveMutation.isPending}
+                  className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all disabled:opacity-50"
+               >
+                  <Save size={14} /> {saveMutation.isPending ? 'Saving...' : 'Save Draft'}
                </button>
             </div>
             <button className="flex items-center gap-2 px-8 py-3 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-emerald-600/20 hover:opacity-90 transition-all">

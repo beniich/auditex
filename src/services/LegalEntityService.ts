@@ -1,35 +1,25 @@
-const API_BASE = '/api';
+import { api } from '../lib/api';
 
-let currentToken: string | null = null;
-
-export function setGlobalAuthToken(token: string | null) {
-  currentToken = token;
-}
-
-async function safeFetch<T>(url: string, options: RequestInit = {}): Promise<T> {
-  try {
-    const headers: any = {
-      ...options.headers,
-    };
-    if (currentToken) {
-      headers['Authorization'] = `Bearer ${currentToken}`;
-    }
-
-    const res = await fetch(url, { ...options, headers });
-    if (!res.ok) {
-      throw new Error(`API Error ${res.status}: ${res.statusText}`);
-    }
-    return res.json();
-  } catch (error) {
-    console.error(`[LegalEntityService] Fetch failed for ${url}:`, error);
-    throw error;
-  }
+export interface LegalEntity {
+  id: string;
+  name: string;
+  jurisdiction: string;
+  taxId: string;
+  complianceScore: number;
+  status: 'ACTIVE' | 'AUDIT_PENDING' | 'NON_COMPLIANT';
+  type: 'HEADQUARTERS' | 'SUBSIDIARY' | 'BRANCH';
 }
 
 export const LegalEntityService = {
-  setToken: setGlobalAuthToken,
+  async getEntities(): Promise<LegalEntity[]> {
+    return api.get<LegalEntity[]>('/entities');
+  },
 
-  async getEntities(): Promise<any[]> {
-    return safeFetch<any[]>(`${API_BASE}/entities`);
+  async getEntityById(id: string): Promise<LegalEntity> {
+    return api.get<LegalEntity>(`/entities/${id}`);
+  },
+
+  async updateEntity(id: string, data: Partial<LegalEntity>): Promise<LegalEntity> {
+    return api.patch<LegalEntity>(`/entities/${id}`, data);
   }
 };

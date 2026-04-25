@@ -132,4 +132,62 @@ export class AIController {
       return res.status(500).json({ error: 'Failed to fetch quota info' });
     }
   }
+
+  /**
+   * Dispatches a report PDF via email
+   */
+  static async sendReportEmail(req: Request, res: Response) {
+    try {
+      const { email, reportTitle, pdfBase64, organizationId } = req.body;
+      
+      if (!email || !pdfBase64) {
+        return res.status(400).json({ error: 'Email and PDF data are required' });
+      }
+
+      const { CommunicationService } = await import('../services/CommunicationService');
+      const { NotificationService } = await import('../services/NotificationService');
+
+      const result = await CommunicationService.sendEmail({
+        to: email,
+        subject: `[AuditAX] Rapport Nexus AI : ${reportTitle}`,
+        body: `Bonjour,\n\nVeuillez trouver ci-joint le rapport analytique généré par le moteur Nexus AI pour : ${reportTitle}.\n\nCe document contient des analyses de sécurité critiques et des recommandations opérationnelles.\n\nCordialement,\nL'intelligence AuditAX.`,
+        attachments: [
+          {
+            filename: `${reportTitle.replace(/\s+/g, '_')}_Report.pdf`,
+            content: pdfBase64.split(',')[1], // Remove potential data:application/pdf;base64,
+            contentType: 'application/pdf'
+          }
+        ]
+      });
+
+      // Log success notification in the system
+      if (organizationId) {
+        await NotificationService.createNotification(
+          organizationId, 
+          'Rapport Exporté', 
+          `Le rapport "${reportTitle}" a été envoyé avec succès à ${email}.`,
+          'SUCCESS'
+        );
+      }
+
+      res.json({ success: true, messageId: result.messageId });
+    } catch (error: any) {
+      console.error('AIController.sendReportEmail error:', error);
+      res.status(500).json({ error: 'Failed to send report email', message: error.message });
+    }
+  }
+
+  /**
+   * Signs a report and generates a digital certificate
+   */
+  static async signReport(req: Request, res: Response) {
+    try {
+      const { reportData, organizationId } = req.body;
+      const result = await AIService.generateIntegrityCertificate(reportData, organizationId || 'global-org');
+      res.json(result);
+    } catch (error: any) {
+      console.error('AIController.signReport error:', error);
+      res.status(500).json({ error: 'Report signing failed' });
+    }
+  }
 }
