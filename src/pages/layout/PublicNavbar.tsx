@@ -31,7 +31,7 @@ export const PublicNavbar = () => {
         </div>
 
         <div className="hidden md:flex items-center gap-4">
-          <button onClick={() => navigate('/dashboard')} className="px-5 py-2.5 text-white/90 hover:text-white font-bold text-sm transition">
+          <button onClick={() => navigate('/app')} className="px-5 py-2.5 text-white/90 hover:text-white font-bold text-sm transition">
             Log In
           </button>
           <button className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white font-black text-xs uppercase tracking-widest rounded-full transition shadow-lg shadow-emerald-500/20">
@@ -56,7 +56,7 @@ export const PublicNavbar = () => {
               <span className="text-slate-300 font-semibold" onClick={() => { setIsOpen(false); navigate('/ciso'); }}>Personas</span>
               <span className="text-slate-300 font-semibold" onClick={() => { setIsOpen(false); navigate('/about'); }}>À Propos</span>
               <hr className="border-white/10" />
-              <button onClick={() => navigate('/dashboard')} className="py-3 text-white font-bold w-full rounded-xl bg-white/5">
+              <button onClick={() => { setIsOpen(false); navigate('/app'); }} className="py-3 text-white font-bold w-full rounded-xl bg-white/5">
                 Log In
               </button>
               <button className="py-3 bg-emerald-500 text-white font-black uppercase text-xs tracking-widest w-full rounded-xl">

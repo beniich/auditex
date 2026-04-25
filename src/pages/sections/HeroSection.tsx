@@ -31,8 +31,8 @@ export const HeroSection = () => {
                     </p>
                     
                     <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                        <button onClick={() => navigate('/demo')} className="px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-white font-black text-sm uppercase tracking-widest rounded-full transition shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2">
-                            Demander une Démo <Network size={18} />
+                        <button onClick={() => navigate('/app')} className="px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-white font-black text-sm uppercase tracking-widest rounded-full transition shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2">
+                             Lancer la Console <Network size={18} />
                         </button>
                         <button onClick={() => navigate('/about')} className="px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-sm uppercase tracking-widest rounded-full transition flex items-center justify-center">
                             Découvrir l'Architecture
