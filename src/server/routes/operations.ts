@@ -1,3 +1,4 @@
+import { Router } from 'express';
 import { IncidentController } from '../controllers/IncidentController';
 import { ChaosController } from '../controllers/ChaosController';
 import { RemediationController } from '../controllers/RemediationController';

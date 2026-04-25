@@ -10,8 +10,8 @@ export class InfrastructureController {
       await new Promise(r => setTimeout(r, 2000));
       
       const discoveredNodes = [
-        { name: 'Discovered-VM-' + Math.floor(Math.random() * 1000), type: 'VIRTUAL_MACHINE', region: 'EU-West' },
-        { name: 'New-DB-' + Math.floor(Math.random() * 1000), type: 'DATABASE', region: 'US-East' }
+        { name: 'Discovered-VM-' + Math.floor(Math.random() * 1000), type: 'VIRTUAL_MACHINE' as "VIRTUAL_MACHINE", region: 'EU-West' },
+        { name: 'New-DB-' + Math.floor(Math.random() * 1000), type: 'DATABASE' as "DATABASE", region: 'US-East' }
       ];
 
       for (const node of discoveredNodes) {

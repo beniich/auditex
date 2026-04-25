@@ -1,3 +1,4 @@
+import { Router } from 'express';
 import { VaultController } from '../controllers/VaultController';
 import { FinancialController } from '../controllers/FinancialController';
 import { NotificationController } from '../controllers/NotificationController';

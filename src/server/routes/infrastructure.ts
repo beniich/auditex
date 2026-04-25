@@ -28,3 +28,4 @@ router.get('/assets', AssetController.list);
 router.post('/assets/:id/tag', AssetController.tag);
 
 
+export default router;
