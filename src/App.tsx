@@ -1,5 +1,6 @@
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'sonner';
 import { ProtectedRoute } from './components/common/ProtectedRoute';
 import { PublicLayout } from './pages/layout/PublicLayout';
 import { LandingPage } from './pages/LandingPage';
@@ -20,6 +21,7 @@ const DashboardContainer = lazy(() => import('./pages/DashboardContainer').then(
 export default function App() {
   return (
     <BrowserRouter>
+      <Toaster position="top-right" expand={false} richColors />
       <Routes>
         {/* Marketing Public Routes */}
         <Route element={<PublicLayout />}>
