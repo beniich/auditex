@@ -122,5 +122,3 @@ export const RemediationTaskBoard = () => {
   );
 };
 export default RemediationTaskBoard;
-
-export default RemediationTaskBoard;

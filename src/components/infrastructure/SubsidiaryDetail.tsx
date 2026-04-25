@@ -118,5 +118,3 @@ export const SubsidiaryDetail = ({ id }: SubsidiaryDetailProps) => {
   );
 };
 export default SubsidiaryDetail;
-
-export default SubsidiaryDetail;

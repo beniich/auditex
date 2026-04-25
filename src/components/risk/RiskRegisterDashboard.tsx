@@ -109,5 +109,3 @@ export const RiskRegisterDashboard = () => {
   );
 };
 export default RiskRegisterDashboard;
-
-export default RiskRegisterDashboard;
