@@ -18,11 +18,20 @@ import { Skeleton } from './components/common/Skeleton';
 // Lazy load the internal app container
 const DashboardContainer = lazy(() => import('./pages/DashboardContainer').then(m => ({ default: m.DashboardContainer })));
 
+import { usePageTracking } from './hooks/usePageTracking';
+
+// Inner component to use location within BrowserRouter
+const TrackingWrapper = ({ children }: { children: React.ReactNode }) => {
+  usePageTracking();
+  return <>{children}</>;
+};
+
 export default function App() {
   return (
     <BrowserRouter>
-      <Toaster position="top-right" expand={false} richColors />
-      <Routes>
+      <TrackingWrapper>
+        <Toaster position="top-right" expand={false} richColors />
+        <Routes>
         {/* Marketing Public Routes */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<LandingPage />} />

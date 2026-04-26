@@ -32,5 +32,13 @@ export const IdentityService = {
 
   async testConnection(): Promise<{ success: boolean; latency: number; details: string }> {
     return api.post<{ success: boolean; latency: number; details: string }>('/identity/test', {});
+  },
+
+  async getProfile(): Promise<any> {
+    return api.get<any>('/auth/profile');
+  },
+
+  async updateProfile(data: any): Promise<any> {
+    return api.patch<any>('/auth/profile', data);
   }
 };

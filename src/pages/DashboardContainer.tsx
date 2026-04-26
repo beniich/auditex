@@ -18,6 +18,7 @@ import { AiApiService } from '../services/AiApiService';
 import { BillingService } from '../services/BillingService';
 import { CertificationService } from '../services/CertificationService';
 import { api } from '../lib/api';
+import { useApiQuery } from '../hooks/useApiQuery';
 
 import { Audit, AuditTemplate } from '../types';
 import { ClipboardCheck, List, Plus } from 'lucide-react';
@@ -64,7 +65,7 @@ const ChaosLab = lazy(() => import('../components/operations/ChaosLab').then(m =
 const FinancialDashboard = lazy(() => import('../components/admin/FinancialDashboard').then(m => ({ default: m.FinancialDashboard })));
 const CapabilityCenter = lazy(() => import('../components/operations/CapabilityCenter').then(m => ({ default: m.CapabilityCenter })));
 const GuidedAuditRunner = lazy(() => import('../components/audit/GuidedAuditRunner').then(m => ({ default: m.GuidedAuditRunner })));
-const AIAnalyticsHub = lazy(() => import('../components/ai/AIAnalyticsHub').then(m => ({ default: m.AiAnalyticsHub })));
+const AIAnalyticsHub = lazy(() => import('../components/ai/AIAnalyticsHub').then(m => ({ default: m.AIAnalyticsHub })));
 const APISecurity = lazy(() => import('../components/admin/APISecurity'));
 const BatchCenter = lazy(() => import('../components/audit/BatchCenter'));
 const IdentityProviderSetup = lazy(() => import('../components/admin/IdentityProviderSetup'));
@@ -84,8 +85,8 @@ export const DashboardContainer = () => {
   useLiveUpdates();
   const { getToken } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [audits, setAudits] = useState<Audit[]>([]);
-  const [templates, setTemplates] = useState<AuditTemplate[]>([]);
+  const { data: audits = [], refetch: refreshAudits } = useApiQuery(['audits'], () => AuditService.getAudits());
+  const { data: templates = [] } = useApiQuery(['audit-templates'], () => AuditService.getTemplates());
   const [selectedAuditId, setSelectedAuditId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isGuidedMode, setIsGuidedMode] = useState(true);
@@ -95,43 +96,15 @@ export const DashboardContainer = () => {
       if (t) {
         api.setToken(t);
         
-        // Only call setToken on services that don't share the global 'api' instance
-        // or have independent internal state if any (most now use global api)
-        AuditService.setToken(t);
-        OrganizationService.setToken(t);
-        RiskService.setToken(t);
-        RemediationService.setToken(t);
-        AssetService.setToken(t);
-        ComplianceService.setToken(t);
-        ChaosService.setToken(t);
-        IncidentService.setToken(t);
-        VaultService.setToken(t);
-        FinancialService.setToken(t);
-
-        refreshAudits();
-        loadTemplates();
+        // Update all services with the new token
+        [
+          AuditService, OrganizationService, RiskService,
+          RemediationService, AssetService, ComplianceService,
+          ChaosService, IncidentService, VaultService, FinancialService
+        ].forEach(s => s.setToken?.(t));
       }
     });
   }, [getToken]);
-
-
-  const loadTemplates = async () => {
-    try {
-      const data = await AuditService.getTemplates();
-      setTemplates(data);
-    } catch (e) {
-      console.error('Failed to load templates', e);
-    }
-  };
-
-  const refreshAudits = async () => {
-    try {
-      const data = await AuditService.getAudits();
-      setAudits(data);
-    } catch (e) {
-      console.error('Failed to load audits', e);
-    }
-  };
 
   const handleStartNewAudit = async (templateId: string, entityId: string) => {
     const id = await AuditService.startAudit(templateId, entityId);

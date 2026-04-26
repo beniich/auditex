@@ -1,0 +1,88 @@
+openapi: 3.0.3
+info:
+  title: AuditAX Industrial API
+  description: Spécification des endpoints pour la plateforme de conformité AuditAX.
+  version: 2.0.0
+servers:
+  - url: http://localhost:3000/api
+    description: Serveur de Développement Local
+
+paths:
+  /auth/profile:
+    get:
+      summary: Récupère le profil utilisateur Clerk
+      responses:
+        '200':
+          description: Profil utilisateur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    patch:
+      summary: Met à jour les métadonnées du profil
+      responses:
+        '200':
+          description: Profil mis à jour
+
+  /api-keys:
+    get:
+      summary: Liste les clés API de l'organisation
+      responses:
+        '200':
+          description: Liste de clés
+    post:
+      summary: Génère une nouvelle clé API
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                scope: { type: string, enum: [READ_ONLY, WRITE_LOGS, FULL_ACCESS] }
+
+  /billing/subscription:
+    get:
+      summary: État de l'abonnement Stripe
+      responses:
+        '200':
+          description: Détails de l'abonnement
+    patch:
+      summary: Changement de plan (Upgrade/Downgrade)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                plan: { type: string }
+
+  /infrastructure/nodes/{id}/health:
+    get:
+      summary: Télémétrie temps-réel d'un nœud
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Métriques (CPU, RAM, Uptime)
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id: { type: string }
+        email: { type: string }
+        organizationId: { type: string }
+        role: { type: string }
+    
+    ApiKey:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        secret: { type: string }
+        status: { type: string }

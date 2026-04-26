@@ -10,7 +10,8 @@ import {
   Zap,
   Clock,
   ShieldCheck,
-  Wallet
+  Wallet,
+  AlertTriangle
 } from 'lucide-react';
 import { useApiQuery } from '../../hooks/useApiQuery';
 import { FinancialService, FinancialSummary } from '../../services/FinancialService';

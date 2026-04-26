@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import { 
   Terminal, FlaskConical as Biotech, 
   Users as Groups, Network as AccountTree, 

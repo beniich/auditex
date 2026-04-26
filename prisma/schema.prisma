@@ -349,3 +349,43 @@ model ConflictOfInterest {
   date        DateTime @default(now())
   status      String   @default("OPEN")
 }
+
+// -----------------------------------------------------------------------------
+// API KEY MANAGEMENT
+// -----------------------------------------------------------------------------
+
+model ApiKey {
+  id             String    @id @default(uuid())
+  organizationId String
+  name           String
+  secret         String    @unique
+  scope          String    @default("READ_ONLY") // READ_ONLY | WRITE_LOGS | FULL_ACCESS
+  status         String    @default("ACTIVE")    // ACTIVE | REVOKED | EXPIRED
+  createdAt      DateTime  @default(now())
+  lastUsedAt     DateTime?
+}
+
+// -----------------------------------------------------------------------------
+// IDENTITY PROVIDER / SSO
+// -----------------------------------------------------------------------------
+
+model SsoConfig {
+  id         String   @id @default(uuid())
+  orgId      String   @unique
+  name       String   @default("Corporate IdP")
+  protocol   String   @default("SAML_2_0")
+  acsUrl     String   @default("https://auditax.io/api/sso/acs")
+  entityId   String   @default("https://auditax.io")
+  certificate String?
+  status     String   @default("ACTIVE")
+  updatedAt  DateTime @updatedAt
+}
+
+model AttributeMapping {
+  id       String @id @default(uuid())
+  orgId    String
+  source   String // IDP claim key
+  target   String // AuditAX property
+  fallback String?
+  status   String @default("ACTIVE")
+}

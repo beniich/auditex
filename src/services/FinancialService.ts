@@ -17,5 +17,5 @@ export const FinancialService = {
   getSummary: () => api.get<FinancialSummary>('/financial/summary'),
   getHeatmap: () => api.get<any[]>('/financial/heatmap'),
   updateImpact: (controlId: string, data: any) =>
-    api.post<any>(`/financial/controls/${controlId}`, data)
+    api.patch<any>(`/financial/controls/${controlId}`, data)
 };

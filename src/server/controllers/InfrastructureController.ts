@@ -72,4 +72,27 @@ export class InfrastructureController {
        res.status(500).json({ error: 'Internal Server Error' });
     }
   }
+
+  static async getHealth(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      // Simulate real-time metrics fetch
+      const metrics = {
+        cpuUsage: (Math.random() * 40 + 10).toFixed(1) + '%',
+        memoryUsage: (Math.random() * 30 + 50).toFixed(1) + '%',
+        activeConnections: Math.floor(Math.random() * 500) + 50,
+        uptime: '45d 12h 4m',
+        lastHealthCheck: new Date().toISOString()
+      };
+      
+      res.json({
+        nodeId: id,
+        status: 'HEALTHY',
+        metrics
+      });
+    } catch (error) {
+       console.error('InfrastructureController.getHealth error:', error);
+       res.status(500).json({ error: 'Internal Server Error' });
+    }
+  }
 }

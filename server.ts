@@ -114,6 +114,40 @@ async function startServer() {
     });
   }
 
+  // 5. Seed API Keys
+  const keyCount = await prisma.apiKey.count({ where: { organizationId: orgId } });
+  if (keyCount === 0) {
+    await prisma.apiKey.create({
+      data: {
+        organizationId: orgId,
+        name: 'Enterprise SIEM Connector',
+        secret: 'am_live_7v8n2m9k0j1h2g3f4d5s6a7s8d9f0g1h',
+        scope: 'WRITE_LOGS',
+        status: 'ACTIVE'
+      }
+    });
+  }
+
+  // 6. Seed SSO Config
+  const ssoCount = await prisma.ssoConfig.count({ where: { orgId } });
+  if (ssoCount === 0) {
+    await prisma.ssoConfig.create({
+      data: {
+        orgId,
+        name: 'Okta Enterprise IdP',
+        protocol: 'SAML_2_0',
+        status: 'ACTIVE'
+      }
+    });
+
+    await prisma.attributeMapping.createMany({
+      data: [
+        { orgId, source: 'email', target: 'email', status: 'ACTIVE' },
+        { orgId, source: 'groups', target: 'role', status: 'ACTIVE' }
+      ]
+    });
+  }
+
   // Vite middleware setup for Frontend
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({

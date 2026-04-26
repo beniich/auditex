@@ -15,6 +15,7 @@ router.post('/infrastructure/discover', InfrastructureController.discover);
 router.post('/infrastructure/nodes', validate(NodeSchema), InfrastructureController.register);
 
 router.patch('/infrastructure/nodes/:id', validate(NodeStatusSchema), InfrastructureController.updateStatus);
+router.get('/infrastructure/nodes/:id/health', InfrastructureController.getHealth);
 
 // Organization & Entity Routes
 router.get('/organizations', OrganizationController.list);
