@@ -3,7 +3,7 @@ import {
   Shield, Key, Terminal, Eye, EyeOff, Trash2, RotateCw, Activity, 
   CheckCircle2, Lock, Plus, History, Network, Zap, Fingerprint, Cpu 
 } from 'lucide-react';
-import { ApiService } from '../../services/ApiService';
+import { ApiKeyService } from '../../services/ApiService';
 import { useApiQuery } from '../../hooks/useApiQuery';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { PageWrapper } from '../common/PageWrapper';
@@ -18,21 +18,21 @@ const APISecurity: React.FC = () => {
 
   const { data: keys = [], isLoading } = useApiQuery(
     ['api-keys'],
-    () => ApiService.getKeys()
+    () => ApiKeyService.getApiKeys()
   );
 
   const createMutation = useMutation({
-    mutationFn: ({ name, scope }: { name: string; scope: string }) => ApiService.createKey(name, scope),
+    mutationFn: ({ name, scope }: { name: string; scope: string }) => ApiKeyService.createApiKey(name, scope),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['api-keys'] })
   });
 
   const revokeMutation = useMutation({
-    mutationFn: (id: string) => ApiService.revokeKey(id),
+    mutationFn: (id: string) => ApiKeyService.revokeApiKey(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['api-keys'] })
   });
 
   const rotateMutation = useMutation({
-    mutationFn: (id: string) => ApiService.rotateKey(id),
+    mutationFn: (id: string) => ApiKeyService.rotateKey(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['api-keys'] })
   });
 
